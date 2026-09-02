@@ -18,6 +18,7 @@ import AdminPanel from '../components/Admin/AdminPanel';
 import LibraryView from '../components/Library/LibraryView';
 import AuthModal from '../components/Auth/AuthModal';
 import BookReviewsSection from '../components/Comments/BookReviewsSection';
+import ComingSoonSection from '../components/Future/ComingSoonSection';
 
 import { BookOpen, Headphones, Sparkles, ArrowRight, Quote, Search, X, Trophy, UploadCloud } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -436,6 +437,11 @@ export default function HomeApp() {
                   currentUser={currentUser}
                 />
               )}
+
+              {/* ── Coming Soon: Future Features Vision ── */}
+              <div className="-mx-4 sm:-mx-8">
+                <ComingSoonSection />
+              </div>
 
               {/* ── Buyuk Allomalar Merosi Shelf ── */}
               <div className="space-y-6">
