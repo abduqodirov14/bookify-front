@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply antialiased selection:bg-[#E05638]/20 selection:text-[#E05638];
+  }
+}
+
+/* Custom Literary & Reader Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(197, 160, 89, 0.25);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(197, 160, 89, 0.5);
+}
+
+/* Google Play Books & Apple Books 3D Hardcover & Spine Physics */
+.book-card-3d {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.book-card-inner {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease;
+  transform-style: preserve-3d;
+}
+
+.book-card-3d:hover .book-card-inner {
+  transform: rotateY(-14deg) translateY(-8px) scale(1.02);
+  box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.35), 0 0 25px rgba(224, 86, 56, 0.15);
+}
+
+/* Physical Book Spine & Page Lighting */
+.book-spine-hinge {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 14px;
+  background: linear-gradient(to right, rgba(0,0,0,0.45) 0%, rgba(255,255,255,0.2) 25%, rgba(0,0,0,0.15) 60%, transparent 100%);
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.book-spread-center-crease {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 32px;
+  transform: translateX(-50%);
+  background: linear-gradient(to right, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.02) 40%, rgba(0,0,0,0.02) 60%, rgba(0,0,0,0.12) 100%);
+  pointer-events: none;
+  z-index: 20;
+}
+
+.dark .book-spread-center-crease {
+  background: linear-gradient(to right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0.6) 100%);
+}
+
+/* Animated SVG Waveform */
+@keyframes wavePulse {
+  0%, 100% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1); }
+}
+
+.waveform-bar {
+  animation: wavePulse 1.2s ease-in-out infinite;
+  transform-origin: bottom;
+}
