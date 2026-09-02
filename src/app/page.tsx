@@ -6,9 +6,6 @@ import { AUTHORS } from '../data/authors';
 import { api, getAuthToken, clearAuthToken } from '../services/api';
 
 import Sidebar from '../components/Navigation/Sidebar';
-import TelegramMobileNav from '../components/Navigation/TelegramMobileNav';
-import TelegramAppView from '../components/Telegram/TelegramAppView';
-import { useTelegramWebApp } from '../hooks/useTelegramWebApp';
 import Header from '../components/Navigation/Header';
 import AudioDock from '../components/Audio/AudioDock';
 import BookSpread from '../components/Reader/BookSpread';
@@ -38,27 +35,6 @@ export default function HomeApp() {
   const [booksList, setBooksList] = useState<Book[]>([]);
   const [isLoadingBooks, setIsLoadingBooks] = useState(true);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
-
-  const { isTelegram, tgUser, triggerHaptic } = useTelegramWebApp();
-
-  // Auto-sync Telegram user profile
-  useEffect(() => {
-    if (tgUser && (!currentUser || currentUser.name === 'Zukko Kitobxon')) {
-      const tgProfile: UserProfile = {
-        id: `tg-${tgUser.id}`,
-        name: `${tgUser.first_name || ''} ${tgUser.last_name || ''}`.trim() || tgUser.username || 'Kitobxon',
-        email: `${tgUser.id}@telegram.org`,
-        role: 'USER',
-        todayMinutes: 40,
-        dailyGoalMinutes: 30,
-        readingStreakDays: 1,
-        totalHours: 148,
-        finishedBooksCount: 1,
-        is2FAEnabled: false
-      };
-      setCurrentUser(tgProfile);
-    }
-  }, [tgUser]);
 
   // Check existing session on mount
   useEffect(() => {
@@ -356,18 +332,6 @@ export default function HomeApp() {
           
           {/* 1. HOME VIEW */}
           {currentPage === 'home' && (
-            isTelegram ? (
-              <TelegramAppView
-                books={booksList}
-                onOpenReader={(bId) => {
-                  setSelectedBookId(bId);
-                  navigate('reader');
-                }}
-                onPlayAudio={playAudio}
-                onNavigate={navigate}
-                currentUser={currentUser}
-              />
-            ) : (
             <div className="max-w-7xl mx-auto space-y-16 pb-28 animate-in fade-in duration-300">
               
               {/* ── Spotlight Hero Showcase or Clean Empty State ── */}
@@ -580,7 +544,6 @@ export default function HomeApp() {
               </div>
 
             </div>
-            )
           )}
 
           {/* 2. LIBRARY VIEW */}
@@ -656,12 +619,6 @@ export default function HomeApp() {
 
         </main>
       </div>
-
-      {/* Telegram Mobile Bottom Navigation */}
-      <TelegramMobileNav
-        currentPage={currentPage}
-        onNavigate={(p) => navigate(p)}
-      />
 
       {/* Floating Global Audio Player Bar */}
       {activeAudioTrack && (
