@@ -258,10 +258,11 @@ export const api = {
 
   // Book Comments & Reviews
   async getBookComments(bookId: string) {
+    if (!bookId) return [];
     try {
-      const res = await fetch(`${API_BASE_URL}/books/${bookId}/comments/`);
-      if (!res.ok) return [];
-      return res.json();
+      const res = await fetch(`${API_BASE_URL}/books/${bookId}/comments`).catch(() => null);
+      if (!res || !res.ok) return [];
+      return await res.json().catch(() => []);
     } catch {
       return [];
     }
@@ -269,7 +270,7 @@ export const api = {
 
   async addBookComment(bookId: string, data: { content: string; rating?: number; user_name?: string }) {
     const token = getAuthToken();
-    const res = await fetch(`${API_BASE_URL}/books/${bookId}/comments/`, {
+    const res = await fetch(`${API_BASE_URL}/books/${bookId}/comments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
