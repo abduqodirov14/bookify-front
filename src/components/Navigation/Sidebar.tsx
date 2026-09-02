@@ -54,9 +54,11 @@ export default function Sidebar({
           onClick={() => onNavigate('home')}
           className="flex items-center gap-3 px-2 cursor-pointer group select-none"
         >
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#E05638] to-[#C5A059] flex items-center justify-center text-white font-serif font-bold text-xl shadow-md group-hover:rotate-3 transition-transform">
-            F
-          </div>
+          <img 
+            src="/icon.png" 
+            alt="Bookify Logo" 
+            className="w-10 h-10 rounded-2xl object-cover shadow-md ring-2 ring-[#C5A059]/20 group-hover:scale-105 transition-transform" 
+          />
           <div>
             <h1 className="font-serif font-bold text-lg tracking-tight text-stone-900 dark:text-white group-hover:text-[#E05638] transition-colors">
               Bookify
