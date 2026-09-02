@@ -4,12 +4,13 @@ export interface Champion {
   avatar: string;
   hours: number;
   pages: number;
-  streakDays: number;
+  streakDays?: number;
   badge: string;
-  badgeColor: string;
+  badgeColor?: string;
   certificateId: string;
-  verifiedAccuracy: string;
-  prizeTitle: string;
+  verifiedAccuracy?: string;
+  prizeTitle?: string;
+  period?: string;
 }
 
 export const TOP_CHAMPIONS: Champion[] = [

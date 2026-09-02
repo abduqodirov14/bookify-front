@@ -181,9 +181,9 @@ export const api = {
     return res.json();
   },
 
-  async getChallengeLeaderboard(challengeId: string) {
-    const res = await fetch(`${API_BASE_URL}/challenges/${challengeId}/leaderboard`);
-    if (!res.ok) return [];
+  async getChallengeLeaderboard(challengeId: string, skip: number = 0, limit: number = 50) {
+    const res = await fetch(`${API_BASE_URL}/challenges/${challengeId}/leaderboard?skip=${skip}&limit=${limit}`);
+    if (!res.ok) return { items: [], total_count: 0, has_more: false };
     return res.json();
   },
 
