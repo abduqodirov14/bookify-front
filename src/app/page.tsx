@@ -7,6 +7,7 @@ import { api, getAuthToken, clearAuthToken } from '../services/api';
 
 import Sidebar from '../components/Navigation/Sidebar';
 import TelegramMobileNav from '../components/Navigation/TelegramMobileNav';
+import TelegramAppView from '../components/Telegram/TelegramAppView';
 import { useTelegramWebApp } from '../hooks/useTelegramWebApp';
 import Header from '../components/Navigation/Header';
 import AudioDock from '../components/Audio/AudioDock';
@@ -37,6 +38,27 @@ export default function HomeApp() {
   const [booksList, setBooksList] = useState<Book[]>([]);
   const [isLoadingBooks, setIsLoadingBooks] = useState(true);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+
+  const { isTelegram, tgUser, triggerHaptic } = useTelegramWebApp();
+
+  // Auto-sync Telegram user profile
+  useEffect(() => {
+    if (tgUser && (!currentUser || currentUser.name === 'Zukko Kitobxon')) {
+      const tgProfile: UserProfile = {
+        id: `tg-${tgUser.id}`,
+        name: `${tgUser.first_name || ''} ${tgUser.last_name || ''}`.trim() || tgUser.username || 'Kitobxon',
+        email: `${tgUser.id}@telegram.org`,
+        role: 'USER',
+        todayMinutes: 40,
+        dailyGoalMinutes: 30,
+        readingStreakDays: 1,
+        totalHours: 148,
+        finishedBooksCount: 1,
+        is2FAEnabled: false
+      };
+      setCurrentUser(tgProfile);
+    }
+  }, [tgUser]);
 
   // Check existing session on mount
   useEffect(() => {
@@ -158,7 +180,6 @@ export default function HomeApp() {
     return () => window.removeEventListener('popstate', parseUrlParams);
   }, []);
 
-
   // Handle Dark / Light Mode HTML class
   useEffect(() => {
     const root = document.documentElement;
@@ -185,7 +206,6 @@ export default function HomeApp() {
   }, []);
 
   const navigate = (page: Page, param?: string) => {
-    // Role protection for Admin
     if (page === 'admin' && currentUser?.role !== 'ADMIN') {
       toast.error("Boshqaruv paneliga kirish uchun administrator huquqi talab qilinadi!");
       navigate('auth');
@@ -207,7 +227,6 @@ export default function HomeApp() {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    // Sync URL in browser address bar
     if (typeof window !== 'undefined') {
       let url = '/';
       if (page !== 'home') {
@@ -337,6 +356,18 @@ export default function HomeApp() {
           
           {/* 1. HOME VIEW */}
           {currentPage === 'home' && (
+            isTelegram ? (
+              <TelegramAppView
+                books={booksList}
+                onOpenReader={(bId) => {
+                  setSelectedBookId(bId);
+                  navigate('reader');
+                }}
+                onPlayAudio={playAudio}
+                onNavigate={navigate}
+                currentUser={currentUser}
+              />
+            ) : (
             <div className="max-w-7xl mx-auto space-y-16 pb-28 animate-in fade-in duration-300">
               
               {/* ── Spotlight Hero Showcase or Clean Empty State ── */}
@@ -379,25 +410,23 @@ export default function HomeApp() {
 
                         <button
                           onClick={() => playAudio(featuredBook)}
-                          className="px-6 py-4 rounded-2xl bg-white dark:bg-white/10 hover:bg-stone-100 dark:hover:bg-white/20 text-stone-900 dark:text-white border border-stone-200 dark:border-white/10 font-bold text-xs font-mono uppercase tracking-wider transition-transform active:scale-95 shadow-xs cursor-pointer flex items-center gap-2"
+                          className="px-8 py-4 rounded-2xl bg-stone-100 hover:bg-stone-200 dark:bg-white/10 dark:hover:bg-white/20 text-stone-900 dark:text-white font-bold text-xs font-mono uppercase tracking-wider transition-transform active:scale-95 border border-stone-200 dark:border-white/10 cursor-pointer flex items-center gap-2"
                         >
-                          <Headphones size={16} className="text-[#E05638]" />
+                          <Headphones size={16} className="text-[#C5A059]" />
                           <span>Audio Tinglash</span>
                         </button>
                       </div>
                     </div>
 
-                    <div className="shrink-0 book-card-3d cursor-pointer" onClick={() => navigate('reader', featuredBook.id)}>
-                      <div className="book-card-inner relative w-60 sm:w-72 aspect-[2/3] rounded-3xl overflow-hidden shadow-2xl border-2 border-black/10">
-                        <img src={featuredBook.coverImage} alt={featuredBook.title} className="w-full h-full object-cover" />
-                        <div className="book-spine-hinge" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-6 text-white">
-                          <span className="text-[10px] font-mono text-[#C5A059] uppercase tracking-widest font-bold">
-                            {featuredBook.authorName}
-                          </span>
-                          <h3 className="font-serif font-bold text-2xl tracking-tight">
-                            {featuredBook.title}
-                          </h3>
+                    <div className="relative group cursor-pointer" onClick={() => navigate('reader', featuredBook.id)}>
+                      <div className="book-card-3d w-56 sm:w-68 aspect-[2/3] scale-100 group-hover:scale-105 transition-transform duration-500">
+                        <div className="book-card-inner relative w-full h-full rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20">
+                          <img 
+                            src={featuredBook.coverImage} 
+                            alt={featuredBook.title} 
+                            className="w-full h-full object-cover" 
+                          />
+                          <div className="book-spine-hinge" />
                         </div>
                       </div>
                     </div>
@@ -405,105 +434,68 @@ export default function HomeApp() {
                   </div>
                 </div>
               ) : (
-                /* Clean Zero-Book Empty State Banner */
-                <div className="p-12 sm:p-16 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 text-center space-y-5 shadow-xs">
-                  <div className="w-16 h-16 rounded-3xl bg-[#E05638]/10 text-[#E05638] flex items-center justify-center mx-auto shadow-md">
-                    <Sparkles size={28} />
-                  </div>
-                  <div className="space-y-2 max-w-lg mx-auto">
-                    <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-950 dark:text-white">
-                      Kutubxona xazinasi toza holatda tayyor
-                    </h2>
-                    <p className="text-xs sm:text-sm text-stone-500 leading-relaxed">
-                      PostgreSQL ma'lumotlar bazasiga ulanish o'rnatildi. Hozircha hech qanday soxta (demo) kitoblar yo'q. 
-                      Administrator paneliga kirib birinchi haqiqiy asarni yuklashingiz mumkin!
-                    </p>
-                  </div>
-                  {currentUser?.role === 'ADMIN' ? (
-                    <button
-                      onClick={() => navigate('admin')}
-                      className="px-8 py-4 rounded-2xl bg-[#E05638] hover:bg-[#C74326] text-white font-bold text-xs font-mono uppercase tracking-wider transition-transform active:scale-95 shadow-xl cursor-pointer inline-flex items-center gap-2"
-                    >
-                      <UploadCloud size={16} />
-                      <span>Admin Panelda Kitob Yuklash</span>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => setCurrentPage('auth')}
-                      className="px-8 py-4 rounded-2xl bg-stone-900 dark:bg-white text-white dark:text-stone-900 font-bold text-xs font-mono uppercase tracking-wider transition-transform active:scale-95 shadow-xl cursor-pointer inline-flex items-center gap-2"
-                    >
-                      <span>Administrator Sifatida Kirish</span>
-                    </button>
-                  )}
+                <div className="p-16 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 text-center space-y-4">
+                  <UploadCloud size={48} className="mx-auto text-stone-400" />
+                  <h3 className="font-serif text-2xl font-bold text-stone-900 dark:text-white">Bazada Asarlar Mavjud Emas</h3>
+                  <p className="text-xs font-mono text-stone-500">Yangi asar qo'shish uchun admin panelga o'ting.</p>
                 </div>
               )}
 
-              {/* ── Community Reviews & Comments Section ── */}
-              {featuredBook && (
-                <BookReviewsSection
-                  bookId={featuredBook.id}
-                  bookTitle={featuredBook.title}
-                  currentUser={currentUser}
-                />
-              )}
-
-              {/* ── Buyuk Allomalar Merosi Shelf ── */}
+              {/* ── Buyuk Adiblar Merosi ── */}
               <div className="space-y-6">
-                <div className="flex items-center justify-between border-b border-stone-200 dark:border-white/10 pb-4">
+                <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-serif text-2xl font-bold text-stone-950 dark:text-white">
-                      Buyuk Allomalar Merosi
+                      Buyuk Adiblar Merosi
                     </h3>
-                    <p className="text-xs text-stone-500">Allomalar portretini tanlang va ularning barcha asarlari olamiga kiring</p>
+                    <p className="text-xs text-stone-500 font-mono mt-0.5">
+                      O'zbek adabiyoti klassiklarining hayoti va asarlari xazinasi
+                    </p>
                   </div>
-                  <button
-                    onClick={() => navigate('author')}
-                    className="text-xs font-mono text-[#E05638] hover:underline font-bold"
+                  <button 
+                    onClick={() => navigate('author', 'abdulla-qodiriy')}
+                    className="text-xs font-mono text-[#E05638] font-bold flex items-center gap-1 hover:underline cursor-pointer"
                   >
-                    Barcha Allomalar →
+                    <span>Barcha Allomalar</span>
+                    <ArrowRight size={14} />
                   </button>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                  {AUTHORS.map(a => (
+                  {AUTHORS.map((a) => (
                     <div
                       key={a.id}
                       onClick={() => navigate('author', a.id)}
-                      className="p-5 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 hover:border-[#E05638] dark:hover:border-[#E05638] shadow-xs hover:shadow-xl transition-all duration-300 text-center space-y-3 cursor-pointer group"
+                      className="p-4 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 hover:border-[#E05638]/50 hover:shadow-xl transition-all duration-300 cursor-pointer text-center space-y-3 group"
                     >
-                      <div className="w-20 h-20 rounded-full overflow-hidden mx-auto shadow-lg border-2 border-white dark:border-stone-700 ring-2 ring-[#C5A059]/30 group-hover:scale-105 transition-transform duration-300">
-                        <img src={a.portrait} alt={a.name} className="w-full h-full object-cover grayscale contrast-125" />
+                      <div className="w-20 h-20 mx-auto rounded-2xl overflow-hidden ring-2 ring-stone-200 dark:ring-white/10 group-hover:ring-[#E05638] transition-all">
+                        <img src={a.portrait} alt={a.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       </div>
-                      <div className="space-y-0.5">
-                        <h4 className="font-serif font-bold text-xs text-stone-900 dark:text-white truncate group-hover:text-[#E05638] transition-colors">
+                      <div>
+                        <h4 className="font-serif font-bold text-sm text-stone-900 dark:text-white group-hover:text-[#E05638] transition-colors">
                           {a.name}
                         </h4>
-                        <span className="text-[10px] font-mono text-stone-400 block">{a.lifetime}</span>
+                        <span className="text-[10px] font-mono text-stone-400 block mt-0.5">
+                          {a.lifetime}
+                        </span>
                       </div>
-                      <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-stone-100 dark:bg-white/10 text-stone-600 dark:text-stone-300 inline-block">
-                        {booksList.filter(b => b.authorId === a.id).length} asar
-                      </span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* ── Curated Masterpieces Bookshelf ── */}
+              {/* ── Durdona Asarlar & Audio Spektakllar ── */}
               {booksList.length > 0 && (
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between border-b border-stone-200 dark:border-white/10 pb-4">
+                  <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-serif text-2xl font-bold text-stone-950 dark:text-white">
                         Durdona Asarlar & Audio Spektakllar
                       </h3>
-                      <p className="text-xs text-stone-500">Mutolaa qilish va tinglash uchun saralangan durdonalar</p>
+                      <p className="text-xs text-stone-500 font-mono mt-0.5">
+                        PostgreSQL bazasiga yuklangan real badiiy kitoblar
+                      </p>
                     </div>
-                    <button
-                      onClick={() => navigate('discover')}
-                      className="text-xs font-mono text-[#E05638] hover:underline font-bold"
-                    >
-                      To'liq Katalog →
-                    </button>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -563,7 +555,32 @@ export default function HomeApp() {
                 </div>
               )}
 
+              {/* ── Kitobxonlar Fikrlari & Taqrizlar ── */}
+              {featuredBook && (
+                <BookReviewsSection
+                  bookId={featuredBook.id}
+                  bookTitle={featuredBook.title}
+                  currentUser={currentUser}
+                />
+              )}
+
+              {/* ── Hamkor Nashriyotlar & Rasmiy Homiy ── */}
+              <div className="p-8 sm:p-12 rounded-3xl bg-stone-900 text-white space-y-6 shadow-xl border border-stone-800">
+                <div className="text-center space-y-2 max-w-xl mx-auto">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-[#C5A059] font-bold">
+                    Rasmiy Hamkorlar
+                  </span>
+                  <h3 className="font-serif text-2xl font-bold">
+                    Milliy Merosimizni Birga Tiklaymiz
+                  </h3>
+                  <p className="text-xs text-stone-400 leading-relaxed">
+                    Bookify O'zbekiston Yozuvchilar uyushmasi va yetakchi nashriyotlar bilan hamkorlikda durdona asarlarning asl nusxalarini saqlaydi.
+                  </p>
+                </div>
+              </div>
+
             </div>
+            )
           )}
 
           {/* 2. LIBRARY VIEW */}
@@ -613,88 +630,49 @@ export default function HomeApp() {
             />
           )}
 
-          {/* 5. ZEN SCRIPTORIUM FOCUS */}
+          {/* 5. FOCUS SCRIPTORIUM */}
           {currentPage === 'time' && (
             <ZenScriptorium />
           )}
 
-          {/* 6. CHALLENGE PODIUM */}
+          {/* 6. ADABIY CHEMPIONAT LEADERBOARD */}
           {currentPage === 'challenge' && (
             <LeaderboardPodium />
           )}
 
-          {/* 7. ADMIN PANEL (Protected strictly) */}
-          {currentPage === 'admin' && currentUser?.role === 'ADMIN' && (
-            <AdminPanel
-              books={booksList}
-              onRefreshBooks={loadBooksFromBackend}
-              onNavigate={navigate}
-            />
+          {/* 7. KELAJAK & VIZYON */}
+          {currentPage === 'vision' && (
+            <ComingSoonSection />
           )}
 
-          {/* 8. KELAJAK & VIZYON (Dedicated Future Features View) */}
-          {currentPage === 'vision' && (
-            <div className="space-y-8 animate-in fade-in">
-              <ComingSoonSection />
-            </div>
+          {/* 8. ADMIN CONTROL PANEL */}
+          {currentPage === 'admin' && (
+            <AdminPanel
+              onNavigate={navigate}
+              books={booksList}
+              onRefreshBooks={loadBooksFromBackend}
+            />
           )}
 
         </main>
       </div>
 
-      {/* ── Persistent Floating Audio Dock ── */}
-      <AudioDock
-        track={activeAudioTrack}
-        onClose={() => setActiveAudioTrack(null)}
-        onOpenReader={bId => navigate('reader', bId)}
+      {/* Telegram Mobile Bottom Navigation */}
+      <TelegramMobileNav
+        currentPage={currentPage}
+        onNavigate={(p) => navigate(p)}
       />
 
-      {/* ── Global Search Modal (Cmd+K) ── */}
-      {isSearchOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-start justify-center pt-24 p-4">
-          <div className="w-full max-w-xl bg-white dark:bg-[#121620] border border-stone-200 dark:border-white/10 rounded-3xl shadow-2xl p-4 space-y-3 animate-in zoom-in-95">
-            <div className="flex items-center gap-3 px-3 py-2 border-b border-stone-100 dark:border-white/10">
-              <Search size={18} className="text-stone-400" />
-              <input
-                type="text"
-                autoFocus
-                placeholder="Kitoblar, mualliflar yoki audio..."
-                className="w-full text-sm bg-transparent outline-none text-stone-900 dark:text-white"
-              />
-              <button onClick={() => setIsSearchOpen(false)} className="text-stone-400 hover:text-stone-900 dark:hover:text-white">
-                <X size={16} />
-              </button>
-            </div>
-
-            <div className="max-h-72 overflow-y-auto space-y-1 p-1">
-              {booksList.length > 0 ? (
-                booksList.map(b => (
-                  <div
-                    key={b.id}
-                    onClick={() => {
-                      setIsSearchOpen(false);
-                      navigate('reader', b.id);
-                    }}
-                    className="p-3 rounded-2xl flex items-center justify-between hover:bg-stone-50 dark:hover:bg-white/[0.04] cursor-pointer transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <img src={b.coverImage} alt={b.title} className="w-8 h-11 object-cover rounded-md shadow-xs" />
-                      <div>
-                        <div className="font-semibold text-xs text-stone-900 dark:text-white">{b.title}</div>
-                        <div className="text-[10px] text-stone-400">{b.authorName} • {b.category}</div>
-                      </div>
-                    </div>
-                    <span className="text-[11px] font-mono text-[#E05638]">Mutolaa →</span>
-                  </div>
-                ))
-              ) : (
-                <div className="p-6 text-center text-xs text-stone-400 font-mono">
-                  Bazada kitoblar mavjud emas
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+      {/* Floating Global Audio Player Bar */}
+      {activeAudioTrack && (
+        <AudioDock
+          track={activeAudioTrack}
+          onClose={() => setActiveAudioTrack(null)}
+          onOpenReader={(bId) => {
+            setSelectedBookId(bId);
+            navigate('reader');
+          }}
+        />
       )}
 
     </div>
