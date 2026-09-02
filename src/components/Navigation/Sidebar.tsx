@@ -41,6 +41,7 @@ export default function Sidebar({
     { id: 'library', label: 'Mening Javonim', icon: Library },
     { id: 'time', label: 'Sokin Scriptorium', icon: Clock },
     { id: 'challenge', label: 'Adabiy Chempionat', icon: Trophy },
+    { id: 'vision' as Page, label: 'Kelajak & Vizyon', icon: Sparkles, badge: 'AI/VR' },
     { id: 'profile', label: 'Kitobxon Pasporti', icon: User },
     ...(isAdmin ? [{ id: 'admin' as Page, label: 'Boshqaruv & 2FA', icon: ShieldCheck, badge: 'Admin' }] : [])
   ];

@@ -9,7 +9,8 @@ export type Page =
   | 'challenge'
   | 'profile'
   | 'admin'
-  | 'auth';
+  | 'auth'
+  | 'vision';
 
 export type ReaderTheme = 'white' | 'sepia' | 'parchment' | 'dark';
 export type ReaderFont = 'literata' | 'georgia' | 'merriweather' | 'sans';

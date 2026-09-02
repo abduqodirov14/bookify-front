@@ -438,11 +438,6 @@ export default function HomeApp() {
                 />
               )}
 
-              {/* ── Coming Soon: Future Features Vision ── */}
-              <div className="-mx-4 sm:-mx-8">
-                <ComingSoonSection />
-              </div>
-
               {/* ── Buyuk Allomalar Merosi Shelf ── */}
               <div className="space-y-6">
                 <div className="flex items-center justify-between border-b border-stone-200 dark:border-white/10 pb-4">
@@ -626,6 +621,13 @@ export default function HomeApp() {
               onRefreshBooks={loadBooksFromBackend}
               onNavigate={navigate}
             />
+          )}
+
+          {/* 8. KELAJAK & VIZYON (Dedicated Future Features View) */}
+          {currentPage === 'vision' && (
+            <div className="space-y-8 animate-in fade-in">
+              <ComingSoonSection />
+            </div>
           )}
 
         </main>

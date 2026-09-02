@@ -6,29 +6,29 @@ const BOOKIFY_FEATURES = [
     icon: '🌍',
     titleUz: 'AI Universal Tarjima',
     titleEn: 'AI Universal Translation',
-    descUz: "Istalgan kitobni o'zbek tilida o'qing — ingliz, yapon, koreys, ispan va 50+ tildan. AI muallifning ovozi va uslubini aynan saqlaydi.",
+    descUz: "Istalgan kitobni o'zbek tilida o'qing — ingliz, yapon, koreys, ispan va 50+ tildan. AI muallifning ovozi va badiiy uslubini aynan saqlaydi.",
     badgeUz: '2027 yilda',
     badgeYear: 'Q1 2027',
     accentColor: '#06B6D4',
-    glow: 'rgba(6, 182, 212, 0.18)',
-    border: 'rgba(6, 182, 212, 0.38)',
-    bg: 'rgba(6, 182, 212, 0.10)',
+    glow: 'rgba(6, 182, 212, 0.15)',
+    border: 'rgba(6, 182, 212, 0.35)',
+    bg: 'rgba(6, 182, 212, 0.08)',
     waitlistBase: 2400,
-    detail: "50+ til  •  Mualliflik huquqiga mos  •  Sifatli o'zbekcha matn",
+    detail: "50+ til • Mualliflik huquqiga mos • Sifatli o'zbekcha matn",
   },
   {
     icon: '🔊',
-    titleUz: 'Tabiiy AI Audioknobalar',
+    titleUz: 'Tabiiy AI Audiokitoblar',
     titleEn: 'Natural AI Audiobooks',
     descUz: "Robot emas. Hissiyotli, to'xtamli, personajlar ovozi bilan haqiqiy kinematografik o'qish — Gollivud darajasida.",
     badgeUz: 'Beta Tez Kunda',
     badgeYear: 'Q3 2026',
     accentColor: '#8B5CF6',
-    glow: 'rgba(139, 92, 246, 0.18)',
-    border: 'rgba(139, 92, 246, 0.38)',
-    bg: 'rgba(139, 92, 246, 0.10)',
+    glow: 'rgba(139, 92, 246, 0.15)',
+    border: 'rgba(139, 92, 246, 0.35)',
+    bg: 'rgba(139, 92, 246, 0.08)',
     waitlistBase: 1800,
-    detail: "Natural intonatsiya  •  Dialog ohanglari  •  Hissiy ifoda",
+    detail: "Natural intonatsiya • Dialog ohanglari • Hissiy ifoda",
   },
   {
     icon: '🧠',
@@ -38,25 +38,25 @@ const BOOKIFY_FEATURES = [
     badgeUz: 'Ishlab Chiqilmoqda',
     badgeYear: '2026',
     accentColor: '#F5C842',
-    glow: 'rgba(245, 200, 66, 0.18)',
-    border: 'rgba(245, 200, 66, 0.38)',
-    bg: 'rgba(245, 200, 66, 0.10)',
+    glow: 'rgba(245, 200, 66, 0.15)',
+    border: 'rgba(245, 200, 66, 0.35)',
+    bg: 'rgba(245, 200, 66, 0.08)',
     waitlistBase: 3100,
-    detail: "Belgilar tahlili  •  Mavzu chuqurlashtirish  •  GPT-4 darajasida",
+    detail: "Belgilar tahlili • Mavzu chuqurlashtirish • GPT-4 darajasida",
   },
   {
     icon: '🥽',
     titleUz: "VR Imerssiv O'qish",
     titleEn: 'VR Immersive Experience',
-    descUz: "Faqat o'qimang — ichiga kiring. Kitob dunyosini virtual haqiqatda boshdan kechiring. Hogvarts yoki Qiyomat dunyosiga qadam basing.",
+    descUz: "Faqat o'qimang — ichiga kiring. Kitob dunyosini virtual haqiqatda boshdan kechiring. Hogvarts yoki Qiyomat olamiga qadam basing.",
     badgeUz: '2027 Istiqbol',
     badgeYear: '2027+',
     accentColor: '#F43F5E',
-    glow: 'rgba(244, 63, 94, 0.18)',
-    border: 'rgba(244, 63, 94, 0.38)',
-    bg: 'rgba(244, 63, 94, 0.10)',
+    glow: 'rgba(244, 63, 94, 0.15)',
+    border: 'rgba(244, 63, 94, 0.35)',
+    bg: 'rgba(244, 63, 94, 0.08)',
     waitlistBase: 4200,
-    detail: "Meta Quest  •  Apple Vision Pro  •  Immersiv 3D sahnalar",
+    detail: "Meta Quest • Apple Vision Pro • Immersiv 3D sahnalar",
   },
 ];
 
@@ -78,56 +78,21 @@ function FeatureCard({ feature, index }: { feature: typeof BOOKIFY_FEATURES[0]; 
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Rotating gradient border on hover */}
-      <div
-        className="absolute inset-[-1px] rounded-[22px] pointer-events-none transition-opacity duration-500"
-        style={{
-          opacity: isHovered ? 1 : 0,
-          background: `conic-gradient(from 0deg, transparent 0%, ${feature.accentColor} 20%, transparent 40%)`,
-          animation: isHovered ? 'cssSpin 2.5s linear infinite' : 'none',
-        }}
-      />
-
       {/* Card Body */}
       <div
-        className="relative rounded-[20px] p-6 sm:p-7 h-full flex flex-col gap-4 overflow-hidden"
+        className={`relative rounded-3xl p-6 sm:p-7 h-full flex flex-col gap-4 overflow-hidden transition-all duration-300 ${
+          isHovered
+            ? 'shadow-2xl -translate-y-2'
+            : 'shadow-xs translate-y-0'
+        } bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10`}
         style={{
-          background: 'rgba(255,255,255,0.04)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-          border: `1px solid ${isHovered ? feature.border : 'rgba(255,255,255,0.07)'}`,
-          boxShadow: isHovered
-            ? `0 24px 64px rgba(0,0,0,0.55), 0 0 48px ${feature.glow}`
-            : '0 8px 32px rgba(0,0,0,0.4)',
-          transform: isHovered ? 'translateY(-8px) scale(1.01)' : 'translateY(0) scale(1)',
-          opacity: isHovered ? 1 : 0.82,
-          filter: isHovered ? 'saturate(1)' : 'saturate(0.6)',
-          transition: 'all 0.45s cubic-bezier(0.34,1.56,0.64,1)',
+          borderColor: isHovered ? feature.accentColor : undefined,
         }}
       >
-        {/* Inner ambient glow */}
-        <div
-          className="absolute inset-0 rounded-[20px] pointer-events-none"
-          style={{
-            background: `radial-gradient(circle at 50% -10%, ${feature.accentColor}22, transparent 65%)`,
-            opacity: isHovered ? 1 : 0,
-            transition: 'opacity 0.6s ease',
-          }}
-        />
-
-        {/* Pulse blob */}
-        <div
-          className="absolute -top-12 -right-12 w-40 h-40 rounded-full pointer-events-none"
-          style={{
-            background: `radial-gradient(circle, ${feature.accentColor}14, transparent 70%)`,
-            animation: 'cssBlob 4s ease-in-out infinite alternate',
-          }}
-        />
-
         {/* Badge row */}
-        <div className="relative flex items-center justify-between z-10">
+        <div className="flex items-center justify-between">
           <span
-            className="text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full"
+            className="text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full font-mono"
             style={{
               background: feature.bg,
               color: feature.accentColor,
@@ -136,67 +101,61 @@ function FeatureCard({ feature, index }: { feature: typeof BOOKIFY_FEATURES[0]; 
           >
             {feature.badgeUz}
           </span>
-          <span className="text-[10px] text-white/25 font-mono tracking-wider">
+          <span className="text-[10px] text-stone-400 font-mono tracking-wider">
             {feature.badgeYear}
           </span>
         </div>
 
-        {/* Floating icon */}
-        <div
-          className="relative text-5xl w-16 h-16 flex items-center justify-center z-10"
-          style={{ animation: 'cssFloat 4s ease-in-out infinite' }}
-        >
-          <span style={{ filter: isHovered ? 'drop-shadow(0 0 12px ' + feature.accentColor + ')' : 'none', transition: 'filter 0.4s ease' }}>
-            {feature.icon}
-          </span>
+        {/* Icon */}
+        <div className="text-4xl w-14 h-14 rounded-2xl flex items-center justify-center bg-stone-50 dark:bg-white/5 border border-stone-100 dark:border-white/5">
+          {feature.icon}
         </div>
 
         {/* Titles */}
-        <div className="relative z-10">
-          <h3 className="text-[19px] sm:text-[21px] font-bold text-white mb-1 leading-snug">
+        <div>
+          <h3 className="font-serif text-lg sm:text-xl font-bold text-stone-900 dark:text-white mb-0.5 leading-snug">
             {feature.titleUz}
           </h3>
-          <p className="text-[11px] text-white/30 font-mono tracking-widest uppercase">
+          <p className="text-[10px] text-stone-400 font-mono tracking-widest uppercase">
             {feature.titleEn}
           </p>
         </div>
 
         {/* Description */}
-        <p className="relative text-[13px] sm:text-[14px] text-white/55 leading-relaxed flex-1 z-10">
+        <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-300 leading-relaxed flex-1">
           {feature.descUz}
         </p>
 
         {/* Tech detail chip */}
         <div
-          className="relative z-10 text-[11px] font-mono px-3 py-2 rounded-lg"
+          className="text-[11px] font-mono px-3 py-2 rounded-xl"
           style={{ background: feature.bg, color: feature.accentColor }}
         >
           {feature.detail}
         </div>
 
         {/* Waitlist count */}
-        <p className="relative text-[11px] text-white/30 z-10">
-          🔔 {count.toLocaleString()}+ kishi ro'yxatga kirdi
+        <p className="text-[11px] font-mono text-stone-400">
+          🔔 {count.toLocaleString()}+ kitobxon kutmoqda
         </p>
 
         {/* CTA button */}
-        <div className="relative z-10">
+        <div>
           {!isSubscribed ? (
             <button
               onClick={handleNotify}
-              className="w-full py-2.5 rounded-xl text-sm font-bold tracking-wide active:scale-95 cursor-pointer"
+              className="w-full py-2.5 rounded-xl text-xs font-mono font-bold uppercase tracking-wider active:scale-95 cursor-pointer transition-all shadow-xs"
               style={{
                 background: isHovered ? feature.accentColor : 'transparent',
-                border: `1px solid ${feature.border}`,
-                color: isHovered ? (feature.accentColor === '#F5C842' ? '#000' : '#fff') : feature.accentColor,
-                transition: 'all 0.3s ease',
+                border: `1px solid ${feature.accentColor}`,
+                color: isHovered ? '#000' : feature.accentColor,
               }}
             >
-              🔔 Xabar Ber — Birinchi Bo'l
+              🔔 Xabar Berish
             </button>
           ) : (
             <div
-              className="w-full py-2.5 rounded-xl text-sm font-bold text-center"
+              className="w-full py-2.5 rounded-xl text-xs font-mono font-bold text-center"
               style={{
                 background: feature.bg,
                 color: feature.accentColor,
@@ -212,13 +171,9 @@ function FeatureCard({ feature, index }: { feature: typeof BOOKIFY_FEATURES[0]; 
       {/* Toast */}
       {showToast && (
         <div
-          className="absolute -top-12 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap shadow-2xl z-50 animate-bounce"
-          style={{
-            background: feature.accentColor,
-            color: feature.accentColor === '#F5C842' ? '#000' : '#fff',
-          }}
+          className="absolute -top-10 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-mono font-bold whitespace-nowrap shadow-xl z-50 text-white bg-stone-900 dark:bg-white dark:text-stone-900"
         >
-          🎉 Birinchilar orasida! Tez orada xabar beramiz.
+          🎉 Siz birinchilar ro'yxatiga qo'shildingiz!
         </div>
       )}
     </div>
@@ -227,118 +182,82 @@ function FeatureCard({ feature, index }: { feature: typeof BOOKIFY_FEATURES[0]; 
 
 export default function ComingSoonSection() {
   return (
-    <section
-      className="relative py-24 sm:py-32 px-4 sm:px-6 overflow-hidden"
-      style={{
-        background: '#0A0D14',
-        backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)',
-        backgroundSize: '32px 32px',
-      }}
-    >
-      {/* Global ambient blob */}
-      <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-        style={{
-          width: '700px',
-          height: '500px',
-          background:
-            'radial-gradient(ellipse at center, rgba(139,92,246,0.07) 0%, rgba(6,182,212,0.04) 40%, transparent 70%)',
-        }}
-      />
-
-      <div className="relative max-w-7xl mx-auto">
-
-        {/* ── Section Header ── */}
-        <div className="text-center mb-14 sm:mb-20">
-          {/* Live dev indicator */}
-          <div className="inline-flex items-center gap-2.5 mb-6 px-4 py-2 rounded-full border border-white/10 text-white/50 text-xs backdrop-blur-sm">
-            <span
-              className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0"
-              style={{ animation: 'cssBlob 1.8s ease-in-out infinite' }}
-            />
-            <span className="font-mono uppercase tracking-widest">
-              Faol Ishlab Chiqilmoqda
-            </span>
-          </div>
-
-          <h2 className="font-serif text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-5 leading-tight">
-            O'qishning{' '}
-            <span
-              style={{
-                background: 'linear-gradient(135deg, #F5C842 0%, #F43F5E 50%, #8B5CF6 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}
-            >
-              Kelajagi
-            </span>
-          </h2>
-
-          <p className="text-white/45 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed mb-8">
-            Bu imkoniyatlar hozir ishlab chiqilmoqda — birinchi bo'lib biling va{' '}
-            <strong className="text-white/70">erta kirish imkoniyatini</strong> qo'lga kiriting.
-          </p>
-
-          {/* Vision journey pills */}
-          <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-mono">
-            {[
-              { label: "📖 O'qish", color: '#E05638', now: true },
-              { label: '→' },
-              { label: '🔊 Tinglash', color: '#8B5CF6' },
-              { label: '→' },
-              { label: '🌍 Tarjima', color: '#06B6D4' },
-              { label: '→' },
-              { label: '🧠 Tushunish', color: '#F5C842' },
-              { label: '→' },
-              { label: '🥽 Kechirish', color: '#F43F5E' },
-            ].map((item: any, i) => (
-              item.label === '→' ? (
-                <span key={i} className="text-white/20 text-base">→</span>
-              ) : (
-                <span
-                  key={i}
-                  className="px-3 py-1.5 rounded-full font-bold"
-                  style={{
-                    background: `${item.color}${item.now ? '25' : '12'}`,
-                    color: `${item.color}${item.now ? 'ff' : 'aa'}`,
-                    border: `1px solid ${item.color}35`,
-                  }}
-                >
-                  {item.label}
-                  {item.now && <span className="ml-1.5 text-[9px] opacity-60">(Hozir)</span>}
-                </span>
-              )
-            ))}
-          </div>
+    <div className="space-y-10">
+      
+      {/* Header */}
+      <div className="text-center max-w-2xl mx-auto space-y-4">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E05638]/10 text-[#E05638] text-xs font-mono font-bold uppercase tracking-wider border border-[#E05638]/20">
+          <span className="w-2 h-2 rounded-full bg-[#E05638] animate-pulse" />
+          <span>Bookify Kelajak Viziyasi</span>
         </div>
 
-        {/* ── Feature Cards Grid ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 sm:gap-6">
-          {BOOKIFY_FEATURES.map((feature, index) => (
-            <FeatureCard key={feature.titleEn} feature={feature} index={index} />
+        <h2 className="font-serif text-3xl sm:text-4xl font-bold text-stone-950 dark:text-white">
+          O'qishning Kelajak Imkoniyatlari
+        </h2>
+
+        <p className="text-sm text-stone-500 leading-relaxed">
+          Bookify loyihasining uzoq muddatli yo'l xaritasi (Roadmap). Biz dunyo adabiyotini har bir kitobxonga uning tilida yetkazish ustida ishlamoqdamiz.
+        </p>
+
+        {/* Vision Journey Pills */}
+        <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-mono pt-2">
+          {[
+            { label: "📖 O'qish (Live)", color: '#E05638' },
+            { label: '→' },
+            { label: '🔊 Audio-Teatr', color: '#8B5CF6' },
+            { label: '→' },
+            { label: '🌍 AI Tarjima', color: '#06B6D4' },
+            { label: '→' },
+            { label: '🧠 AI Yordamchi', color: '#F5C842' },
+            { label: '→' },
+            { label: '🥽 VR Olam', color: '#F43F5E' },
+          ].map((item: any, i) => (
+            item.label === '→' ? (
+              <span key={i} className="text-stone-300 dark:text-stone-700 text-sm">→</span>
+            ) : (
+              <span
+                key={i}
+                className="px-3 py-1 rounded-full font-bold"
+                style={{
+                  background: `${item.color}15`,
+                  color: item.color,
+                  border: `1px solid ${item.color}30`,
+                }}
+              >
+                {item.label}
+              </span>
+            )
           ))}
         </div>
-
-        {/* Bottom note */}
-        <p className="text-center text-white/20 text-xs font-mono mt-12 leading-relaxed">
-          Barcha kelajak imkoniyatlar premium a'zolar uchun chegirmali erta kirish bilan taqdim etiladi
-          <br />
-          <span className="text-white/30 font-bold">Bookify Vision — 2026 → 2027</span>
-        </p>
       </div>
 
-      <style>{`
-        @keyframes cssSpin { to { transform: rotate(360deg); } }
-        @keyframes cssFloat {
-          0%, 100% { transform: translateY(0px) rotate(-1deg); }
-          50% { transform: translateY(-9px) rotate(1deg); }
-        }
-        @keyframes cssBlob {
-          0%, 100% { opacity: 0.5; transform: scale(1); }
-          50% { opacity: 1; transform: scale(1.15); }
-        }
-      `}</style>
-    </section>
+      {/* Feature Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {BOOKIFY_FEATURES.map((feature, index) => (
+          <FeatureCard key={feature.titleEn} feature={feature} index={index} />
+        ))}
+      </div>
+
+      {/* Pitch Deck Banner Box */}
+      <div className="p-8 rounded-3xl bg-gradient-to-r from-stone-900 to-stone-950 text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xl border border-stone-800">
+        <div className="space-y-1 text-center sm:text-left">
+          <h3 className="font-serif text-xl font-bold">
+            Rasmiy Startup Investor Pitch Deck (2026)
+          </h3>
+          <p className="text-xs text-stone-400 font-mono">
+            Bozor tahlili, biznes model, TAM ($1.8B) va to'liq yo'l xaritasini PDF yoki online ko'rish
+          </p>
+        </div>
+        <a
+          href="/pitch-deck.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="px-6 py-3 rounded-2xl bg-[#E05638] hover:bg-[#C74326] text-white text-xs font-mono font-bold uppercase tracking-wider transition-all shadow-lg active:scale-95 whitespace-nowrap"
+        >
+          📄 Pitch Deckni Ochish (PDF) →
+        </a>
+      </div>
+
+    </div>
   );
 }
