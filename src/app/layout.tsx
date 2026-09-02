@@ -30,6 +30,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="uz" className={`${sans.variable} ${serif.variable} ${mono.variable}`}>
+      <head>
+        <script src="https://telegram.org/js/telegram-web-app.js"></script>
+      </head>
       <body className="font-sans antialiased bg-[#F8FAFC] dark:bg-[#080B0F] text-stone-900 dark:text-stone-100 min-h-screen">
         <Toaster position="top-center" reverseOrder={false} />
         {children}

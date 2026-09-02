@@ -6,6 +6,8 @@ import { AUTHORS } from '../data/authors';
 import { api, getAuthToken, clearAuthToken } from '../services/api';
 
 import Sidebar from '../components/Navigation/Sidebar';
+import TelegramMobileNav from '../components/Navigation/TelegramMobileNav';
+import { useTelegramWebApp } from '../hooks/useTelegramWebApp';
 import Header from '../components/Navigation/Header';
 import AudioDock from '../components/Audio/AudioDock';
 import BookSpread from '../components/Reader/BookSpread';
