@@ -95,7 +95,7 @@ export default function Header({
   };
 
   return (
-    <header className="h-16 px-6 lg:px-8 flex items-center justify-between border-b border-stone-200/90 dark:border-white/10 bg-white/90 dark:bg-[#0A0D14]/90 backdrop-blur-md shrink-0 z-30 transition-colors">
+    <header className="h-16 px-3 sm:px-6 lg:px-8 flex items-center justify-between border-b border-stone-200/90 dark:border-white/10 bg-white/90 dark:bg-[#0A0D14]/90 backdrop-blur-md shrink-0 z-30 transition-colors">
       
       <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
         {/* Mobile Hamburger Menu Button */}
@@ -121,16 +121,25 @@ export default function Header({
           <ArrowLeft size={16} />
         </button>
 
-        {/* Spotlight Search Pill (Cmd+K) */}
+        {/* Mobile Search Button */}
+        <button
+          onClick={onOpenSearch}
+          className="sm:hidden p-2 rounded-xl bg-stone-100 dark:bg-white/10 text-stone-700 dark:text-stone-300 hover:bg-stone-200 transition-colors cursor-pointer shrink-0"
+          title="Qidiruv"
+        >
+          <Search size={16} />
+        </button>
+
+        {/* Desktop / Tablet Spotlight Search Pill (Cmd+K) */}
         <div
           onClick={onOpenSearch}
-          className="flex items-center gap-3 w-full max-w-xs sm:max-w-md px-3 py-2 rounded-xl bg-stone-100/90 dark:bg-white/[0.05] border border-stone-200 dark:border-white/10 hover:border-stone-300 dark:hover:border-white/20 transition-colors cursor-pointer group shadow-2xs"
+          className="hidden sm:flex items-center gap-2.5 w-64 md:w-80 lg:w-96 px-3.5 py-2 rounded-xl bg-stone-100/90 dark:bg-white/[0.05] border border-stone-200 dark:border-white/10 hover:border-stone-300 dark:hover:border-white/20 transition-colors cursor-pointer group shadow-2xs"
         >
-          <Search size={15} className="text-stone-400 group-hover:text-[#E05638] transition-colors" />
-          <span className="flex-1 text-xs text-stone-500 dark:text-stone-400">
+          <Search size={15} className="text-stone-400 group-hover:text-[#E05638] transition-colors shrink-0" />
+          <span className="flex-1 text-xs text-stone-500 dark:text-stone-400 truncate whitespace-nowrap">
             Durdona asarlar, allomalar yoki audio...
           </span>
-          <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white dark:bg-white/10 border border-stone-200 text-[10px] font-mono text-stone-500">
+          <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white dark:bg-white/10 border border-stone-200 dark:border-white/10 text-[10px] font-mono text-stone-500 shrink-0">
             <Command size={10} />
             <span>K</span>
           </div>
