@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { api, setAuthToken } from '../../services/api';
+import { api, setAuthToken, API_BASE_URL } from '../../services/api';
 import { Lock, Mail, ShieldCheck, ArrowRight, UserPlus, LogIn, ArrowLeft, X, Sparkles, BookOpen } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -33,7 +33,7 @@ export default function AuthModal({ onSuccess, onCancel }: Props) {
     try {
       if (isRegister) {
         // Register flow
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/auth/register`, {
+        const res = await fetch(`${API_BASE_URL}/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: email.trim(), password: password.trim(), name: name.trim() })
