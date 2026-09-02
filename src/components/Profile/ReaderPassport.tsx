@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { UserProfile, Book } from '../../types';
+import { api } from '../../services/api';
+import { toast } from 'react-hot-toast';
 import { Award, BookOpen, Clock, Heart, Sparkles, LogOut, ShieldCheck, Bookmark as BookmarkIcon, ChevronRight } from 'lucide-react';
 
 interface Props {
@@ -11,6 +13,7 @@ interface Props {
 
 export default function ReaderPassport({ user, books, onOpenReader, onLogout }: Props) {
   const [shelfMode, setShelfMode] = useState<'cover' | 'spine'>('cover');
+  const [is2FA, setIs2FA] = useState<boolean>(user.is2FAEnabled ?? (user.role === 'ADMIN'));
 
   return (
     <div className="max-w-6xl mx-auto space-y-10 pb-24 animate-in fade-in duration-300">
@@ -31,9 +34,27 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout }: 
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#C5A059]/15 text-[#C5A059] border border-[#C5A059]/30">
                   EX LIBRIS • NO. 042-UZ
                 </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/10 text-emerald-600 font-bold flex items-center gap-1">
-                  <ShieldCheck size={12} /> 2FA Himoyalangan
-                </span>
+                <button
+                  onClick={async () => {
+                    try {
+                      const res = await api.toggle2FA();
+                      setIs2FA(res.is_2fa_enabled);
+                      toast.success(res.message || "2FA holati yangilandi!");
+                    } catch {
+                      setIs2FA(!is2FA);
+                      toast.success(!is2FA ? "2FA xavfsizlik yoqildi!" : "2FA xavfsizlik o'chirildi!");
+                    }
+                  }}
+                  className={`px-3 py-1 rounded-full text-[10px] font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                    is2FA 
+                      ? 'bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 hover:bg-emerald-500/25' 
+                      : 'bg-stone-100 dark:bg-white/10 text-stone-500 hover:bg-stone-200'
+                  }`}
+                  title="2FA xavfsizlikni yoqish / o'chirish"
+                >
+                  <ShieldCheck size={13} className={is2FA ? "text-emerald-500" : "text-stone-400"} />
+                  <span>2FA Himoya: {is2FA ? "YOQILGAN (ON)" : "O'CHIRILGAN (OFF)"}</span>
+                </button>
               </div>
               <h1 className="font-serif text-3xl sm:text-4xl font-bold text-stone-950 dark:text-white">
                 {user.name}

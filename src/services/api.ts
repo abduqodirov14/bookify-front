@@ -57,6 +57,17 @@ export const api = {
     return res.json();
   },
 
+  async toggle2FA() {
+    const token = getAuthToken();
+    if (!token) return null;
+    const res = await fetch(`${API_BASE_URL}/auth/2fa/toggle`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error("2FA holatini o'zgartirishda xatolik");
+    return res.json();
+  },
+
   async getMe() {
     const token = getAuthToken();
     if (!token) return null;

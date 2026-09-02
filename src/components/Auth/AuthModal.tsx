@@ -46,6 +46,10 @@ export default function AuthModal({ onSuccess, onCancel }: Props) {
           if (data.otp_hint) setOtp(data.otp_hint);
           setStep('otp');
           toast.success(data.message || "Tasdiqlash kodi yuborildi!", { icon: '🛡️' });
+        } else if (data.access_token) {
+          setAuthToken(data.access_token);
+          onSuccess(data.user);
+          toast.success(`Hisobingiz ochildi! Xush kelibsiz, ${data.user?.name || 'Kitobxon'}!`);
         }
       } else {
         // Login flow
