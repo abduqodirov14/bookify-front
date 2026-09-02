@@ -608,6 +608,7 @@ export default function HomeApp() {
             <AdminPanel
               books={booksList}
               onRefreshBooks={loadBooksFromBackend}
+              onNavigate={navigate}
             />
           )}
 

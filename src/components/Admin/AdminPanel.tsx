@@ -5,40 +5,59 @@ import {
   ShieldCheck, 
   BookOpen, 
   UploadCloud, 
-  TrendingUp, 
-  Users, 
-  DollarSign, 
   Trash2, 
   Plus, 
   Image as ImageIcon, 
   FileText,
   Trophy,
-  Calendar,
-  Award,
-  CheckCircle2,
-  Clock,
-  Sparkles
+  Sparkles,
+  Edit2,
+  X,
+  Check,
+  Eye,
+  RefreshCw,
+  Sliders
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 interface Props {
   books: Book[];
   onRefreshBooks: () => void;
+  onNavigate?: (page: any, param?: string) => void;
 }
 
-export default function AdminPanel({ books, onRefreshBooks }: Props) {
+const COVER_PRESETS = [
+  { name: 'Mumtoz Jigarrang', url: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80' },
+  { name: 'Klassik Kitob', url: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80' },
+  { name: 'Oltin Sahifa', url: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=600&q=80' },
+  { name: 'Tungi Moviy', url: 'https://images.unsplash.com/photo-1495640388908-05fa85288e61?auto=format&fit=crop&w=600&q=80' },
+  { name: 'Badiiy Zangori', url: 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=600&q=80' }
+];
+
+export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props) {
   const [tab, setTab] = useState<'dashboard' | 'upload' | 'seasons'>('dashboard');
   
   // Book Upload State
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
-  const [category, setCategory] = useState('Mumtoz Meros');
-  const [pages, setPages] = useState(320);
+  const [category, setCategory] = useState('Falsafiy Roman');
+  const [pages, setPages] = useState(460);
   const [narrator, setNarrator] = useState('Afzal Rafiqov');
   const [description, setDescription] = useState('');
   const [coverUrl, setCoverUrl] = useState('https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80');
   const [bookFile, setBookFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+
+  // Edit Book State
+  const [editingBook, setEditingBook] = useState<Book | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editAuthor, setEditAuthor] = useState('');
+  const [editCategory, setEditCategory] = useState('');
+  const [editPages, setEditPages] = useState(300);
+  const [editNarrator, setEditNarrator] = useState('');
+  const [editCoverUrl, setEditCoverUrl] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   // Seasons / Tournaments State
   const [challengesList, setChallengesList] = useState<any[]>([]);
@@ -60,6 +79,69 @@ export default function AdminPanel({ books, onRefreshBooks }: Props) {
     fetchChallenges();
   }, [tab]);
 
+  // Open Edit Modal
+  const handleOpenEdit = (b: Book) => {
+    setEditingBook(b);
+    setEditTitle(b.title);
+    setEditAuthor(b.authorName);
+    setEditCategory(b.category || 'Mumtoz Meros');
+    setEditPages(b.pages || 350);
+    setEditNarrator(b.narrator || 'Afzal Rafiqov');
+    setEditCoverUrl(b.coverImage || '');
+    setEditDescription(b.description || '');
+  };
+
+  // Save Book Edit
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingBook) return;
+    if (!editTitle.trim() || !editAuthor.trim()) {
+      toast.error("Kitob nomi va muallifini kiriting");
+      return;
+    }
+
+    setIsSavingEdit(true);
+    const toastId = toast.loading("O'zgarishlar saqlanmoqda...");
+
+    try {
+      await api.updateBook(editingBook.id, {
+        title: editTitle.trim(),
+        author: editAuthor.trim(),
+        author_name: editAuthor.trim(),
+        category: editCategory,
+        pages: editPages,
+        narrator: editNarrator,
+        cover_image: editCoverUrl,
+        description: editDescription
+      });
+
+      toast.success("Kitob ma'lumotlari muvaffaqiyatli yangilandi! 🎉", { id: toastId });
+      setEditingBook(null);
+      onRefreshBooks();
+    } catch (err: any) {
+      toast.error(err.message || "Tahrirlashda xatolik yuz berdi", { id: toastId });
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
+  // Delete Book
+  const handleDeleteBook = async (bookId: string, bookTitle: string) => {
+    if (!confirm(`Haqiqatan ham "${bookTitle}" kitobini butunlay o'chirmoqchimisiz?`)) {
+      return;
+    }
+
+    const toastId = toast.loading("Kitob bazadan o'chirilmoqda...");
+    try {
+      await api.deleteBook(bookId);
+      toast.success(`"${bookTitle}" bazadan muvaffaqiyatli o'chirildi`, { id: toastId });
+      onRefreshBooks();
+    } catch (err: any) {
+      toast.error(err.message || "O'chirishda xatolik yuz berdi", { id: toastId });
+    }
+  };
+
+  // Upload Book
   const handleBookSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !author.trim()) {
@@ -80,6 +162,7 @@ export default function AdminPanel({ books, onRefreshBooks }: Props) {
       formData.append('narrator', narrator);
       formData.append('description', description || `${title} — yangi yuklangan sara durdona asar.`);
       formData.append('cover_image_val', coverUrl);
+      formData.append('cover_image_url', coverUrl);
 
       if (bookFile) {
         formData.append('file', bookFile);
@@ -100,12 +183,13 @@ export default function AdminPanel({ books, onRefreshBooks }: Props) {
       setTab('dashboard');
       onRefreshBooks();
     } catch (err: any) {
-      toast.error(err.message || "Yuklashda xatolik yuz berdi", { id: toastId });
+      toast.error(err.message || "Kitob yuklashda xatolik yuz berdi", { id: toastId });
     } finally {
       setIsUploading(false);
     }
   };
 
+  // Create Challenge
   const handleCreateSeason = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!seasonName.trim()) {
@@ -118,70 +202,44 @@ export default function AdminPanel({ books, onRefreshBooks }: Props) {
 
     try {
       const now = new Date();
-      const end = new Date(now.getTime() + seasonDays * 24 * 60 * 60 * 1000);
+      const end = new Date();
+      end.setDate(now.getDate() + (seasonDays || 30));
 
       await api.createChallenge({
         name: seasonName.trim(),
-        description: seasonDesc.trim() || `${seasonName} — ${seasonDays} kunlik eng faol kitobxonlar adabiy chempionati.`,
+        description: seasonDesc.trim() || `${seasonName} — barcha kitobxonlar o'rtasida adabiy bellashuv.`,
         start_at: now.toISOString(),
         end_at: end.toISOString()
       });
 
-      toast.success(`'${seasonName}' mavsumi ochildi va chempionat boshlandi! 🏆`, { id: toastId });
+      toast.success("Yangi adabiy mavsum muvaffaqiyatli ochildi! 🏆", { id: toastId });
       setSeasonName('');
       setSeasonDesc('');
       fetchChallenges();
     } catch (err: any) {
-      toast.error(err.message || "Mavsum ochishda xatolik", { id: toastId });
+      toast.error(err.message || "Mavsum yaratishda xatolik", { id: toastId });
     } finally {
       setIsCreatingSeason(false);
     }
   };
 
-  const handleFinishSeason = async (challengeId: string, challengeName: string) => {
-    if (!confirm(`Haqiqatdan ham '${challengeName}' mavsumini yakunlab, g'oliblarni taqdirlamoqchimisiz?`)) return;
-    
-    const toastId = toast.loading("G'oliblar aniqlanmoqda va diplomlar yozilmoqda...");
-    try {
-      const res = await api.finishChallenge(challengeId);
-      toast.success(res.message || "Mavsum yakunlandi va g'oliblar e'lon qilindi! 👑", { id: toastId });
-      fetchChallenges();
-    } catch (err: any) {
-      toast.error(err.message || "Yakunlashda xatolik", { id: toastId });
-    }
-  };
-
-  const handleDeleteBook = async (id: string, bTitle: string) => {
-    if (!confirm(`Haqiqatdan ham "${bTitle}" kitobini o'chirmoqchimisiz?`)) return;
-    try {
-      await api.deleteBook(id);
-      toast.success("Kitob muvaffaqiyatli o'chirildi");
-      onRefreshBooks();
-    } catch (err: any) {
-      toast.error(err.message || "O'chirishda xatolik");
-    }
-  };
-
   return (
-    <div className="max-w-7xl mx-auto space-y-8 pb-24 animate-in fade-in duration-300">
+    <div className="p-4 sm:p-8 max-w-6xl mx-auto space-y-8 animate-in fade-in duration-300">
       
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200 dark:border-white/10 pb-6">
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200/90 dark:border-white/10 pb-6">
         <div>
           <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#E05638] uppercase tracking-wider mb-1">
             <ShieldCheck size={16} />
-            <span>Administrator Markazi (2FA Himoyalangan)</span>
+            <span>Administrator Markazi • To'liq CRUD</span>
           </div>
-          <h1 className="font-serif text-3xl sm:text-4xl font-bold text-stone-950 dark:text-white">
-            Tizim & Chempionat Boshqaruvi
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-stone-950 dark:text-white tracking-tight">
+            Bookify Boshqaruv Paneli
           </h1>
-          <p className="text-xs text-stone-500 mt-1">
-            Haqiqiy PostgreSQL ma'lumotlar bazasi, asarlar va adabiy musobaqalar boshqaruvi
-          </p>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs">
+        <div className="flex items-center gap-1.5 bg-stone-100 dark:bg-white/5 p-1 rounded-2xl border border-stone-200/80 dark:border-white/10">
           <button
             onClick={() => setTab('dashboard')}
             className={`px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
@@ -195,6 +253,18 @@ export default function AdminPanel({ books, onRefreshBooks }: Props) {
           </button>
 
           <button
+            onClick={() => setTab('upload')}
+            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
+              tab === 'upload' 
+                ? 'bg-[#E05638] text-white font-bold shadow-xs' 
+                : 'text-stone-600 dark:text-stone-300 hover:text-stone-950'
+            }`}
+          >
+            <UploadCloud size={14} />
+            <span>Yangi Kitob Yuklash</span>
+          </button>
+
+          <button
             onClick={() => setTab('seasons')}
             className={`px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
               tab === 'seasons' 
@@ -205,22 +275,10 @@ export default function AdminPanel({ books, onRefreshBooks }: Props) {
             <Trophy size={14} />
             <span>Mavsumlar & Chempionat</span>
           </button>
-
-          <button
-            onClick={() => setTab('upload')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
-              tab === 'upload' 
-                ? 'bg-[#E05638] text-white font-bold shadow-xs' 
-                : 'text-stone-600 dark:text-stone-300 hover:text-stone-950'
-            }`}
-          >
-            <UploadCloud size={14} />
-            <span>Yangi Kitob</span>
-          </button>
         </div>
       </div>
 
-      {/* 1. DASHBOARD VIEW (BOOKS LIST) */}
+      {/* ── 1. DASHBOARD VIEW (BOOKS LIST WITH FULL CRUD) ── */}
       {tab === 'dashboard' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -236,58 +294,507 @@ export default function AdminPanel({ books, onRefreshBooks }: Props) {
             </div>
             <div className="p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 space-y-2 shadow-xs">
               <span className="text-xs font-mono text-stone-400 uppercase">Baza Holati</span>
-              <div className="font-mono text-xs font-bold text-emerald-500 pt-3">● PostgreSQL 5433 Ulangan</div>
+              <div className="font-mono text-xs font-bold text-emerald-500 pt-3">● PostgreSQL 5432 / Cloud Ulangan</div>
             </div>
           </div>
 
+          {/* Books Management Table */}
           <div className="bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 rounded-3xl overflow-hidden shadow-xs">
             <div className="p-6 border-b border-stone-100 dark:border-white/5 flex items-center justify-between">
-              <h3 className="font-serif text-lg font-bold text-stone-950 dark:text-white">
-                Baza Asarlari Ro'yxati
-              </h3>
-              <button
-                onClick={() => setTab('upload')}
-                className="px-4 py-2 rounded-xl bg-[#E05638] text-white text-xs font-bold font-mono uppercase cursor-pointer flex items-center gap-1.5"
-              >
-                <Plus size={14} />
-                <span>Yangi Kitob Qo'shish</span>
-              </button>
+              <div>
+                <h3 className="font-serif text-lg font-bold text-stone-950 dark:text-white">
+                  Baza Asarlari Ro'yxati (CRUD)
+                </h3>
+                <p className="text-xs text-stone-500 mt-0.5">
+                  Asarlarni tahrirlash, muqova rasmini o'zgartirish yoki butunlay o'chirish
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={onRefreshBooks}
+                  className="p-2.5 rounded-xl bg-stone-100 dark:bg-white/10 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-white/20 transition-colors cursor-pointer"
+                  title="Qayta yuklash"
+                >
+                  <RefreshCw size={14} />
+                </button>
+                <button
+                  onClick={() => setTab('upload')}
+                  className="px-4 py-2 rounded-xl bg-[#E05638] text-white text-xs font-bold font-mono uppercase cursor-pointer flex items-center gap-1.5 shadow-xs"
+                >
+                  <Plus size={14} />
+                  <span>Yangi Kitob Qo'shish</span>
+                </button>
+              </div>
             </div>
 
             {books.length > 0 ? (
               <div className="divide-y divide-stone-100 dark:divide-white/5">
                 {books.map(b => (
-                  <div key={b.id} className="p-4 sm:p-6 flex items-center justify-between gap-4 hover:bg-stone-50 dark:hover:bg-white/[0.02] transition-colors">
+                  <div key={b.id} className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-stone-50 dark:hover:bg-white/[0.02] transition-colors">
+                    
+                    {/* Book Info with Real Cover Thumbnail */}
                     <div className="flex items-center gap-4 min-w-0">
-                      <img src={b.coverImage} alt={b.title} className="w-12 h-16 object-cover rounded-xl shadow-xs shrink-0" />
-                      <div className="min-w-0">
-                        <h4 className="font-serif font-bold text-sm text-stone-900 dark:text-white truncate">{b.title}</h4>
-                        <div className="text-xs text-stone-500 font-mono mt-0.5">
-                          {b.authorName} • {b.category} • {b.pages} bet
+                      <div className="w-14 h-20 rounded-xl overflow-hidden shadow-md bg-stone-900 shrink-0 border border-black/10 relative group">
+                        <img 
+                          src={b.coverImage || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80'} 
+                          alt={b.title} 
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105" 
+                        />
+                      </div>
+                      <div className="min-w-0 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-serif font-bold text-base text-stone-900 dark:text-white truncate">
+                            {b.title}
+                          </h4>
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#E05638]/10 text-[#E05638] border border-[#E05638]/20 shrink-0">
+                            {b.category || 'Mumtoz Meros'}
+                          </span>
                         </div>
+                        <div className="text-xs text-stone-500 font-mono">
+                          Muallif: <strong className="text-stone-800 dark:text-stone-300">{b.authorName}</strong> • {b.pages} bet • {b.narrator || 'Ovozli'}
+                        </div>
+                        <p className="text-xs text-stone-400 line-clamp-1 max-w-xl">
+                          {b.description}
+                        </p>
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => handleDeleteBook(b.id, b.title)}
-                      className="p-2.5 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors cursor-pointer"
-                      title="O'chirish"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    {/* Action Cluster (View, Edit, Delete) */}
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                      {onNavigate && (
+                        <button
+                          onClick={() => onNavigate('reader', b.id)}
+                          className="px-3 py-2 rounded-xl bg-stone-100 dark:bg-white/10 hover:bg-stone-200 dark:hover:bg-white/20 text-stone-800 dark:text-stone-200 text-xs font-mono font-semibold transition-colors cursor-pointer flex items-center gap-1.5"
+                          title="Mutolaa qilish"
+                        >
+                          <Eye size={14} />
+                          <span>Ko'rish</span>
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => handleOpenEdit(b)}
+                        className="px-3 py-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500 hover:text-white text-xs font-mono font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+                        title="Tahrirlash"
+                      >
+                        <Edit2 size={14} />
+                        <span>Tahrirlash</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleDeleteBook(b.id, b.title)}
+                        className="p-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors cursor-pointer"
+                        title="O'chirish"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="p-12 text-center text-xs text-stone-400 font-mono">
-                Bazada hozircha kitoblar mavjud emas.
+              <div className="p-16 text-center space-y-4">
+                <div className="w-12 h-12 rounded-2xl bg-stone-100 dark:bg-white/5 text-stone-400 flex items-center justify-center mx-auto">
+                  <BookOpen size={24} />
+                </div>
+                <div className="text-sm font-serif text-stone-500">
+                  Bazada hozircha kitoblar mavjud emas.
+                </div>
+                <button
+                  onClick={() => setTab('upload')}
+                  className="px-5 py-2.5 rounded-xl bg-[#E05638] text-white text-xs font-mono font-bold uppercase cursor-pointer"
+                >
+                  Birinchi kitobni yuklash
+                </button>
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* 2. SEASONS & TOURNAMENT MANAGEMENT TAB */}
+      {/* ── 2. EDIT BOOK MODAL WITH LIVE COVER THUMBNAIL PREVIEW ── */}
+      {editingBook && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+            
+            <div className="flex items-center justify-between border-b border-stone-100 dark:border-white/5 pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-[#E05638]/10 text-[#E05638] flex items-center justify-center">
+                  <Edit2 size={18} />
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-lg text-stone-950 dark:text-white">
+                    Kitobni Tahrirlash
+                  </h3>
+                  <span className="text-xs font-mono text-stone-400">{editingBook.title}</span>
+                </div>
+              </div>
+              <button
+                onClick={() => setEditingBook(null)}
+                className="p-2 rounded-xl bg-stone-100 dark:bg-white/10 text-stone-500 hover:text-stone-900 dark:hover:text-white cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="space-y-5">
+              
+              {/* Cover Live Preview & URL */}
+              <div className="p-4 rounded-2xl bg-stone-50 dark:bg-white/5 border border-stone-200/80 dark:border-white/10 flex flex-col sm:flex-row items-center gap-4">
+                <div className="w-20 h-28 rounded-xl overflow-hidden shadow-md bg-stone-900 shrink-0 border border-black/10">
+                  <img 
+                    src={editCoverUrl || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80'} 
+                    alt="Cover Preview" 
+                    className="w-full h-full object-cover" 
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80';
+                    }}
+                  />
+                </div>
+                <div className="space-y-2 flex-1 w-full">
+                  <label className="text-xs font-mono text-stone-700 dark:text-stone-300 font-bold block">
+                    Muqova Rasmi URL (Thumbnail):
+                  </label>
+                  <input
+                    type="url"
+                    value={editCoverUrl}
+                    onChange={(e) => setEditCoverUrl(e.target.value)}
+                    placeholder="https://images.unsplash.com/..."
+                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638]"
+                  />
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span className="text-[10px] font-mono text-stone-400">Namunalar:</span>
+                    {COVER_PRESETS.map((p, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setEditCoverUrl(p.url)}
+                        className="px-2 py-0.5 rounded-md text-[10px] font-mono bg-stone-200 dark:bg-white/10 hover:bg-[#E05638] hover:text-white transition-colors cursor-pointer"
+                      >
+                        {p.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Title & Author */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-mono text-stone-700 dark:text-stone-300 font-bold block">
+                    Kitob Nomi:
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-sm font-serif font-bold text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638]"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-mono text-stone-700 dark:text-stone-300 font-bold block">
+                    Muallif:
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editAuthor}
+                    onChange={(e) => setEditAuthor(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-sm font-serif font-bold text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638]"
+                  />
+                </div>
+              </div>
+
+              {/* Category, Pages, Narrator */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-mono text-stone-700 dark:text-stone-300 font-bold block">
+                    Kategoriya:
+                  </label>
+                  <select
+                    value={editCategory}
+                    onChange={(e) => setEditCategory(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638]"
+                  >
+                    <option value="Falsafiy Roman">Falsafiy Roman</option>
+                    <option value="Mumtoz Meros">Mumtoz Meros</option>
+                    <option value="Jadid Merosi">Jadid Merosi</option>
+                    <option value="Tarixiy Asar">Tarixiy Asar</option>
+                    <option value="Jahon Adabiyoti">Jahon Adabiyoti</option>
+                    <option value="Badiiy Nasr">Badiiy Nasr</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-mono text-stone-700 dark:text-stone-300 font-bold block">
+                    Sahifalar:
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={editPages}
+                    onChange={(e) => setEditPages(Number(e.target.value))}
+                    className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638]"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-mono text-stone-700 dark:text-stone-300 font-bold block">
+                    Ovozlovchi:
+                  </label>
+                  <input
+                    type="text"
+                    value={editNarrator}
+                    onChange={(e) => setEditNarrator(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638]"
+                  />
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-mono text-stone-700 dark:text-stone-300 font-bold block">
+                  Asar Haqida (Tavsif):
+                </label>
+                <textarea
+                  rows={3}
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-white dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs leading-relaxed text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638]"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone-100 dark:border-white/5">
+                <button
+                  type="button"
+                  onClick={() => setEditingBook(null)}
+                  className="px-5 py-2.5 rounded-xl text-xs font-mono font-bold text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                >
+                  Bekor qilish
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingEdit}
+                  className="px-6 py-2.5 rounded-xl bg-[#E05638] hover:bg-[#C74326] text-white text-xs font-mono font-bold uppercase transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-1.5"
+                >
+                  <Check size={14} />
+                  <span>{isSavingEdit ? "Saqlanmoqda..." : "O'zgarishlarni Saqlash"}</span>
+                </button>
+              </div>
+
+            </form>
+
+          </div>
+        </div>
+      )}
+
+      {/* ── 3. UPLOAD NEW BOOK TAB WITH LIVE THUMBNAIL PREVIEW ── */}
+      {tab === 'upload' && (
+        <div className="bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#E05638]/10 text-[#E05638] flex items-center justify-center">
+              <UploadCloud size={20} />
+            </div>
+            <div>
+              <h3 className="font-serif text-lg font-bold text-stone-950 dark:text-white">
+                Yangi Durdona Asar Yuklash
+              </h3>
+              <p className="text-xs text-stone-500 font-mono">
+                Asar fayli avtomatik matnga ajratiladi va PostgreSQL bazasiga to'liq yoziladi
+              </p>
+            </div>
+          </div>
+
+          <form onSubmit={handleBookSubmit} className="space-y-6">
+            
+            {/* Live Cover Thumbnail Preview */}
+            <div className="p-4 rounded-2xl bg-stone-50 dark:bg-white/5 border border-stone-200/80 dark:border-white/10 flex flex-col sm:flex-row items-center gap-4">
+              <div className="w-20 h-28 rounded-xl overflow-hidden shadow-md bg-stone-900 shrink-0 border border-black/10 relative">
+                <img 
+                  src={coverUrl || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80'} 
+                  alt="Live Cover Preview" 
+                  className="w-full h-full object-cover" 
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80';
+                  }}
+                />
+                <div className="absolute top-1 right-1 px-1 py-0.5 rounded bg-black/60 text-[8px] font-mono text-white font-bold">
+                  Ko'rinish
+                </div>
+              </div>
+              <div className="space-y-2 flex-1 w-full">
+                <label className="text-xs font-mono text-stone-700 dark:text-stone-300 font-bold block">
+                  Muqova Rasmi URL manzili (Thumbnail):
+                </label>
+                <input
+                  type="url"
+                  value={coverUrl}
+                  onChange={(e) => setCoverUrl(e.target.value)}
+                  placeholder="https://images.unsplash.com/photo-..."
+                  className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638]"
+                />
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  <span className="text-[10px] font-mono text-stone-400">Katalog namunalari:</span>
+                  {COVER_PRESETS.map((p, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setCoverUrl(p.url)}
+                      className="px-2 py-0.5 rounded-md text-[10px] font-mono bg-stone-200 dark:bg-white/10 hover:bg-[#E05638] hover:text-white transition-colors cursor-pointer"
+                    >
+                      {p.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Title & Author */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-mono text-stone-700 dark:text-stone-300 font-bold block">
+                  Kitob Nomi: *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Masalan: Qiyomat"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-white dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-sm font-serif font-bold text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638]"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-mono text-stone-700 dark:text-stone-300 font-bold block">
+                  Muallif: *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Masalan: Chingiz Aytmatov"
+                  value={author}
+                  onChange={(e) => setAuthor(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-white dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-sm font-serif font-bold text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638]"
+                />
+              </div>
+            </div>
+
+            {/* Category & Pages & Narrator */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-mono text-stone-700 dark:text-stone-300 font-bold block">
+                  Kategoriya:
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-white dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638]"
+                >
+                  <option value="Falsafiy Roman">Falsafiy Roman</option>
+                  <option value="Mumtoz Meros">Mumtoz Meros</option>
+                  <option value="Jadid Merosi">Jadid Merosi</option>
+                  <option value="Tarixiy Asar">Tarixiy Asar</option>
+                  <option value="Jahon Adabiyoti">Jahon Adabiyoti</option>
+                  <option value="Badiiy Nasr">Badiiy Nasr</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-mono text-stone-700 dark:text-stone-300 font-bold block">
+                  Taxminiy Sahifalar:
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  value={pages}
+                  onChange={(e) => setPages(Number(e.target.value))}
+                  className="w-full px-4 py-3 rounded-xl bg-white dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638]"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-mono text-stone-700 dark:text-stone-300 font-bold block">
+                  Audio Suhandon:
+                </label>
+                <input
+                  type="text"
+                  placeholder="Afzal Rafiqov"
+                  value={narrator}
+                  onChange={(e) => setNarrator(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-white dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638]"
+                />
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-mono text-stone-700 dark:text-stone-300 font-bold block">
+                Asar haqida qisqacha tavsif:
+              </label>
+              <textarea
+                rows={3}
+                placeholder="Ushbu asar insoniyat va tabiat o'rtasidagi munosabatlarni teran tasvirlaydi..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl bg-white dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs leading-relaxed text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638]"
+              />
+            </div>
+
+            {/* File Upload Box */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-mono text-stone-700 dark:text-stone-300 font-bold block">
+                Kitob Matni / Qo'lyozmasi (PDF, EPUB, DOCX yoki TXT):
+              </label>
+              <div className="border-2 border-dashed border-stone-300 dark:border-white/20 rounded-2xl p-6 text-center hover:border-[#E05638] transition-colors bg-stone-50/50 dark:bg-white/[0.02]">
+                <input
+                  type="file"
+                  id="book-file"
+                  accept=".pdf,.epub,.docx,.txt"
+                  onChange={(e) => setBookFile(e.target.files?.[0] || null)}
+                  className="hidden"
+                />
+                <label htmlFor="book-file" className="cursor-pointer space-y-2 block">
+                  <div className="w-12 h-12 rounded-2xl bg-[#E05638]/10 text-[#E05638] flex items-center justify-center mx-auto">
+                    <FileText size={24} />
+                  </div>
+                  <div className="text-xs font-mono font-bold text-stone-800 dark:text-stone-200">
+                    {bookFile ? bookFile.name : "Faylni tanlash uchun bosing yoki bu yerga tashlang"}
+                  </div>
+                  <div className="text-[10px] font-mono text-stone-400">
+                    Agar fayl tanlanmasa, standart durdona boblar bilan yaratiladi
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone-100 dark:border-white/5">
+              <button
+                type="button"
+                onClick={() => setTab('dashboard')}
+                className="px-6 py-3 rounded-2xl text-xs font-mono font-bold text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              >
+                Bekor qilish
+              </button>
+              <button
+                type="submit"
+                disabled={isUploading}
+                className="px-8 py-3.5 rounded-2xl bg-[#E05638] hover:bg-[#C74326] text-white font-bold text-xs font-mono uppercase tracking-wider transition-all shadow-xl active:scale-95 cursor-pointer flex items-center gap-2"
+              >
+                <Sparkles size={16} />
+                <span>{isUploading ? "Yuklanmoqda..." : "Kitobni Saqlash & Chop Etish"}</span>
+              </button>
+            </div>
+
+          </form>
+        </div>
+      )}
+
+      {/* ── 4. SEASONS & TOURNAMENT MANAGEMENT TAB ── */}
       {tab === 'seasons' && (
         <div className="space-y-8 animate-in fade-in">
           
@@ -299,219 +806,121 @@ export default function AdminPanel({ books, onRefreshBooks }: Props) {
               </div>
               <div>
                 <h3 className="font-serif text-lg font-bold text-stone-950 dark:text-white">
-                  Yangi Adabiy Chempionat / Mavsum Ochish
+                  Yangi Adabiy Mavsum Ochish
                 </h3>
-                <p className="text-xs text-stone-500">
-                  Muddati tugaganda tizim avtomatik eng ko'p o'qigan kitobxonlarni taqdirlaydi
+                <p className="text-xs text-stone-500 font-mono">
+                  Ishtirokchilar mutolaa qilgan vaqti va sahifalar soni bo'yicha chempionatda raqobatlashadi
                 </p>
               </div>
             </div>
 
             <form onSubmit={handleCreateSeason} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block">
-                    Mavsum Nomi *
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="sm:col-span-2 space-y-1.5">
+                  <label className="text-xs font-mono text-stone-700 dark:text-stone-300 font-bold block">
+                    Mavsum Nomi:
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="Masalan: Bahoriy Adabiy Chempionat 2026"
+                    placeholder="Masalan: Kuzgi Adabiy Chempionat 2026"
                     value={seasonName}
-                    onChange={e => setSeasonName(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl bg-stone-50 dark:bg-[#0E1218] border border-stone-200 dark:border-white/10 text-xs text-stone-900 dark:text-white outline-none focus:border-[#E05638]"
+                    onChange={(e) => setSeasonName(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-white dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638]"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block">
-                    Davomiylik Muddati (Kun) *
+                  <label className="text-xs font-mono text-stone-700 dark:text-stone-300 font-bold block">
+                    Davomiyligi (kun):
                   </label>
-                  <select
+                  <input
+                    type="number"
+                    min={1}
+                    max={365}
                     value={seasonDays}
-                    onChange={e => setSeasonDays(Number(e.target.value))}
-                    className="w-full px-4 py-2.5 rounded-xl bg-stone-50 dark:bg-[#0E1218] border border-stone-200 dark:border-white/10 text-xs text-stone-900 dark:text-white outline-none focus:border-[#E05638]"
-                  >
-                    <option value={7}>7 kun (1 haftalik tezkor sprint)</option>
-                    <option value={15}>15 kun (Yarim oylik turnir)</option>
-                    <option value={30}>30 kun (1 oylik to'liq mavsum)</option>
-                    <option value={60}>60 kun (Mavsumiy grand chempionat)</option>
-                    <option value={90}>90 kun (Kvartal chempionati)</option>
-                  </select>
+                    onChange={(e) => setSeasonDays(Number(e.target.value))}
+                    className="w-full px-4 py-3 rounded-xl bg-white dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638]"
+                  />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block">
-                  Mukofot Jamg'armasi & Qo'shimcha Shartlar
+                <label className="text-xs font-mono text-stone-700 dark:text-stone-300 font-bold block">
+                  Mavsum Tavsifi & Sovrin Jamg'armasi:
                 </label>
                 <input
                   type="text"
-                  placeholder="Masalan: 15,000,000 UZS + 1 Yillik Oltin Meros obunasi + Oltin Diplom"
+                  placeholder="15,000,000 UZS sovrin jamg'armasi va Oltin Meros diplomlari..."
                   value={seasonDesc}
-                  onChange={e => setSeasonDesc(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-stone-50 dark:bg-[#0E1218] border border-stone-200 dark:border-white/10 text-xs text-stone-900 dark:text-white outline-none focus:border-[#E05638]"
+                  onChange={(e) => setSeasonDesc(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-white dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638]"
                 />
               </div>
 
-              <button
-                type="submit"
-                disabled={isCreatingSeason}
-                className="px-6 py-3 rounded-2xl bg-[#E05638] hover:bg-[#C74326] text-white font-bold text-xs font-mono uppercase tracking-wider transition-transform active:scale-95 shadow-md cursor-pointer flex items-center gap-2"
-              >
-                <Sparkles size={15} />
-                <span>{isCreatingSeason ? "Ochilmoqda..." : "Mavsumni E'lon Qilish & Boshlash"}</span>
-              </button>
+              <div className="flex justify-end pt-2">
+                <button
+                  type="submit"
+                  disabled={isCreatingSeason}
+                  className="px-6 py-3 rounded-2xl bg-[#E05638] hover:bg-[#C74326] text-white font-bold text-xs font-mono uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-2"
+                >
+                  <Trophy size={14} />
+                  <span>{isCreatingSeason ? "Ochilmoqda..." : "Mavsumni E'lon Qilish"}</span>
+                </button>
+              </div>
             </form>
           </div>
 
-          {/* List of Seasons */}
+          {/* Existing Challenges List */}
           <div className="bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 rounded-3xl overflow-hidden shadow-xs">
             <div className="p-6 border-b border-stone-100 dark:border-white/5">
               <h3 className="font-serif text-lg font-bold text-stone-950 dark:text-white">
-                Barcha Mavsumlar Arxivi
+                Barcha Mavsumlar
               </h3>
             </div>
-
             {challengesList.length > 0 ? (
               <div className="divide-y divide-stone-100 dark:divide-white/5">
-                {challengesList.map(c => {
-                  const isActive = c.status === 'ACTIVE';
-                  return (
-                    <div key={c.id} className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider ${
-                            isActive 
-                              ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' 
-                              : 'bg-stone-100 dark:bg-white/10 text-stone-400'
-                          }`}>
-                            {isActive ? '● Faol Mavsum' : 'Yakunlangan'}
-                          </span>
-                          <span className="text-xs text-stone-400 font-mono">
-                            Tugash sanasi: {new Date(c.end_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <h4 className="font-serif font-bold text-base text-stone-900 dark:text-white">{c.name}</h4>
-                        <p className="text-xs text-stone-500">{c.description}</p>
+                {challengesList.map(ch => (
+                  <div key={ch.id} className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-serif font-bold text-base text-stone-900 dark:text-white">{ch.name}</h4>
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                          ch.status === 'ACTIVE' 
+                            ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' 
+                            : 'bg-stone-500/10 text-stone-500'
+                        }`}>
+                          {ch.status}
+                        </span>
                       </div>
-
-                      {isActive && (
-                        <button
-                          onClick={() => handleFinishSeason(c.id, c.name)}
-                          className="px-4 py-2.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500 hover:text-white font-semibold text-xs transition-colors cursor-pointer self-start sm:self-auto flex items-center gap-1.5"
-                        >
-                          <Award size={14} />
-                          <span>Mavsumni Yakunlash & G'oliblarni Taqdirlash</span>
-                        </button>
-                      )}
+                      <p className="text-xs text-stone-500 mt-1">{ch.description}</p>
                     </div>
-                  );
-                })}
+
+                    {ch.status === 'ACTIVE' && (
+                      <button
+                        onClick={async () => {
+                          if (confirm(`"${ch.name}" mavsumini rasman yakunlab, g'oliblarni taqdirlaysizmi?`)) {
+                            await api.finishChallenge(ch.id);
+                            toast.success("Mavsum yakunlandi va g'oliblar e'lon qilindi! 🏆");
+                            fetchChallenges();
+                          }
+                        }}
+                        className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-mono font-bold uppercase cursor-pointer"
+                      >
+                        Mavsumni Yakunlash & G'oliblarni E'lon Qilish
+                      </button>
+                    )}
+                  </div>
+                ))}
               </div>
             ) : (
-              <div className="p-12 text-center text-xs text-stone-400 font-mono">
-                Hozircha faol mavsumlar mavjud emas. Yuqoridagi formadan yangi mavsum ochishingiz mumkin.
+              <div className="p-8 text-center text-xs text-stone-400 font-mono">
+                Hozircha hech qanday mavsum mavjud emas.
               </div>
             )}
           </div>
 
         </div>
-      )}
-
-      {/* 3. UPLOAD BOOK VIEW */}
-      {tab === 'upload' && (
-        <form onSubmit={handleBookSubmit} className="bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 rounded-3xl p-6 sm:p-10 shadow-xs space-y-6">
-          <div className="border-b border-stone-100 dark:border-white/5 pb-4">
-            <h3 className="font-serif text-xl font-bold text-stone-950 dark:text-white">
-              Yangi Asar Yuklash (EPUB, DOCX, PDF, TXT)
-            </h3>
-            <p className="text-xs text-stone-500 mt-1">
-              Katta 300-500 betli kitoblar avtomatik boblarga ajratilib PostgreSQL bazasiga yoziladi
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block">Kitob Nomi *</label>
-              <input
-                type="text"
-                required
-                placeholder="Masalan: O'tkan kunlar"
-                value={title}
-                onChange={e => setTitle(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl bg-stone-50 dark:bg-[#0E1218] border border-stone-200 dark:border-white/10 text-xs text-stone-900 dark:text-white outline-none focus:border-[#E05638]"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block">Muallif *</label>
-              <input
-                type="text"
-                required
-                placeholder="Masalan: Abdulla Qodiriy"
-                value={author}
-                onChange={e => setAuthor(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl bg-stone-50 dark:bg-[#0E1218] border border-stone-200 dark:border-white/10 text-xs text-stone-900 dark:text-white outline-none focus:border-[#E05638]"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block">Kategoriya</label>
-              <select
-                value={category}
-                onChange={e => setCategory(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl bg-stone-50 dark:bg-[#0E1218] border border-stone-200 dark:border-white/10 text-xs text-stone-900 dark:text-white outline-none focus:border-[#E05638]"
-              >
-                <option value="Mumtoz Meros">Mumtoz Meros</option>
-                <option value="Tarixiy Romanlar">Tarixiy Romanlar</option>
-                <option value="Jadid Adabiyoti">Jadid Adabiyoti</option>
-                <option value="Falsafa & Ma'rifat">Falsafa & Ma'rifat</option>
-                <option value="Badiiy Adabiyot">Badiiy Adabiyot</option>
-              </select>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block">Suhandon / Narrator</label>
-              <input
-                type="text"
-                value={narrator}
-                onChange={e => setNarrator(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl bg-stone-50 dark:bg-[#0E1218] border border-stone-200 dark:border-white/10 text-xs text-stone-900 dark:text-white outline-none focus:border-[#E05638]"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block">Asar Haqida Qisqacha Annotatsiya</label>
-            <textarea
-              rows={3}
-              placeholder="Asarning qisqacha mazmuni va ahamiyati..."
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl bg-stone-50 dark:bg-[#0E1218] border border-stone-200 dark:border-white/10 text-xs text-stone-900 dark:text-white outline-none focus:border-[#E05638]"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block">Kitob Fayli (EPUB, DOCX, PDF, TXT)</label>
-            <input
-              type="file"
-              accept=".pdf,.docx,.epub,.txt"
-              onChange={e => setBookFile(e.target.files ? e.target.files[0] : null)}
-              className="w-full text-xs text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#E05638]/10 file:text-[#E05638] hover:file:bg-[#E05638]/20"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={isUploading}
-            className="w-full py-4 rounded-2xl bg-[#E05638] hover:bg-[#C74326] text-white font-bold text-xs font-mono uppercase tracking-wider transition-transform active:scale-95 shadow-xl cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            <UploadCloud size={16} />
-            <span>{isUploading ? "PostgreSQL Bazasiga Yozilmoqda..." : "Kitobni Saqlash & Chop Etish"}</span>
-          </button>
-        </form>
       )}
 
     </div>

@@ -204,6 +204,39 @@ export const api = {
     return res.json();
   },
 
+  // Admin Book CRUD
+  async updateBook(bookId: string, data: any) {
+    const token = getAuthToken();
+    const res = await fetch(`${API_BASE_URL}/admin/books/${bookId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Kitobni tahrirlashda xatolik yuz berdi');
+    }
+    return res.json();
+  },
+
+  async deleteBook(bookId: string) {
+    const token = getAuthToken();
+    const res = await fetch(`${API_BASE_URL}/admin/books/${bookId}`, {
+      method: 'DELETE',
+      headers: {
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      }
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Kitobni o'chirishda xatolik yuz berdi");
+    }
+    return res.json();
+  },
+
   // Admin Book Upload
   async uploadBook(formData: FormData) {
     const token = getAuthToken();
@@ -221,18 +254,7 @@ export const api = {
     return res.json();
   },
 
-  // Admin Delete Book
-  async deleteBook(id: string) {
-    const token = getAuthToken();
-    const res = await fetch(`${API_BASE_URL}/admin/books/${id}`, {
-      method: 'DELETE',
-      headers: {
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      }
-    });
-    if (!res.ok) throw new Error("O\'chirishda xatolik");
-    return res.json();
-  },
+
 
   // Progress Sync
   async updateProgress(bookId: string, progressPercent: number, chapterId?: string) {
