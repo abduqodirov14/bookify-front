@@ -130,6 +130,30 @@ export default function HomeApp() {
     loadBooksFromBackend();
   }, []);
 
+  // URL routing synchronization (load & popstate)
+  useEffect(() => {
+    const parseUrlParams = () => {
+      if (typeof window === 'undefined') return;
+      const params = new URLSearchParams(window.location.search);
+      const view = params.get('view') as Page;
+      const authorId = params.get('author');
+      const bookId = params.get('book');
+
+      if (view) {
+        if (view === 'author' && authorId) setSelectedAuthorId(authorId);
+        if ((view === 'reader' || view === 'book') && bookId) setSelectedBookId(bookId);
+        setCurrentPage(view);
+      } else {
+        setCurrentPage('home');
+      }
+    };
+
+    parseUrlParams();
+    window.addEventListener('popstate', parseUrlParams);
+    return () => window.removeEventListener('popstate', parseUrlParams);
+  }, []);
+
+
   // Handle Dark / Light Mode HTML class
   useEffect(() => {
     const root = document.documentElement;
@@ -159,12 +183,12 @@ export default function HomeApp() {
     // Role protection for Admin
     if (page === 'admin' && currentUser?.role !== 'ADMIN') {
       toast.error("Boshqaruv paneliga kirish uchun administrator huquqi talab qilinadi!");
-      setCurrentPage('auth');
+      navigate('auth');
       return;
     }
 
     if (page === 'profile' && !currentUser) {
-      setCurrentPage('auth');
+      navigate('auth');
       return;
     }
 
@@ -172,11 +196,24 @@ export default function HomeApp() {
     if (page === 'author' && param) {
       setSelectedAuthorId(param);
     }
-    if (page === 'reader' && param) {
+    if ((page === 'reader' || page === 'book') && param) {
       setSelectedBookId(param);
     }
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Sync URL in browser address bar
+    if (typeof window !== 'undefined') {
+      let url = '/';
+      if (page !== 'home') {
+        const p = new URLSearchParams();
+        p.set('view', page);
+        if (page === 'author' && (param || selectedAuthorId)) p.set('author', param || selectedAuthorId);
+        if ((page === 'reader' || page === 'book') && (param || selectedBookId)) p.set('book', param || selectedBookId);
+        url = `/?${p.toString()}`;
+      }
+      window.history.pushState({ page, param }, '', url);
+    }
   };
 
   const goBack = () => {
