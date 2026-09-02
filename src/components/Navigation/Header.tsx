@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Bell, ArrowLeft, Sun, Moon, LogOut, Command, Sparkles, BookOpen, Trophy, CheckCheck, X } from 'lucide-react';
+import { Search, Bell, ArrowLeft, Menu, Sun, Moon, LogOut, Command, Sparkles, BookOpen, Trophy, CheckCheck, X } from 'lucide-react';
 import { UserProfile, Book } from '../../types';
 
 export interface AppNotification {
@@ -14,6 +14,7 @@ export interface AppNotification {
 
 interface Props {
   onGoBack: () => void;
+  onOpenMobileMenu?: () => void;
   canGoBack: boolean;
   onOpenSearch: () => void;
   currentUser: UserProfile | null;
@@ -28,6 +29,7 @@ interface Props {
 
 export default function Header({
   onGoBack,
+  onOpenMobileMenu,
   canGoBack,
   onOpenSearch,
   currentUser,
@@ -95,7 +97,16 @@ export default function Header({
   return (
     <header className="h-16 px-6 lg:px-8 flex items-center justify-between border-b border-stone-200/90 dark:border-white/10 bg-white/90 dark:bg-[#0A0D14]/90 backdrop-blur-md shrink-0 z-30 transition-colors">
       
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+        {/* Mobile Hamburger Menu Button */}
+        <button
+          onClick={onOpenMobileMenu}
+          className="md:hidden p-2 rounded-xl bg-stone-100 dark:bg-white/10 text-stone-700 dark:text-stone-300 hover:bg-stone-200 transition-colors cursor-pointer shrink-0"
+          title="Menyu"
+        >
+          <Menu size={18} />
+        </button>
+
         {/* Back Button */}
         <button
           onClick={onGoBack}
@@ -113,7 +124,7 @@ export default function Header({
         {/* Spotlight Search Pill (Cmd+K) */}
         <div
           onClick={onOpenSearch}
-          className="flex items-center gap-3 w-80 sm:w-96 px-3.5 py-2 rounded-xl bg-stone-100/90 dark:bg-white/[0.05] border border-stone-200 dark:border-white/10 hover:border-stone-300 dark:hover:border-white/20 transition-colors cursor-pointer group shadow-2xs"
+          className="flex items-center gap-3 w-full max-w-xs sm:max-w-md px-3 py-2 rounded-xl bg-stone-100/90 dark:bg-white/[0.05] border border-stone-200 dark:border-white/10 hover:border-stone-300 dark:hover:border-white/20 transition-colors cursor-pointer group shadow-2xs"
         >
           <Search size={15} className="text-stone-400 group-hover:text-[#E05638] transition-colors" />
           <span className="flex-1 text-xs text-stone-500 dark:text-stone-400">

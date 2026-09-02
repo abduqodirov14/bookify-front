@@ -33,6 +33,7 @@ export default function HomeApp() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [activeAudioTrack, setActiveAudioTrack] = useState<AudioTrack | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [booksList, setBooksList] = useState<Book[]>([]);
   const [isLoadingBooks, setIsLoadingBooks] = useState(true);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
@@ -285,10 +286,13 @@ export default function HomeApp() {
   return (
     <div className="flex h-screen overflow-hidden bg-[#F8FAFC] dark:bg-[#080B0F] text-stone-900 dark:text-stone-100 transition-colors duration-300">
       
-      {/* ── Left Fixed Sidebar ── */}
+      {/* ── Left Fixed Sidebar (Desktop + Mobile Drawer) ── */}
       <Sidebar
         currentPage={currentPage}
-        onNavigate={navigate}
+        onNavigate={(p, param) => {
+          navigate(p, param);
+          setIsMobileMenuOpen(false);
+        }}
         currentUser={currentUser}
         theme={theme}
         onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -298,6 +302,8 @@ export default function HomeApp() {
           setCurrentPage('auth');
           toast.success("Tizimdan muvaffaqiyatli chiqildi!");
         }}
+        isMobileOpen={isMobileMenuOpen}
+        onCloseMobile={() => setIsMobileMenuOpen(false)}
       />
 
       {/* ── Center / Right Main Canvas ── */}
@@ -306,6 +312,7 @@ export default function HomeApp() {
         <Header
           onGoBack={goBack}
           canGoBack={history.length > 0}
+          onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
           onOpenSearch={() => setIsSearchOpen(true)}
           currentUser={currentUser}
           theme={theme}
@@ -326,7 +333,7 @@ export default function HomeApp() {
         />
 
         {/* Scrollable Page Body */}
-        <main className="flex-1 overflow-y-auto px-6 lg:px-12 py-8 transition-colors">
+        <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-12 py-6 sm:py-8 transition-colors pb-24 sm:pb-8">
           
           {/* 1. HOME VIEW */}
           {currentPage === 'home' && (

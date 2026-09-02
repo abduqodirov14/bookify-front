@@ -11,7 +11,8 @@ import {
   LogOut, 
   Sun, 
   Moon,
-  Sparkles
+  Sparkles,
+  X
 } from 'lucide-react';
 import { Page, UserProfile } from '../../types';
 
@@ -22,6 +23,8 @@ interface Props {
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
   onLogout: () => void;
+  isMobileOpen?: boolean;
+  onCloseMobile?: () => void;
 }
 
 export default function Sidebar({
@@ -30,7 +33,9 @@ export default function Sidebar({
   currentUser,
   theme,
   onToggleTheme,
-  onLogout
+  onLogout,
+  isMobileOpen = false,
+  onCloseMobile
 }: Props) {
   const isAdmin = currentUser?.role === 'ADMIN';
 
@@ -46,28 +51,47 @@ export default function Sidebar({
     ...(isAdmin ? [{ id: 'admin' as Page, label: 'Boshqaruv & 2FA', icon: ShieldCheck, badge: 'Admin' }] : [])
   ];
 
-  return (
-    <aside className="w-68 h-screen bg-white/95 dark:bg-[#0A0D14]/95 border-r border-stone-200/90 dark:border-white/10 flex flex-col justify-between p-4 shrink-0 transition-colors z-40">
+  const handleNav = (id: Page) => {
+    onNavigate(id);
+    if (onCloseMobile) {
+      onCloseMobile();
+    }
+  };
+
+  const content = (
+    <div className="w-68 h-full bg-white dark:bg-[#0A0D14] border-r border-stone-200/90 dark:border-white/10 flex flex-col justify-between p-4 transition-colors">
       
       {/* Brand Header */}
       <div className="space-y-6">
-        <div 
-          onClick={() => onNavigate('home')}
-          className="flex items-center gap-3 px-2 cursor-pointer group select-none"
-        >
-          <img 
-            src="/icon.png" 
-            alt="Bookify Logo" 
-            className="w-10 h-10 rounded-2xl object-cover shadow-md ring-2 ring-[#C5A059]/20 group-hover:scale-105 transition-transform" 
-          />
-          <div>
-            <h1 className="font-serif font-bold text-lg tracking-tight text-stone-900 dark:text-white group-hover:text-[#E05638] transition-colors">
-              Bookify
-            </h1>
-            <span className="text-[10px] font-mono tracking-widest text-[#C5A059] uppercase block font-semibold">
-              Milliy Sanatoriy
-            </span>
+        <div className="flex items-center justify-between px-2">
+          <div 
+            onClick={() => handleNav('home')}
+            className="flex items-center gap-3 cursor-pointer group select-none"
+          >
+            <img 
+              src="/icon.png" 
+              alt="Bookify Logo" 
+              className="w-10 h-10 rounded-2xl object-cover shadow-md ring-2 ring-[#C5A059]/20 group-hover:scale-105 transition-transform" 
+            />
+            <div>
+              <h1 className="font-serif font-bold text-lg tracking-tight text-stone-900 dark:text-white group-hover:text-[#E05638] transition-colors">
+                Bookify
+              </h1>
+              <span className="text-[10px] font-mono tracking-widest text-[#C5A059] uppercase block font-semibold">
+                Milliy Sanatoriy
+              </span>
+            </div>
           </div>
+
+          {/* Close button on mobile */}
+          {onCloseMobile && (
+            <button
+              onClick={onCloseMobile}
+              className="md:hidden p-2 rounded-xl text-stone-400 hover:text-stone-700 dark:hover:text-white cursor-pointer"
+            >
+              <X size={20} />
+            </button>
+          )}
         </div>
 
         {/* Navigation Links */}
@@ -78,7 +102,7 @@ export default function Sidebar({
             return (
               <button
                 key={item.id}
-                onClick={() => onNavigate(item.id)}
+                onClick={() => handleNav(item.id)}
                 className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-semibold tracking-tight transition-all duration-200 cursor-pointer ${
                   isActive
                     ? 'bg-[#E05638] text-white shadow-lg shadow-[#E05638]/25 font-bold translate-x-1'
@@ -104,62 +128,87 @@ export default function Sidebar({
         </nav>
       </div>
 
-      {/* Footer / User Profile & Dark Mode */}
-      <div className="space-y-3 pt-4 border-t border-stone-200/90 dark:border-white/10">
-        
-        {/* Theme Switcher Button */}
-        <button
-          onClick={onToggleTheme}
-          className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-medium text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-white/[0.05] transition-colors cursor-pointer"
-        >
-          <div className="flex items-center gap-2.5">
-            {theme === 'dark' ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-stone-600" />}
-            <span>{theme === 'dark' ? "Kunduzgi Rejim" : "Tungi Obsidiyan"}</span>
-          </div>
-          <span className="text-[10px] font-mono uppercase text-stone-400">
-            {theme === 'dark' ? "Light" : "Dark"}
-          </span>
-        </button>
-
-        {/* User Card */}
+      {/* Footer User Info & Theme */}
+      <div className="pt-4 border-t border-stone-200/90 dark:border-white/10 space-y-3">
         {currentUser ? (
-          <div className="p-3 rounded-2xl bg-stone-50 dark:bg-[#121620] border border-stone-200/80 dark:border-white/10 flex items-center justify-between">
+          <div className="flex items-center justify-between p-2.5 rounded-2xl bg-stone-50 dark:bg-white/[0.03] border border-stone-100 dark:border-white/5">
             <div 
-              onClick={() => onNavigate('profile')}
-              className="flex items-center gap-2.5 cursor-pointer min-w-0"
+              onClick={() => handleNav('profile')}
+              className="flex items-center gap-2.5 cursor-pointer min-w-0 flex-1"
             >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#E05638] to-[#C5A059] flex items-center justify-center text-white font-bold text-xs shadow-xs shrink-0">
-                {currentUser.name.charAt(0)}
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#E05638] to-[#C5A059] flex items-center justify-center text-white font-serif font-bold text-xs shrink-0 shadow-xs">
+                {currentUser.name[0]}
               </div>
-              <div className="min-w-0">
-                <div className="font-serif font-bold text-xs text-stone-900 dark:text-white truncate">
+              <div className="min-w-0 flex-1">
+                <span className="font-serif font-bold text-xs text-stone-900 dark:text-white truncate block">
                   {currentUser.name}
-                </div>
-                <div className="text-[10px] font-mono text-stone-500 uppercase">
-                  {currentUser.role === 'ADMIN' ? '🛡️ Administrator' : '📖 Kitobxon'}
-                </div>
+                </span>
+                <span className="text-[10px] font-mono text-stone-400 block truncate">
+                  {currentUser.email}
+                </span>
               </div>
             </div>
 
             <button
               onClick={onLogout}
-              className="p-1.5 rounded-xl text-stone-400 hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg text-stone-400 hover:text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer shrink-0 ml-1"
               title="Chiqish"
             >
-              <LogOut size={15} />
+              <LogOut size={14} />
             </button>
           </div>
         ) : (
           <button
-            onClick={() => onNavigate('auth')}
-            className="w-full py-2.5 rounded-2xl bg-[#E05638] hover:bg-[#C74326] text-white font-bold text-xs font-mono uppercase tracking-wider transition-all shadow-md cursor-pointer text-center"
+            onClick={() => handleNav('auth')}
+            className="w-full py-3 rounded-2xl bg-[#E05638] hover:bg-[#C74326] text-white font-bold text-xs font-mono uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer"
           >
             Tizimga Kirish
           </button>
         )}
 
+        <div className="flex items-center justify-between px-2 pt-1 text-[11px] font-mono text-stone-400">
+          <button
+            onClick={onToggleTheme}
+            className="flex items-center gap-1.5 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer"
+          >
+            {theme === 'dark' ? (
+              <>
+                <Sun size={13} className="text-amber-400" />
+                <span>Yorug' Mavzu</span>
+              </>
+            ) : (
+              <>
+                <Moon size={13} className="text-amber-600" />
+                <span>Tungi Obsidiyan</span>
+              </>
+            )}
+          </button>
+          <span className="text-[9px] opacity-60">v2.0.0</span>
+        </div>
       </div>
 
-    </aside>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Desktop Persistent Sidebar (Hidden on Mobile) */}
+      <aside className="hidden md:flex shrink-0 h-screen z-40">
+        {content}
+      </aside>
+
+      {/* Mobile Drawer Overlay */}
+      {isMobileOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex animate-in fade-in">
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs"
+            onClick={onCloseMobile}
+          />
+          <div className="relative z-10 animate-in slide-in-from-left duration-300 h-full">
+            {content}
+          </div>
+        </div>
+      )}
+    </>
   );
 }
