@@ -17,6 +17,7 @@ import DiscoverCatalog from '../components/Discover/DiscoverCatalog';
 import AdminPanel from '../components/Admin/AdminPanel';
 import LibraryView from '../components/Library/LibraryView';
 import AuthModal from '../components/Auth/AuthModal';
+import BookReviewsSection from '../components/Comments/BookReviewsSection';
 
 import { BookOpen, Headphones, Sparkles, ArrowRight, Quote, Search, X, Trophy, UploadCloud } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -425,6 +426,15 @@ export default function HomeApp() {
                     </button>
                   )}
                 </div>
+              )}
+
+              {/* ── Community Reviews & Comments Section ── */}
+              {featuredBook && (
+                <BookReviewsSection
+                  bookId={featuredBook.id}
+                  bookTitle={featuredBook.title}
+                  currentUser={currentUser}
+                />
               )}
 
               {/* ── Buyuk Allomalar Merosi Shelf ── */}

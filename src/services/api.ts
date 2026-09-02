@@ -256,6 +256,63 @@ export const api = {
 
 
 
+  // Book Comments & Reviews
+  async getBookComments(bookId: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/books/${bookId}/comments/`);
+      if (!res.ok) return [];
+      return res.json();
+    } catch {
+      return [];
+    }
+  },
+
+  async addBookComment(bookId: string, data: { content: string; rating?: number; user_name?: string }) {
+    const token = getAuthToken();
+    const res = await fetch(`${API_BASE_URL}/books/${bookId}/comments/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Fikr qoldirishda xatolik yuz berdi");
+    }
+    return res.json();
+  },
+
+  async deleteBookComment(bookId: string, commentId: string) {
+    const token = getAuthToken();
+    const res = await fetch(`${API_BASE_URL}/books/${bookId}/comments/${commentId}/`, {
+      method: 'DELETE',
+      headers: {
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      }
+    });
+    if (!res.ok) {
+      throw new Error("Izohni o'chirishda xatolik");
+    }
+    return res.json();
+  },
+
+  async getAllAdminComments() {
+    const token = getAuthToken();
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/comments/`, {
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+      if (!res.ok) return [];
+      return res.json();
+    } catch {
+      return [];
+    }
+  },
+
   // Progress Sync
   async updateProgress(bookId: string, progressPercent: number, chapterId?: string) {
     const token = getAuthToken();

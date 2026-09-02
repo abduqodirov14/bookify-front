@@ -7,7 +7,6 @@ import {
   UploadCloud, 
   Trash2, 
   Plus, 
-  Image as ImageIcon, 
   FileText,
   Trophy,
   Sparkles,
@@ -16,7 +15,9 @@ import {
   Check,
   Eye,
   RefreshCw,
-  Sliders
+  MessageSquare,
+  Star,
+  UserCheck
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -35,7 +36,7 @@ const COVER_PRESETS = [
 ];
 
 export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props) {
-  const [tab, setTab] = useState<'dashboard' | 'upload' | 'seasons'>('dashboard');
+  const [tab, setTab] = useState<'dashboard' | 'upload' | 'seasons' | 'comments'>('dashboard');
   
   // Book Upload State
   const [title, setTitle] = useState('');
@@ -66,6 +67,10 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
   const [seasonDays, setSeasonDays] = useState(30);
   const [isCreatingSeason, setIsCreatingSeason] = useState(false);
 
+  // Comments Moderation State
+  const [adminComments, setAdminComments] = useState<any[]>([]);
+  const [isLoadingComments, setIsLoadingComments] = useState(false);
+
   const fetchChallenges = async () => {
     try {
       const list = await api.getChallenges();
@@ -75,8 +80,24 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
     }
   };
 
+  const fetchAdminComments = async () => {
+    setIsLoadingComments(true);
+    try {
+      const list = await api.getAllAdminComments();
+      setAdminComments(list);
+    } catch {
+      // silent
+    } finally {
+      setIsLoadingComments(false);
+    }
+  };
+
   useEffect(() => {
-    fetchChallenges();
+    if (tab === 'seasons') {
+      fetchChallenges();
+    } else if (tab === 'comments') {
+      fetchAdminComments();
+    }
   }, [tab]);
 
   // Open Edit Modal
@@ -138,6 +159,18 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
       onRefreshBooks();
     } catch (err: any) {
       toast.error(err.message || "O'chirishda xatolik yuz berdi", { id: toastId });
+    }
+  };
+
+  // Delete Comment from Admin
+  const handleDeleteComment = async (bookId: string, commentId: string) => {
+    if (!confirm("Ushbu fikrni o'chirmoqchimisiz?")) return;
+    try {
+      await api.deleteBookComment(bookId, commentId);
+      toast.success("Fikr bazadan o'chirildi");
+      fetchAdminComments();
+    } catch (err: any) {
+      toast.error(err.message || "O'chirishda xatolik");
     }
   };
 
@@ -231,7 +264,7 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
         <div>
           <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#E05638] uppercase tracking-wider mb-1">
             <ShieldCheck size={16} />
-            <span>Administrator Markazi • To'liq CRUD</span>
+            <span>Administrator Markazi • To'liq Boshqaruv</span>
           </div>
           <h1 className="font-serif text-2xl sm:text-3xl font-bold text-stone-950 dark:text-white tracking-tight">
             Bookify Boshqaruv Paneli
@@ -239,10 +272,10 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex items-center gap-1.5 bg-stone-100 dark:bg-white/5 p-1 rounded-2xl border border-stone-200/80 dark:border-white/10">
+        <div className="flex flex-wrap items-center gap-1.5 bg-stone-100 dark:bg-white/5 p-1 rounded-2xl border border-stone-200/80 dark:border-white/10">
           <button
             onClick={() => setTab('dashboard')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
+            className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
               tab === 'dashboard' 
                 ? 'bg-[#E05638] text-white font-bold shadow-xs' 
                 : 'text-stone-600 dark:text-stone-300 hover:text-stone-950'
@@ -253,27 +286,39 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
           </button>
 
           <button
+            onClick={() => setTab('comments')}
+            className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
+              tab === 'comments' 
+                ? 'bg-[#E05638] text-white font-bold shadow-xs' 
+                : 'text-stone-600 dark:text-stone-300 hover:text-stone-950'
+            }`}
+          >
+            <MessageSquare size={14} />
+            <span>Taqrizlar & Fikrlar</span>
+          </button>
+
+          <button
             onClick={() => setTab('upload')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
+            className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
               tab === 'upload' 
                 ? 'bg-[#E05638] text-white font-bold shadow-xs' 
                 : 'text-stone-600 dark:text-stone-300 hover:text-stone-950'
             }`}
           >
             <UploadCloud size={14} />
-            <span>Yangi Kitob Yuklash</span>
+            <span>Yangi Kitob</span>
           </button>
 
           <button
             onClick={() => setTab('seasons')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
+            className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
               tab === 'seasons' 
                 ? 'bg-[#E05638] text-white font-bold shadow-xs' 
                 : 'text-stone-600 dark:text-stone-300 hover:text-stone-950'
             }`}
           >
             <Trophy size={14} />
-            <span>Mavsumlar & Chempionat</span>
+            <span>Mavsumlar</span>
           </button>
         </div>
       </div>
@@ -413,7 +458,75 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
         </div>
       )}
 
-      {/* ── 2. EDIT BOOK MODAL WITH LIVE COVER THUMBNAIL PREVIEW ── */}
+      {/* ── 2. COMMENTS MODERATION TAB (WHO WROTE WHAT & WHEN) ── */}
+      {tab === 'comments' && (
+        <div className="space-y-6 animate-in fade-in">
+          <div className="bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 rounded-3xl overflow-hidden shadow-xs">
+            <div className="p-6 border-b border-stone-100 dark:border-white/5 flex items-center justify-between">
+              <div>
+                <h3 className="font-serif text-lg font-bold text-stone-950 dark:text-white flex items-center gap-2">
+                  <MessageSquare size={18} className="text-[#E05638]" />
+                  <span>Barcha Kitobxonlar Taqrizlari & Fikrlari</span>
+                </h3>
+                <p className="text-xs text-stone-500 mt-0.5">
+                  Platformadagi barcha fikr-mulohazalar xronologiyasi (Kim, qachon va nima yozganligi)
+                </p>
+              </div>
+              <button
+                onClick={fetchAdminComments}
+                className="p-2.5 rounded-xl bg-stone-100 dark:bg-white/10 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-white/20 transition-colors cursor-pointer"
+                title="Qayta yuklash"
+              >
+                <RefreshCw size={14} />
+              </button>
+            </div>
+
+            {adminComments.length > 0 ? (
+              <div className="divide-y divide-stone-100 dark:divide-white/5">
+                {adminComments.map((c) => (
+                  <div key={c.id} className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4 hover:bg-stone-50 dark:hover:bg-white/[0.02] transition-colors">
+                    <div className="space-y-2 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-serif font-bold text-sm text-stone-950 dark:text-white">
+                          {c.user_name}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-stone-100 dark:bg-white/10 text-stone-600 dark:text-stone-300">
+                          Asar: <strong className="text-stone-900 dark:text-white">{c.book_title}</strong>
+                        </span>
+                        <span className="text-xs text-amber-500 flex items-center">
+                          {Array.from({ length: c.rating || 5 }).map((_, i) => (
+                            <Star key={i} size={12} className="fill-amber-400" />
+                          ))}
+                        </span>
+                        <span className="text-[11px] font-mono text-stone-400 ml-auto sm:ml-0">
+                          ⏱️ {c.created_at}
+                        </span>
+                      </div>
+                      <p className="text-sm text-stone-700 dark:text-stone-300 leading-relaxed font-serif bg-stone-50 dark:bg-white/[0.02] p-3 rounded-xl border border-stone-200/50 dark:border-white/5">
+                        "{c.content}"
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => handleDeleteComment(c.book_id, c.id)}
+                      className="p-2.5 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors cursor-pointer shrink-0 self-end sm:self-start"
+                      title="O'chirish"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-16 text-center text-xs text-stone-400 font-mono">
+                Hozircha hech qanday fikr-mulohaza qoldirilmagan.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── 3. EDIT BOOK MODAL WITH LIVE COVER THUMBNAIL PREVIEW ── */}
       {editingBook && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in">
           <div className="bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
@@ -592,7 +705,7 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
         </div>
       )}
 
-      {/* ── 3. UPLOAD NEW BOOK TAB WITH LIVE THUMBNAIL PREVIEW ── */}
+      {/* ── 4. UPLOAD NEW BOOK TAB WITH LIVE THUMBNAIL PREVIEW ── */}
       {tab === 'upload' && (
         <div className="bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
           <div className="flex items-center gap-3">
@@ -794,7 +907,7 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
         </div>
       )}
 
-      {/* ── 4. SEASONS & TOURNAMENT MANAGEMENT TAB ── */}
+      {/* ── 5. SEASONS & TOURNAMENT MANAGEMENT TAB ── */}
       {tab === 'seasons' && (
         <div className="space-y-8 animate-in fade-in">
           
