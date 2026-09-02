@@ -1,5 +1,5 @@
 const getBaseApiUrl = () => {
-  const raw = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_UR || 'http://localhost:8000/api/v1';
+  const raw = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_UR || 'https://bookify-vz6r.onrender.com/api/v1';
   const clean = raw.trim().replace(/\/+$/, '');
   return clean.endsWith('/api/v1') ? clean : `${clean}/api/v1`;
 };
@@ -25,6 +25,20 @@ export const clearAuthToken = () => {
   }
 };
 
+// Resilient Fetch with Auto-Retry (handles Render cold-start & connection resets)
+async function fetchWithRetry(url: string, options: RequestInit = {}, retries = 3, delay = 1000): Promise<Response> {
+  try {
+    const res = await fetch(url, options);
+    return res;
+  } catch (err: any) {
+    if (retries > 0) {
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return fetchWithRetry(url, options, retries - 1, delay * 1.5);
+    }
+    throw err;
+  }
+}
+
 export const api = {
   // Auth
   async login(email: string, password: string) {
@@ -32,7 +46,7 @@ export const api = {
     formData.append('username', email.trim().toLowerCase());
     formData.append('password', password);
 
-    const res = await fetch(`${API_BASE_URL}/auth/login`, {
+    const res = await fetchWithRetry(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: formData.toString()
@@ -45,14 +59,14 @@ export const api = {
   },
 
   async verify2FA(tempToken: string, code: string) {
-    const res = await fetch(`${API_BASE_URL}/auth/verify-2fa`, {
+    const res = await fetchWithRetry(`${API_BASE_URL}/auth/verify-2fa`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ temp_token: tempToken, code: code.trim() })
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || '2FA kodi noto\'g\'ri');
+      throw new Error(err.detail || "2FA kodi noto'g'ri");
     }
     return res.json();
   },
@@ -60,7 +74,7 @@ export const api = {
   async toggle2FA() {
     const token = getAuthToken();
     if (!token) return null;
-    const res = await fetch(`${API_BASE_URL}/auth/2fa/toggle`, {
+    const res = await fetchWithRetry(`${API_BASE_URL}/auth/2fa/toggle`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -71,54 +85,66 @@ export const api = {
   async getMe() {
     const token = getAuthToken();
     if (!token) return null;
-    const res = await fetch(`${API_BASE_URL}/auth/me`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (!res.ok) {
-      clearAuthToken();
+    try {
+      const res = await fetchWithRetry(`${API_BASE_URL}/auth/me`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) {
+        clearAuthToken();
+        return null;
+      }
+      return res.json();
+    } catch {
       return null;
     }
-    return res.json();
   },
 
   // Books
   async getBooks() {
-    const res = await fetch(`${API_BASE_URL}/books`, {
-      headers: { 'Cache-Control': 'no-cache' }
-    });
-    if (!res.ok) return [];
-    return res.json();
+    try {
+      const res = await fetchWithRetry(`${API_BASE_URL}/books`, {
+        headers: { 'Cache-Control': 'no-cache' }
+      });
+      if (!res.ok) return [];
+      return res.json();
+    } catch (e) {
+      console.warn("Backend books fetch warning:", e);
+      return [];
+    }
   },
 
   async getBookReader(id: string) {
-    const res = await fetch(`${API_BASE_URL}/books/${id}/reader`);
+    const res = await fetchWithRetry(`${API_BASE_URL}/books/${id}/reader`);
     if (!res.ok) throw new Error("Kitob topilmadi");
     return res.json();
   },
 
   async getBookById(id: string) {
-    const res = await fetch(`${API_BASE_URL}/books/${id}`);
+    const res = await fetchWithRetry(`${API_BASE_URL}/books/${id}`);
     if (!res.ok) throw new Error("Kitob topilmadi");
     return res.json();
   },
 
   // Authors
   async getAuthors() {
-    const res = await fetch(`${API_BASE_URL}/authors`);
-    if (!res.ok) return [];
-    return res.json();
+    try {
+      const res = await fetchWithRetry(`${API_BASE_URL}/authors`);
+      if (!res.ok) return [];
+      return res.json();
+    } catch {
+      return [];
+    }
   },
 
   // Library / Mening Javonim
   async getLibrary() {
     const token = getAuthToken();
     if (!token) {
-      // Local storage fallback for unauthenticated user
       const saved = typeof window !== 'undefined' ? localStorage.getItem('fianny_saved_books') : null;
       return saved ? JSON.parse(saved) : [];
     }
     try {
-      const res = await fetch(`${API_BASE_URL}/library/`, {
+      const res = await fetchWithRetry(`${API_BASE_URL}/library/`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) return [];
@@ -131,12 +157,13 @@ export const api = {
   async addToLibrary(bookId: string) {
     const token = getAuthToken();
     if (token) {
-      await fetch(`${API_BASE_URL}/library/${bookId}`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      try {
+        await fetchWithRetry(`${API_BASE_URL}/library/${bookId}`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+      } catch {}
     }
-    // Also save in local storage
     if (typeof window !== 'undefined') {
       const saved = JSON.parse(localStorage.getItem('fianny_saved_books') || '[]');
       if (!saved.includes(bookId)) {
@@ -149,10 +176,12 @@ export const api = {
   async removeFromLibrary(bookId: string) {
     const token = getAuthToken();
     if (token) {
-      await fetch(`${API_BASE_URL}/library/${bookId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      try {
+        await fetchWithRetry(`${API_BASE_URL}/library/${bookId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+      } catch {}
     }
     if (typeof window !== 'undefined') {
       let saved = JSON.parse(localStorage.getItem('fianny_saved_books') || '[]');
@@ -161,151 +190,53 @@ export const api = {
     }
   },
 
-
-  // Challenges & Tournaments (Mavsumlar)
-  async getChallenges() {
-    const res = await fetch(`${API_BASE_URL}/challenges/`);
-    if (!res.ok) return [];
-    return res.json();
-  },
-
-  async createChallenge(data: { name: string; description?: string; start_at?: string; end_at?: string; cover_image?: string }) {
+  // Reading Progress Sync
+  async syncProgress(bookId: string, progressPercent: number, currentChapter: number, currentSentence: number) {
     const token = getAuthToken();
-    const res = await fetch(`${API_BASE_URL}/challenges/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      },
-      body: JSON.stringify(data)
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || 'Mavsum yaratishda xatolik');
-    }
-    return res.json();
-  },
-
-  async finishChallenge(challengeId: string) {
-    const token = getAuthToken();
-    const res = await fetch(`${API_BASE_URL}/challenges/${challengeId}/finish`, {
-      method: 'POST',
-      headers: {
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      }
-    });
-    if (!res.ok) throw new Error("Mavsumni yakunlashda xatolik");
-    return res.json();
-  },
-
-  async getChallengeLeaderboard(challengeId: string, skip: number = 0, limit: number = 50) {
-    const res = await fetch(`${API_BASE_URL}/challenges/${challengeId}/leaderboard?skip=${skip}&limit=${limit}`);
-    if (!res.ok) return { items: [], total_count: 0, has_more: false };
-    return res.json();
-  },
-
-  // Admin Book CRUD
-  async updateBook(bookId: string, data: any) {
-    const token = getAuthToken();
-    const res = await fetch(`${API_BASE_URL}/admin/books/${bookId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      },
-      body: JSON.stringify(data)
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || 'Kitobni tahrirlashda xatolik yuz berdi');
-    }
-    return res.json();
-  },
-
-  async deleteBook(bookId: string) {
-    const token = getAuthToken();
-    const res = await fetch(`${API_BASE_URL}/admin/books/${bookId}`, {
-      method: 'DELETE',
-      headers: {
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      }
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || "Kitobni o'chirishda xatolik yuz berdi");
-    }
-    return res.json();
-  },
-
-  // Admin Book Upload
-  async uploadBook(formData: FormData) {
-    const token = getAuthToken();
-    const res = await fetch(`${API_BASE_URL}/admin/books/upload`, {
-      method: 'POST',
-      headers: {
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      },
-      body: formData
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || 'Kitob yuklashda xatolik');
-    }
-    return res.json();
-  },
-
-
-
-  // Book Comments & Reviews
-  async getBookComments(bookId: string) {
-    if (!bookId) return [];
+    if (!token) return null;
     try {
-      const res = await fetch(`${API_BASE_URL}/books/${bookId}/comments`).catch(() => null);
-      if (!res || !res.ok) return [];
-      return await res.json().catch(() => []);
-    } catch {
-      return [];
-    }
-  },
-
-  async addBookComment(bookId: string, data: { content: string; rating?: number; user_name?: string }) {
-    const token = getAuthToken();
-    const res = await fetch(`${API_BASE_URL}/books/${bookId}/comments`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      },
-      body: JSON.stringify(data)
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || "Fikr qoldirishda xatolik yuz berdi");
-    }
-    return res.json();
-  },
-
-  async deleteBookComment(bookId: string, commentId: string) {
-    const token = getAuthToken();
-    const res = await fetch(`${API_BASE_URL}/books/${bookId}/comments/${commentId}/`, {
-      method: 'DELETE',
-      headers: {
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      }
-    });
-    if (!res.ok) {
-      throw new Error("Izohni o'chirishda xatolik");
-    }
-    return res.json();
-  },
-
-  async getAllAdminComments() {
-    const token = getAuthToken();
-    try {
-      const res = await fetch(`${API_BASE_URL}/admin/comments/`, {
+      const res = await fetchWithRetry(`${API_BASE_URL}/users/me/progress/books/${bookId}`, {
+        method: 'PUT',
         headers: {
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        }
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          progress_percent: progressPercent,
+          current_chapter: currentChapter,
+          current_sentence: currentSentence
+        })
+      });
+      return res.ok ? res.json() : null;
+    } catch {
+      return null;
+    }
+  },
+
+  async updateProgress(bookId: string, percent: number, chapterId?: string) {
+    return this.syncProgress(bookId, percent, 1, 1);
+  },
+
+  async getProgress(bookId: string) {
+    const token = getAuthToken();
+    if (!token) return null;
+    try {
+      const res = await fetchWithRetry(`${API_BASE_URL}/users/me/progress/books/${bookId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      return res.ok ? res.json() : null;
+    } catch {
+      return null;
+    }
+  },
+
+  // Bookmarks
+  async getBookmarks() {
+    const token = getAuthToken();
+    if (!token) return [];
+    try {
+      const res = await fetchWithRetry(`${API_BASE_URL}/users/me/bookmarks/`, {
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) return [];
       return res.json();
@@ -314,26 +245,323 @@ export const api = {
     }
   },
 
-  // Progress Sync
-  async updateProgress(bookId: string, progressPercent: number, chapterId?: string) {
+  async addBookmark(bookId: string, chapterId: string, sentenceIndex: number, textSnippet: string) {
     const token = getAuthToken();
-    if (!token) return;
+    if (!token) return null;
     try {
-      await fetch(`${API_BASE_URL}/users/me/progress/books/${bookId}`, {
-        method: 'PUT',
+      const res = await fetchWithRetry(`${API_BASE_URL}/users/me/bookmarks/`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          percent: Number(progressPercent),
-          progress_percent: Number(progressPercent),
-          chapter_id: chapterId || undefined,
-          last_read_at: new Date().toISOString()
+          book_id: bookId,
+          chapter_id: chapterId,
+          sentence_index: sentenceIndex,
+          text_snippet: textSnippet
         })
       });
+      return res.ok ? res.json() : null;
     } catch {
-      // Ignore background sync errors
+      return null;
     }
+  },
+
+  async deleteBookmark(bookmarkId: string) {
+    const token = getAuthToken();
+    if (!token) return;
+    try {
+      await fetchWithRetry(`${API_BASE_URL}/users/me/bookmarks/${bookmarkId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+    } catch {}
+  },
+
+  // User Stats
+  async getUserStats() {
+    const token = getAuthToken();
+    if (!token) return null;
+    try {
+      const res = await fetchWithRetry(`${API_BASE_URL}/users/me/stats`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) return null;
+      return res.json();
+    } catch {
+      return null;
+    }
+  },
+
+  async updateReadingTime(minutes: number) {
+    const token = getAuthToken();
+    if (!token) return null;
+    try {
+      const res = await fetchWithRetry(`${API_BASE_URL}/users/me/stats`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ add_minutes: minutes })
+      });
+      return res.ok ? res.json() : null;
+    } catch {
+      return null;
+    }
+  },
+
+  // Admin APIs
+  async getAdminStats() {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetchWithRetry(`${API_BASE_URL}/admin/dashboard/stats`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error("Statistikani yuklashda xatolik");
+    return res.json();
+  },
+
+  async getAdminFinancials() {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetchWithRetry(`${API_BASE_URL}/admin/financials/overview`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error("Moliya hisobotini yuklashda xatolik");
+    return res.json();
+  },
+
+  async getAdminSessions() {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetchWithRetry(`${API_BASE_URL}/admin/sessions/recent`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error("Sessiyalarni yuklashda xatolik");
+    return res.json();
+  },
+
+  async getAdminUsers() {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetchWithRetry(`${API_BASE_URL}/admin/users`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error("Foydalanuvchilarni yuklashda xatolik");
+    return res.json();
+  },
+
+  async resetUserPassword(userId: string, newPass: string) {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetchWithRetry(`${API_BASE_URL}/admin/users/${userId}/reset-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ new_password: newPass })
+    });
+    if (!res.ok) throw new Error("Parolni tiklashda xatolik");
+    return res.json();
+  },
+
+  async toggleUserStatus(userId: string, isSuspended: boolean) {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetchWithRetry(`${API_BASE_URL}/admin/users/${userId}/toggle-status`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ is_suspended: isSuspended })
+    });
+    if (!res.ok) throw new Error("Statusni o'zgartirishda xatolik");
+    return res.json();
+  },
+
+  async uploadBook(formData: FormData) {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetchWithRetry(`${API_BASE_URL}/admin/books/upload`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: formData
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Kitob yuklashda xatolik yuz berdi");
+    }
+    return res.json();
+  },
+
+  async updateBook(bookId: string, data: any) {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetchWithRetry(`${API_BASE_URL}/admin/books/${bookId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Kitobni tahrirlashda xatolik");
+    }
+    return res.json();
+  },
+
+  async deleteBook(bookId: string) {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetchWithRetry(`${API_BASE_URL}/admin/books/${bookId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Kitobni o'chirishda xatolik");
+    }
+    return res.json();
+  },
+
+  // Seasons / Tournaments (Challenges)
+  async getChallenges() {
+    try {
+      const res = await fetchWithRetry(`${API_BASE_URL}/challenges`);
+      if (!res.ok) return [];
+      return res.json();
+    } catch {
+      return [];
+    }
+  },
+
+  async createChallenge(dataOrName: any, description?: string, daysDuration?: number) {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const payload = typeof dataOrName === 'object'
+      ? dataOrName
+      : {
+          name: dataOrName,
+          description: description || '',
+          days_duration: daysDuration || 30
+        };
+
+    const res = await fetchWithRetry(`${API_BASE_URL}/challenges`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error("Mavsum yaratishda xatolik");
+    return res.json();
+  },
+
+  async getChallengeLeaderboard(challengeId: string, skip: number = 0, limit: number = 50) {
+    try {
+      const res = await fetchWithRetry(`${API_BASE_URL}/challenges/${challengeId}/leaderboard?skip=${skip}&limit=${limit}`);
+      if (!res.ok) return { items: [], total_count: 0 };
+      return res.json();
+    } catch {
+      return { items: [], total_count: 0 };
+    }
+  },
+
+  async joinChallenge(challengeId: string) {
+    const token = getAuthToken();
+    if (!token) throw new Error("Musobaqada qatnashish uchun tizimga kiring");
+    const res = await fetchWithRetry(`${API_BASE_URL}/challenges/${challengeId}/join`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error("Musobaqaga qo'shilishda xatolik");
+    return res.json();
+  },
+
+  async finishChallenge(challengeId: string) {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetchWithRetry(`${API_BASE_URL}/challenges/${challengeId}/finish`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error("Mavsumni yakunlashda xatolik");
+    return res.json();
+  },
+
+  // Comments & Reviews
+  async getBookComments(bookId: string) {
+    try {
+      const res = await fetchWithRetry(`${API_BASE_URL}/books/${bookId}/comments`);
+      if (!res.ok) return [];
+      return res.json();
+    } catch {
+      return [];
+    }
+  },
+
+  async addBookComment(bookId: string, dataOrContent: any, rating: number = 5) {
+    const token = getAuthToken();
+    if (!token) throw new Error("Fikr qoldirish uchun tizimga kiring");
+    const payload = typeof dataOrContent === 'object'
+      ? dataOrContent
+      : { content: dataOrContent, rating };
+
+    const res = await fetchWithRetry(`${API_BASE_URL}/books/${bookId}/comments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Fikr qoldirishda xatolik");
+    }
+    return res.json();
+  },
+
+  async postComment(bookId: string, content: string, rating: number = 5) {
+    return this.addBookComment(bookId, content, rating);
+  },
+
+  async getAllAdminComments() {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetchWithRetry(`${API_BASE_URL}/admin/comments`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) return [];
+    return res.json();
+  },
+
+  async deleteAdminComment(commentId: string) {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetchWithRetry(`${API_BASE_URL}/admin/comments/${commentId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error("Fikrni o'chirishda xatolik");
+    return res.json();
+  },
+
+  async deleteBookComment(bookId: string, commentId: string) {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetchWithRetry(`${API_BASE_URL}/books/${bookId}/comments/${commentId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error("Fikrni o'chirishda xatolik");
+    return res.json();
   }
 };
