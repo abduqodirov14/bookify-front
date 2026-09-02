@@ -262,9 +262,22 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200/90 dark:border-white/10 pb-6">
         <div>
-          <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#E05638] uppercase tracking-wider mb-1">
-            <ShieldCheck size={16} />
-            <span>Administrator Markazi • To'liq Boshqaruv</span>
+          <div className="flex flex-wrap items-center gap-3 mb-1">
+            <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#E05638] uppercase tracking-wider">
+              <ShieldCheck size={16} />
+              <span>Administrator Markazi • To'liq Boshqaruv</span>
+            </div>
+            
+            <a
+              href="/BOOKIFY_INVESTOR_PITCH_DECK_2026.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1 rounded-full bg-[#C5A059]/15 hover:bg-[#C5A059]/25 border border-[#C5A059]/30 text-[#C5A059] text-[11px] font-mono font-bold transition-all inline-flex items-center gap-1.5 shadow-2xs cursor-pointer"
+              title="Investor Pitch Deck PDFni ochish yoki yuklab olish"
+            >
+              <FileText size={13} />
+              <span>Pitch Deck (PDF)</span>
+            </a>
           </div>
           <h1 className="font-serif text-2xl sm:text-3xl font-bold text-stone-950 dark:text-white tracking-tight">
             Bookify Boshqaruv Paneli
