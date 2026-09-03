@@ -44,9 +44,9 @@ export default function Sidebar({
     { id: 'discover', label: 'Xazina & Katalog', icon: Compass },
     { id: 'author', label: 'Buyuk Allomalar', icon: Users2 },
     { id: 'library', label: 'Mening Javonim', icon: Library },
-    { id: 'time', label: 'Sokin Scriptorium', icon: Clock },
+    { id: 'time', label: 'Sokin Mutolaa', icon: Clock },
     { id: 'challenge', label: 'Adabiy Chempionat', icon: Trophy },
-    { id: 'vision' as Page, label: 'Kelajak & Vizyon', icon: Sparkles, badge: 'AI/VR' },
+    { id: 'vision' as Page, label: 'Kelajak & Rejalar', icon: Sparkles },
     { id: 'profile', label: 'Kitobxon Pasporti', icon: User },
     ...(isAdmin ? [{ id: 'admin' as Page, label: 'Boshqaruv & 2FA', icon: ShieldCheck, badge: 'Admin' }] : [])
   ];
@@ -59,7 +59,7 @@ export default function Sidebar({
   };
 
   const content = (
-    <div className="w-68 h-full bg-white dark:bg-[#0A0D14] border-r border-stone-200/90 dark:border-white/10 flex flex-col justify-between p-4 transition-colors">
+    <div className="w-60 lg:w-64 h-full bg-white dark:bg-[#0A0D14] border-r border-stone-200/90 dark:border-white/10 flex flex-col justify-between p-4 transition-colors">
       
       {/* Brand Header */}
       <div className="space-y-6">
@@ -78,7 +78,7 @@ export default function Sidebar({
                 Bookify
               </h1>
               <span className="text-[10px] font-mono tracking-widest text-[#C5A059] uppercase block font-semibold">
-                Milliy Sanatoriy
+                Elektron Kutubxona
               </span>
             </div>
           </div>

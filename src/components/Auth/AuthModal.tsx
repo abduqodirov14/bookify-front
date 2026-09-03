@@ -32,14 +32,8 @@ export default function AuthModal({ onSuccess, onCancel }: Props) {
     setLoading(true);
     try {
       if (isRegister) {
-        // Register flow
-        const res = await fetch(`${API_BASE_URL}/auth/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: email.trim(), password: password.trim(), name: name.trim() })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || "Ro'yxatdan o'tishda xatolik");
+        // Register flow with auto-retry
+        const data = await api.register(email.trim(), password.trim(), name.trim());
         
         if (data.require_2fa) {
           setTempToken(data.temp_token);

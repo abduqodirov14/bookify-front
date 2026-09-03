@@ -528,20 +528,7 @@ export default function HomeApp() {
                 />
               )}
 
-              {/* ── Hamkor Nashriyotlar & Rasmiy Homiy ── */}
-              <div className="p-8 sm:p-12 rounded-3xl bg-stone-900 text-white space-y-6 shadow-xl border border-stone-800">
-                <div className="text-center space-y-2 max-w-xl mx-auto">
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-[#C5A059] font-bold">
-                    Rasmiy Hamkorlar
-                  </span>
-                  <h3 className="font-serif text-2xl font-bold">
-                    Milliy Merosimizni Birga Tiklaymiz
-                  </h3>
-                  <p className="text-xs text-stone-400 leading-relaxed">
-                    Bookify O'zbekiston Yozuvchilar uyushmasi va yetakchi nashriyotlar bilan hamkorlikda durdona asarlarning asl nusxalarini saqlaydi.
-                  </p>
-                </div>
-              </div>
+              {/* End of Home feed */}
 
             </div>
           )}

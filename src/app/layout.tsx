@@ -21,6 +21,11 @@ const mono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Bookify — Milliy Kitob & Audio Sanatoriysi",
   description: "O'zbekistonning eng sara durdona asarlari, audio spektakllari va adabiy chempionati.",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/icon.png",
+  },
 };
 
 export default function RootLayout({

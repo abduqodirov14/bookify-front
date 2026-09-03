@@ -41,6 +41,23 @@ async function fetchWithRetry(url: string, options: RequestInit = {}, retries = 
 
 export const api = {
   // Auth
+  async register(email: string, password: string, name: string) {
+    const res = await fetchWithRetry(`${API_BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: email.trim().toLowerCase(),
+        password: password.trim(),
+        name: name.trim()
+      })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.detail || "Ro'yxatdan o'tishda xatolik yuz berdi");
+    }
+    return data;
+  },
+
   async login(email: string, password: string) {
     const formData = new URLSearchParams();
     formData.append('username', email.trim().toLowerCase());
