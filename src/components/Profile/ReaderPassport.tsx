@@ -17,6 +17,7 @@ import {
   Medal,
   Scroll
 } from 'lucide-react';
+import { Camera, Image as ImageIcon } from 'lucide-react';
 import OfficialCertificateModal from '../Certificate/OfficialCertificateModal';
 
 interface Props {
@@ -47,6 +48,10 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout, on
   const [is2FA, setIs2FA] = useState<boolean>(user.is2FAEnabled ?? (user.role === 'ADMIN'));
   const [showCertModal, setShowCertModal] = useState<boolean>(false);
   const [modalCertData, setModalCertData] = useState<any>(null);
+  const [currentAvatar, setCurrentAvatar] = useState<string>(user.avatarUrl || '');
+  const [showAvatarModal, setShowAvatarModal] = useState<boolean>(false);
+  const [avatarInputUrl, setAvatarInputUrl] = useState<string>('');
+  const [isSavingAvatar, setIsSavingAvatar] = useState<boolean>(false);
 
   // New registered users start with 0 certificates until they win a tournament.
   // Admins or tournament winners have certificates.
@@ -77,8 +82,22 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout, on
         <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
           
           <div className="flex flex-col sm:flex-row items-center gap-6">
-            <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-[#E05638] to-[#C5A059] flex items-center justify-center text-white font-serif font-bold text-3xl shadow-xl ring-4 ring-[#C5A059]/20">
-              {user.name[0]}
+            <div 
+              onClick={() => setShowAvatarModal(true)}
+              className="relative w-24 h-24 rounded-3xl overflow-hidden shadow-xl ring-4 ring-[#C5A059]/20 cursor-pointer group shrink-0"
+              title="Profil rasmini almashtirish"
+            >
+              {currentAvatar ? (
+                <img src={currentAvatar} alt={user.name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-tr from-[#E05638] to-[#C5A059] flex items-center justify-center text-white font-serif font-bold text-3xl">
+                  {user.name[0]}
+                </div>
+              )}
+              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[10px] font-mono font-bold gap-1">
+                <Camera size={18} />
+                <span>Rasm qo'yish</span>
+              </div>
             </div>
             
             <div className="space-y-2 text-center sm:text-left">
@@ -340,6 +359,113 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout, on
         )}
 
       </div>
+
+      {/* ── Profile Avatar Change Modal ── */}
+      {showAvatarModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
+          <div className="relative w-full max-w-md bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5 animate-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-white/5">
+              <div className="flex items-center gap-2">
+                <Camera size={18} className="text-[#E05638]" />
+                <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-white">
+                  Profil Rasmini Tanlash
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowAvatarModal(false)}
+                className="p-1.5 rounded-xl bg-stone-100 dark:bg-white/10 hover:bg-stone-200 text-stone-500 cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Current preview */}
+            <div className="flex justify-center py-2">
+              <div className="w-24 h-24 rounded-3xl overflow-hidden border-4 border-[#C5A059] shadow-lg">
+                {(avatarInputUrl || currentAvatar) ? (
+                  <img src={avatarInputUrl || currentAvatar} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-[#E05638] flex items-center justify-center text-white text-3xl font-bold">
+                    {user.name[0]}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* File Upload / Image Link */}
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block">
+                  Qurilmadan rasm tanlash:
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                        if (reader.result) {
+                          setAvatarInputUrl(reader.result as string);
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  className="w-full text-xs text-stone-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#E05638]/10 file:text-[#E05638] hover:file:bg-[#E05638]/20 cursor-pointer"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block">
+                  Yoki rasm havolasini (URL) kiriting:
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://images.unsplash.com/... yoki Google rasm URL"
+                  value={avatarInputUrl}
+                  onChange={(e) => setAvatarInputUrl(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-stone-50 dark:bg-[#0E1218] border border-stone-200 dark:border-white/10 text-xs text-stone-900 dark:text-white outline-none focus:border-[#E05638]"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowAvatarModal(false)}
+                className="flex-1 py-2.5 rounded-xl bg-stone-100 dark:bg-white/10 text-stone-600 dark:text-stone-300 text-xs font-mono font-semibold"
+              >
+                Bekor Qilish
+              </button>
+              <button
+                type="button"
+                disabled={isSavingAvatar || (!avatarInputUrl && !currentAvatar)}
+                onClick={async () => {
+                  const targetImg = avatarInputUrl || currentAvatar;
+                  if (!targetImg) return;
+                  setIsSavingAvatar(true);
+                  try {
+                    await api.updateAvatarUrl(targetImg);
+                    setCurrentAvatar(targetImg);
+                    user.avatarUrl = targetImg;
+                    setShowAvatarModal(false);
+                    toast.success("Profil rasmingiz muvaffaqiyatli yangilandi!");
+                  } catch (e: any) {
+                    toast.error(e.message || "Rasmni saqlashda xatolik");
+                  } finally {
+                    setIsSavingAvatar(false);
+                  }
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-[#E05638] hover:bg-[#c94529] text-white text-xs font-mono font-bold uppercase transition-all shadow-md cursor-pointer disabled:opacity-50"
+              >
+                {isSavingAvatar ? "Saqlanmoqda..." : "Saqlash"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Official FreeCodeCamp-style Certificate Modal ── */}
       {showCertModal && (

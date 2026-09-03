@@ -240,25 +240,40 @@ export default function Header({
         </div>
 
         {/* User Pill & Log Out */}
-        <div 
-          onClick={onNavigateProfile}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-stone-100 dark:bg-white/10 border border-stone-200 dark:border-white/10 cursor-pointer hover:bg-stone-200 dark:hover:bg-white/20 transition-colors"
-        >
-          <div className="w-6 h-6 rounded-full bg-[#E05638] text-white font-bold text-[10px] flex items-center justify-center">
-            {currentUser?.name?.[0]?.toUpperCase() || 'A'}
-          </div>
-          <span className="text-xs font-medium text-stone-800 dark:text-stone-200 hidden sm:inline">
-            {currentUser?.name || 'Administrator'}
-          </span>
-        </div>
+        {currentUser ? (
+          <>
+            <div 
+              onClick={onNavigateProfile}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-stone-100 dark:bg-white/10 border border-stone-200 dark:border-white/10 cursor-pointer hover:bg-stone-200 dark:hover:bg-white/20 transition-colors"
+            >
+              {currentUser.avatarUrl ? (
+                <img src={currentUser.avatarUrl} alt={currentUser.name} className="w-6 h-6 rounded-full object-cover" />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-[#E05638] text-white font-bold text-[10px] flex items-center justify-center">
+                  {currentUser.name?.[0]?.toUpperCase() || 'K'}
+                </div>
+              )}
+              <span className="text-xs font-medium text-stone-800 dark:text-stone-200 hidden sm:inline">
+                {currentUser.name}
+              </span>
+            </div>
 
-        <button
-          onClick={onLogout}
-          className="p-2 rounded-xl bg-stone-100 dark:bg-white/10 text-stone-500 hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
-          title="Tizimdan Chiqish"
-        >
-          <LogOut size={16} />
-        </button>
+            <button
+              onClick={onLogout}
+              className="p-2 rounded-xl bg-stone-100 dark:bg-white/10 text-stone-500 hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
+              title="Tizimdan Chiqish"
+            >
+              <LogOut size={16} />
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={() => onNavigatePage('auth')}
+            className="px-4 py-1.5 rounded-full bg-[#E05638] hover:bg-[#c94529] text-white text-xs font-mono font-bold uppercase transition-all shadow-xs cursor-pointer"
+          >
+            Kirish
+          </button>
+        )}
 
       </div>
 

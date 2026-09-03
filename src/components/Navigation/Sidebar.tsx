@@ -136,9 +136,13 @@ export default function Sidebar({
               onClick={() => handleNav('profile')}
               className="flex items-center gap-2.5 cursor-pointer min-w-0 flex-1"
             >
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#E05638] to-[#C5A059] flex items-center justify-center text-white font-serif font-bold text-xs shrink-0 shadow-xs">
-                {currentUser.name[0]}
-              </div>
+              {currentUser.avatarUrl ? (
+                <img src={currentUser.avatarUrl} alt={currentUser.name} className="w-8 h-8 rounded-xl object-cover shrink-0 shadow-xs border border-white/20" />
+              ) : (
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#E05638] to-[#C5A059] flex items-center justify-center text-white font-serif font-bold text-xs shrink-0 shadow-xs">
+                  {currentUser.name[0]}
+                </div>
+              )}
               <div className="min-w-0 flex-1">
                 <span className="font-serif font-bold text-xs text-stone-900 dark:text-white truncate block">
                   {currentUser.name}

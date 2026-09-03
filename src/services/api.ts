@@ -116,6 +116,37 @@ export const api = {
     }
   },
 
+  async googleAuth(credential: string) {
+    const res = await fetchWithRetry(`${API_BASE_URL}/auth/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.detail || "Google orqali kirishda xatolik yuz berdi");
+    }
+    return data;
+  },
+
+  async updateAvatarUrl(avatarUrl: string) {
+    const token = getAuthToken();
+    if (!token) return null;
+    const res = await fetchWithRetry(`${API_BASE_URL}/users/me/avatar-url`, {
+      method: 'PUT',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` 
+      },
+      body: JSON.stringify({ avatar_url: avatarUrl })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.detail || "Avatarni yangilashda xatolik yuz berdi");
+    }
+    return data;
+  },
+
   // Books
   async getBooks() {
     try {
@@ -448,6 +479,18 @@ export const api = {
   },
 
   // Seasons / Tournaments (Challenges)
+  async getActiveChallenge() {
+    try {
+      const list = await this.getChallenges();
+      if (Array.isArray(list) && list.length > 0) {
+        return list[0];
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  },
+
   async getChallenges() {
     try {
       const res = await fetchWithRetry(`${API_BASE_URL}/challenges`);

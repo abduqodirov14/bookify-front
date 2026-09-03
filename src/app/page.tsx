@@ -35,6 +35,7 @@ export default function HomeApp() {
   const [booksList, setBooksList] = useState<Book[]>([]);
   const [isLoadingBooks, setIsLoadingBooks] = useState(true);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [pendingBookToOpen, setPendingBookToOpen] = useState<string | null>(null);
 
   // Check existing session on mount
   useEffect(() => {
@@ -49,12 +50,13 @@ export default function HomeApp() {
               name: me.name || me.email.split('@')[0],
               email: me.email,
               role: me.role === 'ADMIN' ? 'ADMIN' : 'USER',
+              avatarUrl: me.avatar_url || me.avatarUrl || '',
               dailyGoalMinutes: 40,
               todayMinutes: 40,
               readingStreakDays: 1,
-              totalHours: 0,
-              finishedBooksCount: 0,
-              is2FAEnabled: true
+              totalHours: me.total_hours || 0,
+              finishedBooksCount: me.finished_books_count || 0,
+              is2FAEnabled: me.is_2fa_enabled ?? (me.role === 'ADMIN')
             });
           }
         } catch (e) {
@@ -226,6 +228,26 @@ export default function HomeApp() {
     }
   };
 
+  const handleOpenReader = (bookId: string) => {
+    if (!currentUser) {
+      setPendingBookToOpen(bookId);
+      toast.error("Mutolaani boshlash uchun iltimos, avval tizimga kiring!");
+      setCurrentPage('auth');
+      return;
+    }
+    setSelectedBookId(bookId);
+    setCurrentPage('reader');
+  };
+
+  const handlePlayAudio = (book: Book) => {
+    if (!currentUser) {
+      toast.error("Audio spektaklni tinglash uchun iltimos, avval tizimga kiring!");
+      setCurrentPage('auth');
+      return;
+    }
+    playAudio(book);
+  };
+
   const playAudio = (book: Book) => {
     setActiveAudioTrack({
       bookId: book.id,
@@ -265,15 +287,24 @@ export default function HomeApp() {
             name: user.name || user.email?.split('@')[0] || "Kitobxon",
             email: user.email,
             role: user.role === 'ADMIN' ? 'ADMIN' : 'USER',
+            avatarUrl: user.avatar_url || user.avatarUrl || '',
             dailyGoalMinutes: 40,
             todayMinutes: 40,
             readingStreakDays: 1,
-            totalHours: 0,
-            finishedBooksCount: 0,
-            is2FAEnabled: true
+            totalHours: user.total_hours || 0,
+            finishedBooksCount: user.finished_books_count || 0,
+            is2FAEnabled: user.is_2fa_enabled ?? (user.role === 'ADMIN')
           });
-          setCurrentPage(user.role === 'ADMIN' ? 'admin' : 'home');
+          if (pendingBookToOpen) {
+            const bId = pendingBookToOpen;
+            setPendingBookToOpen(null);
+            setSelectedBookId(bId);
+            setCurrentPage('reader');
+          } else {
+            setCurrentPage(user.role === 'ADMIN' ? 'admin' : 'home');
+          }
         }}
+        onCancel={() => setCurrentPage('home')}
       />
     );
   }
@@ -365,7 +396,7 @@ export default function HomeApp() {
 
                       <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-2">
                         <button
-                          onClick={() => navigate('reader', featuredBook.id)}
+                          onClick={() => handleOpenReader(featuredBook.id)}
                           className="px-8 py-4 rounded-2xl bg-[#E05638] hover:bg-[#C74326] text-white font-bold text-xs font-mono uppercase tracking-wider transition-transform active:scale-95 shadow-xl hover:shadow-2xl cursor-pointer flex items-center gap-2"
                         >
                           <BookOpen size={16} />
@@ -373,7 +404,7 @@ export default function HomeApp() {
                         </button>
 
                         <button
-                          onClick={() => playAudio(featuredBook)}
+                          onClick={() => handlePlayAudio(featuredBook)}
                           className="px-8 py-4 rounded-2xl bg-stone-100 hover:bg-stone-200 dark:bg-white/10 dark:hover:bg-white/20 text-stone-900 dark:text-white font-bold text-xs font-mono uppercase tracking-wider transition-transform active:scale-95 border border-stone-200 dark:border-white/10 cursor-pointer flex items-center gap-2"
                         >
                           <Headphones size={16} className="text-[#C5A059]" />
@@ -382,7 +413,7 @@ export default function HomeApp() {
                       </div>
                     </div>
 
-                    <div className="relative group cursor-pointer" onClick={() => navigate('reader', featuredBook.id)}>
+                    <div className="relative group cursor-pointer" onClick={() => handleOpenReader(featuredBook.id)}>
                       <div className="book-card-3d w-56 sm:w-68 aspect-[2/3] scale-100 group-hover:scale-105 transition-transform duration-500">
                         <div className="book-card-inner relative w-full h-full rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20">
                           <img 
@@ -498,7 +529,7 @@ export default function HomeApp() {
 
                         <div className="grid grid-cols-2 gap-2 pt-2 border-t border-stone-100 dark:border-white/5">
                           <button
-                            onClick={() => navigate('reader', b.id)}
+                            onClick={() => handleOpenReader(b.id)}
                             className="py-2.5 rounded-xl bg-stone-900 dark:bg-white text-white dark:text-stone-900 font-semibold text-xs transition-colors cursor-pointer hover:bg-[#E05638] dark:hover:bg-[#E05638] dark:hover:text-white flex items-center justify-center gap-1.5"
                           >
                             <BookOpen size={14} />
@@ -506,7 +537,7 @@ export default function HomeApp() {
                           </button>
 
                           <button
-                            onClick={() => playAudio(b)}
+                            onClick={() => handlePlayAudio(b)}
                             className="py-2.5 rounded-xl bg-[#E05638]/10 text-[#E05638] hover:bg-[#E05638] hover:text-white font-semibold text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                           >
                             <Headphones size={14} />
@@ -537,8 +568,8 @@ export default function HomeApp() {
           {currentPage === 'library' && (
             <LibraryView
               allBooks={booksList}
-              onOpenReader={bId => navigate('reader', bId)}
-              onPlayAudio={playAudio}
+              onOpenReader={handleOpenReader}
+              onPlayAudio={handlePlayAudio}
               onGoToDiscover={() => navigate('discover')}
             />
           )}
@@ -547,8 +578,8 @@ export default function HomeApp() {
           {currentPage === 'discover' && (
             <DiscoverCatalog
               books={booksList}
-              onOpenReader={bId => navigate('reader', bId)}
-              onPlayAudio={playAudio}
+              onOpenReader={handleOpenReader}
+              onPlayAudio={handlePlayAudio}
             />
           )}
 
@@ -559,8 +590,8 @@ export default function HomeApp() {
               books={booksList}
               allAuthors={AUTHORS}
               onSelectAuthor={aId => setSelectedAuthorId(aId)}
-              onOpenReader={bId => navigate('reader', bId)}
-              onPlayAudio={playAudio}
+              onOpenReader={handleOpenReader}
+              onPlayAudio={handlePlayAudio}
               onBack={goBack}
             />
           )}
@@ -570,7 +601,7 @@ export default function HomeApp() {
             <ReaderPassport
               user={currentUser}
               books={booksList}
-              onOpenReader={bId => navigate('reader', bId)}
+              onOpenReader={handleOpenReader}
               onLogout={() => {
                 clearAuthToken();
                 setCurrentUser(null);
@@ -595,13 +626,33 @@ export default function HomeApp() {
             <ComingSoonSection />
           )}
 
-          {/* 8. ADMIN CONTROL PANEL */}
+          {/* 8. ADMIN CONTROL PANEL (PROTECTED: ONLY FOR ADMIN) */}
           {currentPage === 'admin' && (
-            <AdminPanel
-              onNavigate={navigate}
-              books={booksList}
-              onRefreshBooks={loadBooksFromBackend}
-            />
+            currentUser?.role === 'ADMIN' ? (
+              <AdminPanel
+                onNavigate={navigate}
+                books={booksList}
+                onRefreshBooks={loadBooksFromBackend}
+              />
+            ) : (
+              <div className="p-8 sm:p-14 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 text-center space-y-4 max-w-md mx-auto my-16 shadow-xs">
+                <div className="w-16 h-16 mx-auto rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center text-3xl font-bold">
+                  🔒
+                </div>
+                <h3 className="font-serif text-2xl font-bold text-stone-900 dark:text-white">
+                  Ruxsat Berilmagan (403)
+                </h3>
+                <p className="text-xs text-stone-500 leading-relaxed">
+                  Ushbu boshqaruv paneli faqat platforma administratori uchun himoyalangan. Tizimga administrator hisobingiz orqali kiring.
+                </p>
+                <button
+                  onClick={() => setCurrentPage('auth')}
+                  className="px-6 py-3 rounded-xl bg-[#E05638] hover:bg-[#c94529] text-white text-xs font-mono font-bold uppercase transition-all shadow-md cursor-pointer inline-block"
+                >
+                  Tizimga Kirish
+                </button>
+              </div>
+            )
           )}
 
         </main>
