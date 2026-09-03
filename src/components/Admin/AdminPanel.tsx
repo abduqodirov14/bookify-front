@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Book } from '../../types';
 import { api } from '../../services/api';
 import { 
@@ -65,6 +65,9 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
   const [editDescription, setEditDescription] = useState('');
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [publishingBookId, setPublishingBookId] = useState<string | null>(null);
+  // Live pipeline progress for PROCESSING books  { [bookId]: { progress, step_name, pages_processed, total_pages } }
+  const [processingStatuses, setProcessingStatuses] = useState<Record<string, any>>({});
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const handlePublishBook = async (bookId: string, bookTitle: string) => {
     setPublishingBookId(bookId);
@@ -118,6 +121,49 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
       fetchAdminComments();
     }
   }, [tab]);
+
+  // ── Auto-poll live progress for PROCESSING books every 2 seconds ──
+  const pollProcessingBooks = useCallback(async () => {
+    const processingBooks = books.filter(b => b.status === 'PROCESSING');
+    if (processingBooks.length === 0) {
+      setProcessingStatuses({});
+      return;
+    }
+    const updates: Record<string, any> = {};
+    await Promise.all(
+      processingBooks.map(async (b) => {
+        try {
+          const st = await api.getBookStatus(b.id);
+          if (st) updates[b.id] = st;
+        } catch { /* silent */ }
+      })
+    );
+    setProcessingStatuses(prev => ({ ...prev, ...updates }));
+    // If any book just became READY/COMPLETED, refresh the books list
+    const anyDone = Object.values(updates).some(
+      s => s.status === 'COMPLETED' || s.book_status === 'READY' || s.book_status === 'NEEDS_RETRY'
+    );
+    if (anyDone) onRefreshBooks();
+  }, [books, onRefreshBooks]);
+
+  useEffect(() => {
+    const hasProcessing = books.some(b => b.status === 'PROCESSING');
+    if (hasProcessing) {
+      pollProcessingBooks(); // immediate first poll
+      pollingRef.current = setInterval(pollProcessingBooks, 2000);
+    } else {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+    }
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+    };
+  }, [books, pollProcessingBooks]);
 
   // Open Edit Modal
   const handleOpenEdit = (b: Book) => {
@@ -287,7 +333,7 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
       setDirectTextContent('');
       setUploadProgress(0);
       setIsUploading(false);
-      setTab('books');   // ← Kitoblar ro'yxatiga o'tkazadi (READY + [Chop Etish] tugmasi ko'rinadi)
+      setTab('dashboard');   // ← Dashboard'da kitoblar ro'yxati (READY + [Chop Etish] tugmasi ko'rinadi)
       onRefreshBooks();
     } catch (err: any) {
       toast.error(err.message || "Kitob yuklashda xatolik yuz berdi");
@@ -503,6 +549,30 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                         <p className="text-xs text-stone-400 line-clamp-1 max-w-xl">
                           {b.description}
                         </p>
+                        {/* ── Live Pipeline Progress Bar for PROCESSING books ── */}
+                        {b.status === 'PROCESSING' && (() => {
+                          const ps = processingStatuses[b.id];
+                          const pct = ps?.progress || 0;
+                          const stepName = ps?.step_name || 'Konveyer ishga tushirilmoqda...';
+                          const pagesDone = ps?.pages_processed || 0;
+                          const totalPgs = ps?.total_pages || 0;
+                          return (
+                            <div className="mt-2 space-y-1 max-w-sm">
+                              <div className="flex items-center justify-between text-[10px] font-mono text-stone-400">
+                                <span className="truncate max-w-[220px]">{stepName}</span>
+                                <span className="shrink-0 ml-2 font-bold text-sky-500">
+                                  {totalPgs > 0 ? `${pagesDone}/${totalPgs} bet` : `${pct}%`}
+                                </span>
+                              </div>
+                              <div className="h-1.5 rounded-full bg-stone-100 dark:bg-white/10 overflow-hidden">
+                                <div
+                                  className="h-full rounded-full bg-sky-500 transition-all duration-500"
+                                  style={{ width: `${Math.max(5, pct)}%` }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
 
