@@ -73,16 +73,25 @@ export default function BookSpread({ book, onBack }: Props) {
   // Otherwise, use word-density typography pagination (~130 words per page).
   const spreads = useMemo(() => {
     if (dbPages.length > 0) {
-      const result: { left: string[]; right: string[] }[] = [];
-      for (let i = 0; i < dbPages.length; i += 2) {
-        const pLeft = dbPages[i];
-        const pRight = dbPages[i + 1];
-        result.push({
-          left: pLeft?.text ? pLeft.text.split('\n\n').filter(Boolean) : ["Sahifa matni yo'q."],
-          right: pRight?.text ? pRight.text.split('\n\n').filter(Boolean) : []
-        });
+      const hasAnyText = dbPages.some(p => p.text && p.text.trim().length > 0);
+      if (hasAnyText) {
+        const result: { left: string[]; right: string[] }[] = [];
+        for (let i = 0; i < dbPages.length; i += 2) {
+          const pLeft = dbPages[i];
+          const pRight = dbPages[i + 1];
+          const leftText = pLeft?.text?.trim() 
+            ? pLeft.text.split('\n\n').filter(Boolean) 
+            : (paragraphs.length > 0 ? paragraphs.slice(0, 2) : [chapter.content || `${book.title} — ${pLeft?.page_number || 1}-sahifa.`]);
+          const rightText = pRight?.text?.trim() 
+            ? pRight.text.split('\n\n').filter(Boolean) 
+            : [];
+          result.push({
+            left: leftText,
+            right: rightText
+          });
+        }
+        return result.length > 0 ? result : [{ left: paragraphs, right: [] }];
       }
-      return result.length > 0 ? result : [{ left: ["Sahifa bo'sh."], right: [] }];
     }
 
     const rawParagraphs = paragraphs;
