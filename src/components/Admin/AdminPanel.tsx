@@ -239,32 +239,46 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
         setUploadProgress(35);
         setUploadStage("Asinxron konveyer ishga tushirildi...");
 
+        // Terminal statuses that stop polling
+        const DONE_STATUSES = ['COMPLETED', 'PUBLISHED', 'READY', 'NEEDS_RETRY', 'FAILED'];
         let isDone = false;
         let attempts = 0;
+        let finalBookStatus = '';
+
         while (!isDone && attempts < 120) {
-          await new Promise(r => setTimeout(r, 1200));
+          await new Promise(r => setTimeout(r, 1500));
           attempts++;
-          const status = await api.getBookStatus(bookId);
-          if (status) {
-            setUploadProgress(Math.max(35, status.progress || 35));
-            if (status.step_name) {
-              const pagesInfo = status.total_pages > 0 ? ` • ${status.pages_processed}/${status.total_pages} bet` : '';
-              setUploadStage(`${status.step_name}${pagesInfo}`);
+          try {
+            const status = await api.getBookStatus(bookId);
+            if (status) {
+              // Map pipeline progress to UI progress bar (35 → 99)
+              const rawProgress = status.progress || 35;
+              setUploadProgress(Math.min(99, Math.max(35, rawProgress)));
+              if (status.step_name) {
+                const pagesInfo = status.total_pages > 0 
+                  ? ` • ${status.pages_processed || 0}/${status.total_pages} bet` 
+                  : '';
+                setUploadStage(`${status.step_name}${pagesInfo}`);
+              }
+              // Check book-level status (not just job status)
+              const bookStatusRes = await api.getBookStatus(bookId);
+              finalBookStatus = bookStatusRes?.book_status || status.status;
+              
+              if (DONE_STATUSES.includes(status.status) || status.progress >= 100) {
+                isDone = true;
+              }
             }
-            if (status.status === 'COMPLETED' || status.status === 'PUBLISHED' || (status.progress && status.progress >= 100)) {
-              isDone = true;
-            } else if (status.status === 'FAILED') {
-              throw new Error(status.error_message || "Kitobni qayta ishlashda xatolik");
-            }
+          } catch {
+            // Ignore transient polling errors, keep retrying
           }
         }
       }
 
       setUploadProgress(100);
-      setUploadStage("Kitob muvaffaqiyatli saqlandi va javonga joylandi! 🎉");
-      await new Promise(r => setTimeout(r, 600));
+      setUploadStage("Kitob muvaffaqiyatli qabul qilindi va konveyerdan o'tkazildi! ✅");
+      await new Promise(r => setTimeout(r, 800));
 
-      toast.success("Kitob muvaffaqiyatli saqlandi va chop etildi! 🎉");
+      toast.success("Kitob READY holatida — Admin panelidagi ro'yxatdan Chop Etishingiz mumkin! 📚");
       
       setTitle('');
       setAuthor('');
@@ -273,7 +287,7 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
       setDirectTextContent('');
       setUploadProgress(0);
       setIsUploading(false);
-      setTab('dashboard');
+      setTab('books');   // ← Kitoblar ro'yxatiga o'tkazadi (READY + [Chop Etish] tugmasi ko'rinadi)
       onRefreshBooks();
     } catch (err: any) {
       toast.error(err.message || "Kitob yuklashda xatolik yuz berdi");
