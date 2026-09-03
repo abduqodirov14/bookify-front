@@ -194,9 +194,10 @@ export const api = {
   },
 
   // Books
-  async getBooks() {
+  async getBooks(includeAll = false) {
     try {
-      const res = await fetchWithRetry(`${API_BASE_URL}/books`, {
+      const url = includeAll ? `${API_BASE_URL}/books?all=true` : `${API_BASE_URL}/books`;
+      const res = await fetchWithRetry(url, {
         headers: { 'Cache-Control': 'no-cache' }
       });
       if (!res.ok) return [];

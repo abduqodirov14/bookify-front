@@ -82,6 +82,16 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
     }
   };
 
+  const handleRetryBook = async (bookId: string, bookTitle: string) => {
+    try {
+      await api.retryBookPipeline(bookId);
+      toast.success(`"${bookTitle}" kitobini qayta ishlash boshlandi! 🔄`);
+      onRefreshBooks();
+    } catch (e: any) {
+      toast.error(e.message || "Qayta urinishda xatolik");
+    }
+  };
+
   // Seasons / Tournaments State
   const [challengesList, setChallengesList] = useState<any[]>([]);
   const [seasonName, setSeasonName] = useState('');
@@ -476,6 +486,28 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
             </div>
           </div>
 
+          {/* ── READY BOOKS ALERT BANNER ── */}
+          {books.filter(b => b.status === 'READY').length > 0 && (
+            <div className="p-5 rounded-3xl bg-gradient-to-r from-emerald-500/20 via-teal-500/15 to-emerald-500/20 border-2 border-emerald-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md animate-bounce">
+                  <CheckCircle2 size={24} />
+                </div>
+                <div>
+                  <h4 className="font-serif font-bold text-base text-emerald-950 dark:text-emerald-100 flex items-center gap-2">
+                    <span>Chop etishga tayyor asarlar mavjud!</span>
+                    <span className="px-2.5 py-0.5 rounded-full text-xs bg-emerald-600 text-white font-mono font-bold">
+                      {books.filter(b => b.status === 'READY').length} ta asar
+                    </span>
+                  </h4>
+                  <p className="text-xs text-emerald-800 dark:text-emerald-300 mt-0.5">
+                    Ushbu asarlar konveyerdan to'liq o'tgan va tasdiqlangan. Ommaga e'lon qilish uchun quyidagi ro'yxatdan yashil <strong>[🚀 Chop Etish (Publish)]</strong> tugmasini bosing.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Books Management Table */}
           <div className="bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 rounded-3xl overflow-hidden shadow-xs">
             <div className="p-6 border-b border-stone-100 dark:border-white/5 flex items-center justify-between">
@@ -576,17 +608,27 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                       </div>
                     </div>
 
-                    {/* Action Cluster (View, Publish, Edit, Delete) */}
-                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                    {/* Action Cluster (View, Publish, Retry, Edit, Delete) */}
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-center flex-wrap sm:flex-nowrap">
                       {b.status === 'READY' && (
                         <button
                           onClick={() => handlePublishBook(b.id, b.title)}
                           disabled={publishingBookId === b.id}
-                          className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-mono font-bold transition-all shadow-md hover:shadow-lg cursor-pointer flex items-center gap-1.5 shrink-0"
-                          title="Ommaga chop etish"
+                          className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-xs font-mono font-bold transition-all shadow-md hover:shadow-emerald-500/30 cursor-pointer flex items-center gap-2 shrink-0 border border-emerald-400/50 ring-2 ring-emerald-500/40 animate-pulse"
+                          title="Ommaga rasman chop etish"
                         >
-                          <CheckCircle2 size={14} />
-                          <span>{publishingBookId === b.id ? "Chop etilmoqda..." : "Chop Etish"}</span>
+                          <CheckCircle2 size={16} />
+                          <span>{publishingBookId === b.id ? "Chop etilmoqda..." : "🚀 Chop Etish (Publish)"}</span>
+                        </button>
+                      )}
+                      {b.status === 'NEEDS_RETRY' && (
+                        <button
+                          onClick={() => handleRetryBook(b.id, b.title)}
+                          className="px-3 py-2 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 hover:bg-amber-500 hover:text-white text-xs font-mono font-bold transition-colors cursor-pointer flex items-center gap-1.5 shrink-0 border border-amber-500/30"
+                          title="Konveyerni qayta ishga tushirish"
+                        >
+                          <RefreshCw size={14} />
+                          <span>Qayta Urinish</span>
                         </button>
                       )}
                       {onNavigate && (

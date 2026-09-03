@@ -96,7 +96,8 @@ export default function HomeApp() {
   const loadBooksFromBackend = async () => {
     setIsLoadingBooks(true);
     try {
-      const data = await api.getBooks();
+      // Pass includeAll=true so AdminPanel and lists receive all books (READY, PROCESSING, etc.)
+      const data = await api.getBooks(true);
       const formatted: Book[] = await Promise.all(data.map(async (b: any) => {
         let chaptersData: any[] = [];
         try {
@@ -289,9 +290,10 @@ export default function HomeApp() {
     toast.success(`"${book.title}" audio spektakli tinglanmoqda`, { icon: '🎧' });
   };
 
-  const selectedBook = booksList.find(b => b.id === selectedBookId) || booksList[0];
+  const publishedBooks = booksList.filter(b => !b.status || b.status === 'PUBLISHED');
+  const selectedBook = booksList.find(b => b.id === selectedBookId) || publishedBooks[0] || booksList[0];
   const selectedAuthor = AUTHORS.find(a => a.id === selectedAuthorId) || AUTHORS[0];
-  const featuredBook = booksList[0];
+  const featuredBook = publishedBooks[0] || booksList[0];
 
   // Full Screen Reader View
   if (currentPage === 'reader' && selectedBook) {
@@ -500,7 +502,7 @@ export default function HomeApp() {
               </div>
 
               {/* ── Durdona Asarlar & Audio Spektakllar ── */}
-              {booksList.length > 0 && (
+              {publishedBooks.length > 0 && (
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -514,7 +516,7 @@ export default function HomeApp() {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {booksList.map(b => (
+                    {publishedBooks.map(b => (
                       <div
                         key={b.id}
                         className="p-5 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between space-y-4 group"
@@ -587,7 +589,7 @@ export default function HomeApp() {
           {/* 2. LIBRARY VIEW */}
           {currentPage === 'library' && (
             <LibraryView
-              allBooks={booksList}
+              allBooks={publishedBooks}
               onOpenReader={handleOpenReader}
               onPlayAudio={handlePlayAudio}
               onGoToDiscover={() => navigate('discover')}
@@ -597,7 +599,7 @@ export default function HomeApp() {
           {/* 3. DISCOVER CATALOG VIEW */}
           {currentPage === 'discover' && (
             <DiscoverCatalog
-              books={booksList}
+              books={publishedBooks}
               onOpenReader={handleOpenReader}
               onPlayAudio={handlePlayAudio}
             />
@@ -607,7 +609,7 @@ export default function HomeApp() {
           {currentPage === 'author' && (
             <AuthorDetail
               author={selectedAuthor}
-              books={booksList}
+              books={publishedBooks}
               allAuthors={AUTHORS}
               onSelectAuthor={aId => setSelectedAuthorId(aId)}
               onOpenReader={handleOpenReader}
