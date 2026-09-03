@@ -67,6 +67,13 @@ export default function HomeApp() {
     initAuth();
   }, []);
 
+  // Security Route Guard: Silent redirect away from admin if not admin
+  useEffect(() => {
+    if (currentPage === 'admin' && currentUser?.role !== 'ADMIN') {
+      setCurrentPage('home');
+    }
+  }, [currentPage, currentUser]);
+
   // Fetch real books from FastAPI backend
   const loadBooksFromBackend = async () => {
     setIsLoadingBooks(true);
@@ -651,33 +658,13 @@ export default function HomeApp() {
             <ComingSoonSection />
           )}
 
-          {/* 8. ADMIN CONTROL PANEL (PROTECTED: ONLY FOR ADMIN) */}
-          {currentPage === 'admin' && (
-            currentUser?.role === 'ADMIN' ? (
-              <AdminPanel
-                onNavigate={navigate}
-                books={booksList}
-                onRefreshBooks={loadBooksFromBackend}
-              />
-            ) : (
-              <div className="p-8 sm:p-14 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 text-center space-y-4 max-w-md mx-auto my-16 shadow-xs">
-                <div className="w-16 h-16 mx-auto rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center text-3xl font-bold">
-                  🔒
-                </div>
-                <h3 className="font-serif text-2xl font-bold text-stone-900 dark:text-white">
-                  Ruxsat Berilmagan (403)
-                </h3>
-                <p className="text-xs text-stone-500 leading-relaxed">
-                  Ushbu boshqaruv paneli faqat platforma administratori uchun himoyalangan. Tizimga administrator hisobingiz orqali kiring.
-                </p>
-                <button
-                  onClick={() => setCurrentPage('auth')}
-                  className="px-6 py-3 rounded-xl bg-[#E05638] hover:bg-[#c94529] text-white text-xs font-mono font-bold uppercase transition-all shadow-md cursor-pointer inline-block"
-                >
-                  Tizimga Kirish
-                </button>
-              </div>
-            )
+          {/* 8. ADMIN CONTROL PANEL (ONLY FOR VERIFIED ADMIN) */}
+          {currentPage === 'admin' && currentUser?.role === 'ADMIN' && (
+            <AdminPanel
+              onNavigate={navigate}
+              books={booksList}
+              onRefreshBooks={loadBooksFromBackend}
+            />
           )}
 
         </main>

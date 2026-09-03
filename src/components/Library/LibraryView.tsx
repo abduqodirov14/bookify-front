@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Book } from '../../types';
 import { api } from '../../services/api';
-import { BookOpen, BookmarkCheck, Trash2, Sparkles, Headphones } from 'lucide-react';
+import { BookOpen, BookmarkCheck, Trash2, Headphones } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 interface Props {
@@ -141,14 +141,14 @@ export default function LibraryView({ allBooks, onOpenReader, onPlayAudio, onGoT
               Shaxsiy javoningiz hozircha bo'sh
             </h3>
             <p className="text-xs text-stone-500 leading-relaxed">
-              Katalogdagi sara durdona asarlardan istalganini "Kutubxonaga qo'shish" tugmasi orqali shaxsiy javoningizga saqlab olishingiz mumkin.
+              Katalogdagi sara durdona asarlardan istalganini "Javonga saqlash" tugmasi orqali shaxsiy mutolaa ro'yxatingizga qo'shib olishingiz mumkin.
             </p>
           </div>
           <button
             onClick={onGoToDiscover}
             className="px-8 py-4 rounded-2xl bg-[#E05638] hover:bg-[#C74326] text-white font-bold text-xs font-mono uppercase tracking-wider transition-transform active:scale-95 shadow-xl cursor-pointer inline-flex items-center gap-2"
           >
-            <Sparkles size={15} />
+            <BookOpen size={15} />
             <span>Katalogdan Asar Tanlash</span>
           </button>
         </div>
