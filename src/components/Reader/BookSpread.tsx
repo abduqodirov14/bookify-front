@@ -52,15 +52,54 @@ export default function BookSpread({ book, onBack }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chapter = book.chapters[currentChapterIdx] || book.chapters[0];
 
-  // Split chapter content into paragraph chunks
   const paragraphs = useMemo(() => {
     return chapter.content.split('\n\n').filter(p => p.trim().length > 0);
   }, [chapter]);
 
-  // Two pages per spread (Left and Right)
-  const totalSpreads = Math.max(1, Math.ceil(paragraphs.length / 4));
-  const leftPageParagraphs = paragraphs.slice(currentPageSpread * 4, currentPageSpread * 4 + 2);
-  const rightPageParagraphs = paragraphs.slice(currentPageSpread * 4 + 2, currentPageSpread * 4 + 4);
+  // Split chapter content into realistic book pages:
+  // In print typography, 1 page holds ~120-150 words.
+  // 1 two-page spread (Left + Right) holds ~240-300 words.
+  const spreads = useMemo(() => {
+    const rawParagraphs = paragraphs;
+    if (rawParagraphs.length === 0) {
+      return [{ left: ["Sahifa bo'sh."], right: [] }];
+    }
+
+    const pages: string[][] = [];
+    let currentPage: string[] = [];
+    let currentWords = 0;
+    const WORDS_PER_PAGE = 130; // Authentic book typography density
+
+    for (const p of rawParagraphs) {
+      const pWords = p.split(/\s+/).filter(Boolean).length;
+      if (currentWords + pWords > WORDS_PER_PAGE && currentPage.length > 0) {
+        pages.push(currentPage);
+        currentPage = [p];
+        currentWords = pWords;
+      } else {
+        currentPage.push(p);
+        currentWords += pWords;
+      }
+    }
+    if (currentPage.length > 0) {
+      pages.push(currentPage);
+    }
+
+    // Group pages into two-page spreads (Left and Right)
+    const result: { left: string[]; right: string[] }[] = [];
+    for (let i = 0; i < pages.length; i += 2) {
+      result.push({
+        left: pages[i],
+        right: pages[i + 1] || []
+      });
+    }
+    return result.length > 0 ? result : [{ left: rawParagraphs, right: [] }];
+  }, [chapter]);
+
+  const totalSpreads = Math.max(1, spreads.length);
+  const currentSpread = spreads[currentPageSpread] || spreads[0] || { left: [], right: [] };
+  const leftPageParagraphs = currentSpread.left;
+  const rightPageParagraphs = currentSpread.right;
 
   // Approximate remaining minutes
   const remainingMinutes = Math.max(1, Math.ceil((totalSpreads - currentPageSpread) * 1.5));
