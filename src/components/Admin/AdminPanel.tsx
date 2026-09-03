@@ -48,6 +48,10 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
   const [coverUrl, setCoverUrl] = useState('https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80');
   const [bookFile, setBookFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStage, setUploadStage] = useState('');
+  const [uploadTextMode, setUploadTextMode] = useState<'file' | 'text'>('file');
+  const [directTextContent, setDirectTextContent] = useState('');
 
   // Edit Book State
   const [editingBook, setEditingBook] = useState<Book | null>(null);
@@ -183,7 +187,8 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
     }
 
     setIsUploading(true);
-    const toastId = toast.loading("Kitob backend serverga yuklanmoqda va PostgreSQL bazasiga yozilmoqda...");
+    setUploadProgress(15);
+    setUploadStage("Fayl va ma'lumotlar serverga uzatilmoqda...");
 
     try {
       const formData = new FormData();
@@ -197,28 +202,60 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
       formData.append('cover_image_val', coverUrl);
       formData.append('cover_image_url', coverUrl);
 
-      if (bookFile) {
+      if (uploadTextMode === 'text' && directTextContent.trim()) {
+        const blob = new Blob([directTextContent.trim()], { type: 'text/plain' });
+        formData.append('file', blob, `${title}.txt`);
+      } else if (bookFile) {
         formData.append('file', bookFile);
       } else {
         const blob = new Blob([
-          `1-Bob: ${title}\n\nUshbu kitob muvaffaqiyatli chop etildi va PostgreSQL ma'lumotlar bazasida to'liq saqlandi.`
+          `1-Bob: ${title}\n\nUshbu kitob muvaffaqiyatli chop etildi va ma'lumotlar bazasida to'liq saqlandi.`
         ], { type: 'text/plain' });
         formData.append('file', blob, `${title}.txt`);
       }
 
+      // Live progress stages
+      const p1 = setTimeout(() => {
+        setUploadProgress(45);
+        setUploadStage("Matn qatlami tahlil qilinmoqda va boblarga ajratilmoqda...");
+      }, 600);
+
+      const p2 = setTimeout(() => {
+        setUploadProgress(75);
+        setUploadStage("Boblar formatlanmoqda, muqova saqlanmoqda...");
+      }, 1400);
+
+      const p3 = setTimeout(() => {
+        setUploadProgress(92);
+        setUploadStage("PostgreSQL bazasiga yozilib, kitob javoniga joylanmoqda...");
+      }, 2200);
+
       await api.uploadBook(formData);
-      toast.success("Kitob PostgreSQL bazasiga muvaffaqiyatli saqlandi va chop etildi! 🎉", { id: toastId });
+
+      clearTimeout(p1);
+      clearTimeout(p2);
+      clearTimeout(p3);
+
+      setUploadProgress(100);
+      setUploadStage("Muvaffaqiyatli yuklandi va chop etildi! 🎉");
+
+      await new Promise(r => setTimeout(r, 700));
+
+      toast.success("Kitob muvaffaqiyatli saqlandi va chop etildi! 🎉");
       
       setTitle('');
       setAuthor('');
       setDescription('');
       setBookFile(null);
+      setDirectTextContent('');
+      setUploadProgress(0);
+      setIsUploading(false);
       setTab('dashboard');
       onRefreshBooks();
     } catch (err: any) {
-      toast.error(err.message || "Kitob yuklashda xatolik yuz berdi", { id: toastId });
-    } finally {
+      toast.error(err.message || "Kitob yuklashda xatolik yuz berdi");
       setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -737,9 +774,9 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
 
           <form onSubmit={handleBookSubmit} className="space-y-6">
             
-            {/* Live Cover Thumbnail Preview */}
-            <div className="p-4 rounded-2xl bg-stone-50 dark:bg-white/5 border border-stone-200/80 dark:border-white/10 flex flex-col sm:flex-row items-center gap-4">
-              <div className="w-20 h-28 rounded-xl overflow-hidden shadow-md bg-stone-900 shrink-0 border border-black/10 relative">
+            {/* Live Cover Thumbnail Preview with File Upload & Presets */}
+            <div className="p-5 rounded-2xl bg-stone-50 dark:bg-white/5 border border-stone-200/80 dark:border-white/10 flex flex-col sm:flex-row items-center gap-5">
+              <div className="w-24 h-34 rounded-2xl overflow-hidden shadow-lg bg-stone-900 shrink-0 border border-black/10 relative">
                 <img 
                   src={coverUrl || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80'} 
                   alt="Live Cover Preview" 
@@ -748,23 +785,56 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                     (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80';
                   }}
                 />
-                <div className="absolute top-1 right-1 px-1 py-0.5 rounded bg-black/60 text-[8px] font-mono text-white font-bold">
+                <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/70 text-[9px] font-mono text-white font-bold">
                   Ko'rinish
                 </div>
               </div>
-              <div className="space-y-2 flex-1 w-full">
+              <div className="space-y-3 flex-1 w-full">
                 <label className="text-xs font-mono text-stone-700 dark:text-stone-300 font-bold block">
-                  Muqova Rasmi URL manzili (Thumbnail):
+                  Kitob Muqova Rasmi:
                 </label>
-                <input
-                  type="url"
-                  value={coverUrl}
-                  onChange={(e) => setCoverUrl(e.target.value)}
-                  placeholder="https://images.unsplash.com/photo-..."
-                  className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638]"
-                />
+
+                {/* File Upload for Cover Image */}
+                <div className="space-y-1">
+                  <span className="text-[11px] font-mono text-stone-500 block">
+                    📁 Qurilmangizdan rasm faylini tanlash (JPG, PNG, WEBP):
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          if (reader.result) {
+                            setCoverUrl(reader.result as string);
+                            toast.success("Muqova rasmi yuklandi!");
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="w-full text-xs text-stone-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#E05638]/10 file:text-[#E05638] hover:file:bg-[#E05638]/20 cursor-pointer"
+                  />
+                </div>
+
+                {/* URL Input */}
+                <div className="space-y-1">
+                  <span className="text-[11px] font-mono text-stone-500 block">
+                    🔗 Yoki rasm havolasini (URL) kiriting:
+                  </span>
+                  <input
+                    type="url"
+                    value={coverUrl.startsWith('data:') ? '' : coverUrl}
+                    onChange={(e) => setCoverUrl(e.target.value)}
+                    placeholder="https://images.unsplash.com/photo-..."
+                    className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638]"
+                  />
+                </div>
+
                 <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                  <span className="text-[10px] font-mono text-stone-400">Katalog namunalari:</span>
+                  <span className="text-[10px] font-mono text-stone-400">Namunalar:</span>
                   {COVER_PRESETS.map((p, i) => (
                     <button
                       key={i}
