@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { Globe, Headphones, BookOpen, Compass, Bell, Check, Sparkles } from 'lucide-react';
+import { Globe, Headphones, BookOpen, Compass, Bell, Check } from 'lucide-react';
 
 const REJALAR = [
   {
@@ -57,11 +57,6 @@ export default function ComingSoonSection() {
       
       {/* Human-written, clean editorial header */}
       <div className="text-center max-w-2xl mx-auto space-y-3">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#C5A059]/15 text-[#C5A059] text-xs font-mono font-semibold border border-[#C5A059]/30">
-          <Sparkles size={13} />
-          <span>Bookify Rivojlanish Yo'li</span>
-        </div>
-
         <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-stone-900 dark:text-white tracking-tight">
           Rejadagi Yangi Imkoniyatlar
         </h2>

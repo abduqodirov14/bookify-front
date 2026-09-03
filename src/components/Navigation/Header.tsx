@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Bell, ArrowLeft, Menu, Sun, Moon, LogOut, Command, Sparkles, BookOpen, Trophy, CheckCheck, X } from 'lucide-react';
+import { Search, Bell, ArrowLeft, Menu, Sun, Moon, LogOut, Command, BookOpen, Trophy, CheckCheck, X } from 'lucide-react';
 import { UserProfile, Book } from '../../types';
 
 export interface AppNotification {

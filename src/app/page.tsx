@@ -20,7 +20,7 @@ import AuthModal from '../components/Auth/AuthModal';
 import BookReviewsSection from '../components/Comments/BookReviewsSection';
 import ComingSoonSection from '../components/Future/ComingSoonSection';
 
-import { BookOpen, Headphones, Sparkles, ArrowRight, Quote, Search, X, Trophy, UploadCloud } from 'lucide-react';
+import { BookOpen, Headphones, ArrowRight, Quote, Search, X, Trophy, UploadCloud } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 export default function HomeApp() {

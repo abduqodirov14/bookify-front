@@ -11,7 +11,7 @@ import {
   LogOut, 
   Sun, 
   Moon,
-  Sparkles,
+  Layers,
   X
 } from 'lucide-react';
 import { Page, UserProfile } from '../../types';
@@ -46,7 +46,7 @@ export default function Sidebar({
     { id: 'library', label: 'Mening Javonim', icon: Library },
     { id: 'time', label: 'Sokin Mutolaa', icon: Clock },
     { id: 'challenge', label: 'Adabiy Chempionat', icon: Trophy },
-    { id: 'vision' as Page, label: 'Kelajak & Rejalar', icon: Sparkles },
+    { id: 'vision' as Page, label: 'Kelajak & Rejalar', icon: Layers },
     { id: 'profile', label: 'Kitobxon Pasporti', icon: User },
     ...(isAdmin ? [{ id: 'admin' as Page, label: 'Boshqaruv & 2FA', icon: ShieldCheck, badge: 'Admin' }] : [])
   ];
