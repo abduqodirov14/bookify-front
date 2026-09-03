@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Book } from '../../types';
 import { api } from '../../services/api';
-import { Search, BookOpen, Headphones, BookmarkPlus, Sparkles } from 'lucide-react';
+import { Search, BookOpen, Headphones, BookmarkPlus } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 interface Props {
@@ -146,13 +146,13 @@ export default function DiscoverCatalog({ books, onOpenReader, onPlayAudio }: Pr
       ) : (
         <div className="p-16 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 text-center space-y-4 shadow-xs max-w-lg mx-auto">
           <div className="w-14 h-14 rounded-2xl bg-[#E05638]/10 text-[#E05638] flex items-center justify-center mx-auto shadow-xs">
-            <Sparkles size={24} />
+            <BookOpen size={24} />
           </div>
           <h3 className="font-serif text-xl font-bold text-stone-950 dark:text-white">
-            Katalogda kitoblar topilmadi
+            Katalogda Kitoblar Topilmadi
           </h3>
           <p className="text-xs text-stone-500">
-            Hozircha bazada kitoblar mavjud emas yoki qidiruv so'rovi bo'yicha asar chiqmadi.
+            Qidiruv so'rovi bo'yicha mos keladigan asarlar topilmadi yoki filtrlar o'zgartirilishi lozim.
           </p>
         </div>
       )}

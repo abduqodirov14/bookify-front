@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { api, setAuthToken } from '../../services/api';
-import { Lock, Mail, ShieldCheck, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Lock, Mail, ShieldCheck, ArrowRight, ArrowLeft, Check } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 interface Props {
@@ -20,8 +20,9 @@ export default function AuthModal({ onSuccess, onCancel }: Props) {
   const [tempToken, setTempToken] = useState<string>('');
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleReady, setGoogleReady] = useState(false);
 
-  // Initialize Google Identity Services
+  // Initialize Google Identity Services (One-Tap & Native Button)
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://accounts.google.com/gsi/client';
@@ -36,19 +37,21 @@ export default function AuthModal({ onSuccess, onCancel }: Props) {
             auto_select: false
           });
 
-          const container = document.getElementById('google-signin-btn-container');
+          const container = document.getElementById('google-native-signin-btn');
           if (container) {
             (window as any).google.accounts.id.renderButton(container, {
               theme: 'outline',
               size: 'large',
-              width: 320,
+              width: 340,
               text: 'continue_with',
-              shape: 'pill'
+              shape: 'pill',
+              logo_alignment: 'left'
             });
+            setGoogleReady(true);
           }
         }
       } catch (err) {
-        console.warn("Google auth script init warning:", err);
+        console.warn("Google auth init:", err);
       }
     };
     document.body.appendChild(script);
@@ -68,7 +71,7 @@ export default function AuthModal({ onSuccess, onCancel }: Props) {
       if (data.access_token) {
         setAuthToken(data.access_token);
         onSuccess(data.user);
-        toast.success(`Google orqali kirdingiz! Xush kelibsiz, ${data.user?.name || 'Kitobxon'}!`);
+        toast.success(`Xush kelibsiz, ${data.user?.name || 'Kitobxon'}!`);
       }
     } catch (err: any) {
       toast.error(err.message || "Google orqali kirishda xatolik");
@@ -82,10 +85,10 @@ export default function AuthModal({ onSuccess, onCancel }: Props) {
       if ((window as any).google?.accounts?.id) {
         (window as any).google.accounts.id.prompt();
       } else {
-        toast.error("Google xizmatlari ulanmoqda, iltimos kuting...");
+        toast.error("Google xizmati ulanmoqda, iltimos 2 soniya kuting...");
       }
     } catch {
-      toast.error("Google bilan ulanib bo'lmadi");
+      toast.error("Google tizimiga ulanib bo'lmadi");
     }
   };
 
@@ -171,17 +174,17 @@ export default function AuthModal({ onSuccess, onCancel }: Props) {
           </button>
         )}
 
-        {/* Brand Crest */}
+        {/* Brand Header */}
         <div className="text-center space-y-2 pt-2">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#E05638] to-[#C5A059] flex items-center justify-center text-white font-serif font-bold text-2xl shadow-lg mx-auto">
             B
           </div>
           <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-950 dark:text-white">
-            {step === 'otp' ? "2-Bosqichli Tasdiqlash" : isRegister ? "Yangi Hisob Ochish" : "Tizimga Kirish"}
+            {step === 'otp' ? "Xavfsizlik Tasdig'i" : isRegister ? "Yangi Hisob Ochish" : "Tizimga Kirish"}
           </h2>
           <p className="text-xs text-stone-500">
             {step === 'otp' 
-              ? "Profilingiz xavfsizligi uchun maxsus kod kiritilishi lozim" 
+              ? "Profilingiz himoyasi uchun tasdiqlash kodini kiriting" 
               : "Durdona asarlar va shaxsiy mutolaa javoniga kirish"}
           </p>
         </div>
@@ -190,29 +193,36 @@ export default function AuthModal({ onSuccess, onCancel }: Props) {
         {step === 'creds' && (
           <div className="space-y-5">
 
-            {/* ── GOOGLE SIGN IN ── */}
-            <div className="space-y-3">
-              <div id="google-signin-btn-container" className="flex justify-center min-h-[44px]" />
-              
-              <button
-                type="button"
-                onClick={handleManualGoogleClick}
-                className="w-full py-3 px-4 rounded-2xl border border-stone-200 dark:border-white/10 bg-stone-50 dark:bg-[#0E1218] hover:bg-stone-100 dark:hover:bg-white/5 text-stone-800 dark:text-white font-medium text-xs flex items-center justify-center gap-3 transition-colors cursor-pointer shadow-xs"
-              >
-                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-                </svg>
-                <span>Google orqali davom etish</span>
-              </button>
+            {/* ── SINGLE ELEGANT GOOGLE SIGN IN BUTTON ── */}
+            <div className="relative w-full min-h-[44px] flex items-center justify-center">
+              {/* Native Google GIS Button */}
+              <div 
+                id="google-native-signin-btn" 
+                className={`w-full flex justify-center ${googleReady ? 'block' : 'hidden'}`}
+              />
 
-              <div className="flex items-center gap-3 my-2">
-                <div className="flex-1 h-px bg-stone-200 dark:border-white/10" />
-                <span className="text-[11px] font-mono text-stone-400 uppercase">yoki email orqali</span>
-                <div className="flex-1 h-px bg-stone-200 dark:border-white/10" />
-              </div>
+              {/* Seamless Fallback Button while script loads or for manual click */}
+              {!googleReady && (
+                <button
+                  type="button"
+                  onClick={handleManualGoogleClick}
+                  className="w-full py-3 px-4 rounded-full border border-stone-200 dark:border-white/10 bg-white dark:bg-[#0E1218] hover:bg-stone-50 dark:hover:bg-white/5 text-stone-800 dark:text-white font-medium text-xs flex items-center justify-center gap-3 transition-colors shadow-xs cursor-pointer"
+                >
+                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                  </svg>
+                  <span>Google hisobi orqali kirish</span>
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-3 my-2">
+              <div className="flex-1 h-px bg-stone-200 dark:bg-white/10" />
+              <span className="text-[11px] font-mono text-stone-400 uppercase">yoki elektron pochta</span>
+              <div className="flex-1 h-px bg-stone-200 dark:bg-white/10" />
             </div>
 
             <form onSubmit={handleAuth} className="space-y-4">
@@ -270,7 +280,7 @@ export default function AuthModal({ onSuccess, onCancel }: Props) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 rounded-2xl bg-[#E05638] hover:bg-[#C74326] text-white font-bold text-xs font-mono uppercase tracking-wider transition-transform active:scale-95 shadow-xl cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-3.5 rounded-2xl bg-[#E05638] hover:bg-[#C74326] text-white font-bold text-xs font-mono uppercase tracking-wider transition-transform active:scale-95 shadow-lg cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <span>{loading ? "Tekshirilmoqda..." : isRegister ? "Ro'yxatdan O'tish" : "Tizimga Kirish"}</span>
                 <ArrowRight size={15} />
@@ -297,19 +307,24 @@ export default function AuthModal({ onSuccess, onCancel }: Props) {
         {/* STEP 2: 2FA OTP Challenge */}
         {step === 'otp' && (
           <form onSubmit={handleVerifyOtp} className="space-y-5">
-            <div className="p-4 rounded-2xl bg-[#C5A059]/10 border border-[#C5A059]/30 text-stone-800 dark:text-stone-200 space-y-1">
-              <div className="flex items-center gap-2 text-xs font-bold text-[#A6823F]">
-                <ShieldCheck size={16} />
-                <span>2-Bosqichli Xavfsizlik Himoyasi (2FA)</span>
+            <div className="p-4 rounded-2xl bg-stone-50 dark:bg-white/[0.03] border border-stone-200 dark:border-white/10 text-stone-800 dark:text-stone-200 space-y-1 text-center">
+              <div className="flex items-center justify-center gap-2 text-xs font-bold text-stone-900 dark:text-white">
+                <ShieldCheck size={16} className="text-emerald-500" />
+                <span>Xavfsizlik Tekshiruvi</span>
               </div>
-              <p className="text-[11px] text-stone-600 dark:text-stone-300">
-                Xavfsizlik kodi: <strong className="font-mono text-stone-900 dark:text-white">{otp || "984211"}</strong>
+              <p className="text-[11px] text-stone-500 leading-relaxed">
+                Hisobingiz himoyasi uchun maxsus 6 xonali kodni kiriting
               </p>
+              {otp && (
+                <p className="text-[10px] font-mono text-stone-400 pt-1">
+                  Tasdiqlash kodi: <strong className="text-[#E05638]">{otp}</strong>
+                </p>
+              )}
             </div>
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block text-center">
-                6 Xonali Tasdiqlash Kodini Kiriting
+                6 Xonali Kod
               </label>
               <input
                 type="text"
@@ -317,7 +332,7 @@ export default function AuthModal({ onSuccess, onCancel }: Props) {
                 maxLength={6}
                 value={otp}
                 onChange={e => setOtp(e.target.value)}
-                placeholder="984211"
+                placeholder="••••••"
                 className="w-full text-center tracking-[0.4em] font-mono font-bold text-2xl py-3 rounded-2xl bg-stone-50 dark:bg-[#0E1218] border border-stone-200 dark:border-white/10 text-stone-900 dark:text-white outline-none focus:border-[#E05638]"
               />
             </div>
@@ -325,10 +340,10 @@ export default function AuthModal({ onSuccess, onCancel }: Props) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 rounded-2xl bg-[#E05638] hover:bg-[#C74326] text-white font-bold text-xs font-mono uppercase tracking-wider transition-transform active:scale-95 shadow-xl cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full py-3.5 rounded-2xl bg-[#E05638] hover:bg-[#C74326] text-white font-bold text-xs font-mono uppercase tracking-wider transition-transform active:scale-95 shadow-lg cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              <span>{loading ? "Tasdiqlanmoqda..." : "Kodni Tasdiqlash & Kirish"}</span>
-              <ShieldCheck size={16} />
+              <span>{loading ? "Tasdiqlanmoqda..." : "Kodni Tasdiqlash"}</span>
+              <Check size={16} />
             </button>
 
             <button

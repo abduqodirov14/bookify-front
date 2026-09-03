@@ -361,10 +361,10 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
             <div className="p-6 border-b border-stone-100 dark:border-white/5 flex items-center justify-between">
               <div>
                 <h3 className="font-serif text-lg font-bold text-stone-950 dark:text-white">
-                  Baza Asarlari Ro'yxati (CRUD)
+                  Kutubxona Asarlari Ro'yxati
                 </h3>
                 <p className="text-xs text-stone-500 mt-0.5">
-                  Asarlarni tahrirlash, muqova rasmini o'zgartirish yoki butunlay o'chirish
+                  Asarlarni tahrirlash, muqova rasmini yangilash yoki asarlar qo'shish
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -457,13 +457,13 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                   <BookOpen size={24} />
                 </div>
                 <div className="text-sm font-serif text-stone-500">
-                  Bazada hozircha kitoblar mavjud emas.
+                  Hozircha kitoblar yuklanmagan.
                 </div>
                 <button
                   onClick={() => setTab('upload')}
                   className="px-5 py-2.5 rounded-xl bg-[#E05638] text-white text-xs font-mono font-bold uppercase cursor-pointer"
                 >
-                  Birinchi kitobni yuklash
+                  Yangi Kitob Qo'shish
                 </button>
               </div>
             )}

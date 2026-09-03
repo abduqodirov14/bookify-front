@@ -429,10 +429,35 @@ export default function HomeApp() {
                   </div>
                 </div>
               ) : (
-                <div className="p-16 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 text-center space-y-4">
-                  <UploadCloud size={48} className="mx-auto text-stone-400" />
-                  <h3 className="font-serif text-2xl font-bold text-stone-900 dark:text-white">Bazada Asarlar Mavjud Emas</h3>
-                  <p className="text-xs font-mono text-stone-500">Yangi asar qo'shish uchun admin panelga o'ting.</p>
+                <div className="relative rounded-3xl p-8 sm:p-14 bg-gradient-to-br from-[#1C1917] via-[#292524] to-[#1C1917] text-white overflow-hidden shadow-2xl border border-white/10">
+                  <div className="absolute -top-10 -right-10 w-96 h-96 bg-[#C5A059]/10 rounded-full blur-3xl pointer-events-none" />
+                  <div className="max-w-2xl space-y-5 relative z-10 text-center sm:text-left">
+                    <span className="inline-block px-3.5 py-1 rounded-full bg-[#C5A059]/20 text-[#C5A059] border border-[#C5A059]/30 text-xs font-mono font-bold tracking-wider uppercase">
+                      Milliy Elektron Kutubxona
+                    </span>
+                    <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
+                      O'zbek Mumtoz Merosini Mutolaa Qiling
+                    </h2>
+                    <p className="text-xs sm:text-sm text-stone-300 leading-relaxed font-sans max-w-xl">
+                      Buyuk allomalarimiz nodir asarlari, chuqur ma'noli falsafiy romanlar va audio spektakllar orqali mutolaa madaniyatini yuksaltiring.
+                    </p>
+                    <div className="pt-2 flex flex-wrap items-center justify-center sm:justify-start gap-3">
+                      <button
+                        onClick={() => navigate('author', 'abdulla-qodiriy')}
+                        className="px-6 py-3.5 rounded-2xl bg-[#E05638] hover:bg-[#c94529] text-white font-bold text-xs font-mono uppercase tracking-wider transition-all shadow-lg active:scale-95 cursor-pointer flex items-center gap-2"
+                      >
+                        <BookOpen size={16} />
+                        <span>Allomalar Hayoti & Merosi</span>
+                      </button>
+                      <button
+                        onClick={() => navigate('challenge')}
+                        className="px-6 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs font-mono uppercase tracking-wider transition-all border border-white/10 cursor-pointer flex items-center gap-2"
+                      >
+                        <Trophy size={16} className="text-[#C5A059]" />
+                        <span>Adabiy Chempionat</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -488,7 +513,7 @@ export default function HomeApp() {
                         Durdona Asarlar & Audio Spektakllar
                       </h3>
                       <p className="text-xs text-stone-500 font-mono mt-0.5">
-                        PostgreSQL bazasiga yuklangan real badiiy kitoblar
+                        O'zbek va jahon mumtoz adabiyotining sara durdona asarlari
                       </p>
                     </div>
                   </div>
