@@ -524,6 +524,26 @@ export const api = {
     return res.json();
   },
 
+  async getBookStatus(bookId: string) {
+    try {
+      const res = await fetchWithRetry(`${API_BASE_URL}/admin/books/${bookId}/status`);
+      if (!res.ok) return null;
+      return res.json();
+    } catch {
+      return null;
+    }
+  },
+
+  async getBookPages(bookId: string) {
+    try {
+      const res = await fetchWithRetry(`${API_BASE_URL}/books/${bookId}/pages`);
+      if (!res.ok) return [];
+      return res.json();
+    } catch {
+      return [];
+    }
+  },
+
   // Seasons / Tournaments (Challenges)
   async getActiveChallenge() {
     try {

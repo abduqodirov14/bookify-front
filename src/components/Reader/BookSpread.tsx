@@ -48,6 +48,18 @@ export default function BookSpread({ book, onBack }: Props) {
   const [activeSentenceIdx, setActiveSentenceIdx] = useState<number | null>(null);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const [selectedText, setSelectedText] = useState<{ text: string; x: number; y: number } | null>(null);
+  const [dbPages, setDbPages] = useState<any[]>([]);
+
+  // Fetch real physical pages if available in database
+  useEffect(() => {
+    let isMounted = true;
+    api.getBookPages(book.id).then(pages => {
+      if (isMounted && Array.isArray(pages) && pages.length > 0) {
+        setDbPages(pages);
+      }
+    }).catch(() => {});
+    return () => { isMounted = false; };
+  }, [book.id]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const chapter = book.chapters[currentChapterIdx] || book.chapters[0];
@@ -56,10 +68,23 @@ export default function BookSpread({ book, onBack }: Props) {
     return chapter.content.split('\n\n').filter(p => p.trim().length > 0);
   }, [chapter]);
 
-  // Split chapter content into realistic book pages:
-  // In print typography, 1 page holds ~120-150 words.
-  // 1 two-page spread (Left + Right) holds ~240-300 words.
+  // Authentic book pagination:
+  // If book has real book_pages from database, paginate across all authentic pages!
+  // Otherwise, use word-density typography pagination (~130 words per page).
   const spreads = useMemo(() => {
+    if (dbPages.length > 0) {
+      const result: { left: string[]; right: string[] }[] = [];
+      for (let i = 0; i < dbPages.length; i += 2) {
+        const pLeft = dbPages[i];
+        const pRight = dbPages[i + 1];
+        result.push({
+          left: pLeft?.text ? pLeft.text.split('\n\n').filter(Boolean) : ["Sahifa matni yo'q."],
+          right: pRight?.text ? pRight.text.split('\n\n').filter(Boolean) : []
+        });
+      }
+      return result.length > 0 ? result : [{ left: ["Sahifa bo'sh."], right: [] }];
+    }
+
     const rawParagraphs = paragraphs;
     if (rawParagraphs.length === 0) {
       return [{ left: ["Sahifa bo'sh."], right: [] }];
@@ -68,7 +93,7 @@ export default function BookSpread({ book, onBack }: Props) {
     const pages: string[][] = [];
     let currentPage: string[] = [];
     let currentWords = 0;
-    const WORDS_PER_PAGE = 130; // Authentic book typography density
+    const WORDS_PER_PAGE = 130;
 
     for (const p of rawParagraphs) {
       const pWords = p.split(/\s+/).filter(Boolean).length;
@@ -85,7 +110,6 @@ export default function BookSpread({ book, onBack }: Props) {
       pages.push(currentPage);
     }
 
-    // Group pages into two-page spreads (Left and Right)
     const result: { left: string[]; right: string[] }[] = [];
     for (let i = 0; i < pages.length; i += 2) {
       result.push({
@@ -94,7 +118,7 @@ export default function BookSpread({ book, onBack }: Props) {
       });
     }
     return result.length > 0 ? result : [{ left: rawParagraphs, right: [] }];
-  }, [chapter]);
+  }, [chapter, dbPages, paragraphs]);
 
   const totalSpreads = Math.max(1, spreads.length);
   const currentSpread = spreads[currentPageSpread] || spreads[0] || { left: [], right: [] };
@@ -527,7 +551,12 @@ export default function BookSpread({ book, onBack }: Props) {
         >
           <span className="font-medium truncate max-w-[140px]">{chapter.title}</span>
           <span className="opacity-30">•</span>
-          <span className="font-mono">{currentPageSpread + 1} / {totalSpreads} sahifa</span>
+          <span className="font-mono">
+            {dbPages.length > 0 
+              ? `Sahifa ${currentPageSpread * 2 + 1}${dbPages[currentPageSpread * 2 + 1] ? `-${currentPageSpread * 2 + 2}` : ''} / ${dbPages.length}`
+              : `${currentPageSpread + 1} / ${totalSpreads} sahifa`
+            }
+          </span>
           <span className="opacity-30">•</span>
           <span className="opacity-80 font-mono">~{remainingMinutes} daqiqa qoldi</span>
         </div>

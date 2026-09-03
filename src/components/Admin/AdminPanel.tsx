@@ -214,32 +214,40 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
         formData.append('file', blob, `${title}.txt`);
       }
 
-      // Live progress stages
-      const p1 = setTimeout(() => {
-        setUploadProgress(45);
-        setUploadStage("Matn qatlami tahlil qilinmoqda va boblarga ajratilmoqda...");
-      }, 600);
+      setUploadProgress(20);
+      setUploadStage("Fayl qabul qilinmoqda (HTTP 202 Accepted)...");
 
-      const p2 = setTimeout(() => {
-        setUploadProgress(75);
-        setUploadStage("Boblar formatlanmoqda, muqova saqlanmoqda...");
-      }, 1400);
+      const res = await api.uploadBook(formData);
+      const bookId = res?.book_id;
 
-      const p3 = setTimeout(() => {
-        setUploadProgress(92);
-        setUploadStage("PostgreSQL bazasiga yozilib, kitob javoniga joylanmoqda...");
-      }, 2200);
+      if (bookId) {
+        setUploadProgress(35);
+        setUploadStage("Asinxron konveyer ishga tushirildi...");
 
-      await api.uploadBook(formData);
-
-      clearTimeout(p1);
-      clearTimeout(p2);
-      clearTimeout(p3);
+        let isDone = false;
+        let attempts = 0;
+        while (!isDone && attempts < 120) {
+          await new Promise(r => setTimeout(r, 1200));
+          attempts++;
+          const status = await api.getBookStatus(bookId);
+          if (status) {
+            setUploadProgress(Math.max(35, status.progress || 35));
+            if (status.step_name) {
+              const pagesInfo = status.total_pages > 0 ? ` • ${status.pages_processed}/${status.total_pages} bet` : '';
+              setUploadStage(`${status.step_name}${pagesInfo}`);
+            }
+            if (status.status === 'COMPLETED' || status.status === 'PUBLISHED' || (status.progress && status.progress >= 100)) {
+              isDone = true;
+            } else if (status.status === 'FAILED') {
+              throw new Error(status.error_message || "Kitobni qayta ishlashda xatolik");
+            }
+          }
+        }
+      }
 
       setUploadProgress(100);
-      setUploadStage("Muvaffaqiyatli yuklandi va chop etildi! 🎉");
-
-      await new Promise(r => setTimeout(r, 700));
+      setUploadStage("Kitob muvaffaqiyatli saqlandi va javonga joylandi! 🎉");
+      await new Promise(r => setTimeout(r, 600));
 
       toast.success("Kitob muvaffaqiyatli saqlandi va chop etildi! 🎉");
       
