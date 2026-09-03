@@ -144,6 +144,7 @@ export default function HomeApp() {
           reviewsCount: 1,
           narrator: b.narrator || 'Afzal Rafiqov',
           featuredQuote: "Moziyga qaytib ish ko'rmak xayrlidir...",
+          status: b.status || 'PUBLISHED',
           chapters: chaptersData
         };
       }));

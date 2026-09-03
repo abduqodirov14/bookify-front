@@ -544,6 +544,34 @@ export const api = {
     }
   },
 
+  async publishBook(bookId: string) {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetchWithRetry(`${API_BASE_URL}/admin/books/${bookId}/publish`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Kitobni chop etishda xatolik");
+    }
+    return res.json();
+  },
+
+  async retryBookPipeline(bookId: string) {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetchWithRetry(`${API_BASE_URL}/admin/books/${bookId}/retry`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Qayta urinishda xatolik");
+    }
+    return res.json();
+  },
+
   // Seasons / Tournaments (Challenges)
   async getActiveChallenge() {
     try {

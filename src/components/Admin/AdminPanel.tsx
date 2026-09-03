@@ -17,7 +17,8 @@ import {
   RefreshCw,
   MessageSquare,
   Star,
-  UserCheck
+  UserCheck,
+  CheckCircle2
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -63,6 +64,20 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
   const [editCoverUrl, setEditCoverUrl] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [publishingBookId, setPublishingBookId] = useState<string | null>(null);
+
+  const handlePublishBook = async (bookId: string, bookTitle: string) => {
+    setPublishingBookId(bookId);
+    try {
+      await api.publishBook(bookId);
+      toast.success(`"${bookTitle}" kitobi ommaga muvaffaqiyatli chop etildi! 🎉`);
+      onRefreshBooks();
+    } catch (e: any) {
+      toast.error(e.message || "Kitobni chop etishda xatolik");
+    } finally {
+      setPublishingBookId(null);
+    }
+  };
 
   // Seasons / Tournaments State
   const [challengesList, setChallengesList] = useState<any[]>([]);
@@ -452,6 +467,21 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                           <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#E05638]/10 text-[#E05638] border border-[#E05638]/20 shrink-0">
                             {b.category || 'Mumtoz Meros'}
                           </span>
+                          {b.status === 'READY' && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shrink-0">
+                              TAYYOR (READY)
+                            </span>
+                          )}
+                          {b.status === 'PROCESSING' && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/30 shrink-0 animate-pulse">
+                              KONVEYERDA...
+                            </span>
+                          )}
+                          {b.status === 'NEEDS_RETRY' && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 shrink-0">
+                              QAYTA URINISH
+                            </span>
+                          )}
                         </div>
                         <div className="text-xs text-stone-500 font-mono">
                           Muallif: <strong className="text-stone-800 dark:text-stone-300">{b.authorName}</strong> • {b.pages} bet • {b.narrator || 'Ovozli'}
@@ -462,8 +492,19 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                       </div>
                     </div>
 
-                    {/* Action Cluster (View, Edit, Delete) */}
+                    {/* Action Cluster (View, Publish, Edit, Delete) */}
                     <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                      {b.status === 'READY' && (
+                        <button
+                          onClick={() => handlePublishBook(b.id, b.title)}
+                          disabled={publishingBookId === b.id}
+                          className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-mono font-bold transition-all shadow-md hover:shadow-lg cursor-pointer flex items-center gap-1.5 shrink-0"
+                          title="Ommaga chop etish"
+                        >
+                          <CheckCircle2 size={14} />
+                          <span>{publishingBookId === b.id ? "Chop etilmoqda..." : "Chop Etish"}</span>
+                        </button>
+                      )}
                       {onNavigate && (
                         <button
                           onClick={() => onNavigate('reader', b.id)}

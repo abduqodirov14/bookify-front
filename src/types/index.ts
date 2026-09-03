@@ -49,6 +49,7 @@ export interface Book {
   rating: number;
   reviewsCount: number;
   narrator?: string;
+  status?: string;
   chapters: Chapter[];
   featuredQuote: string;
 }
