@@ -22,8 +22,28 @@ export const setAuthToken = (token: string) => {
 export const clearAuthToken = () => {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('fianny_token');
+    localStorage.removeItem('bookify_user');
   }
 };
+
+export const getCachedUser = () => {
+  if (typeof window !== 'undefined') {
+    const raw = localStorage.getItem('bookify_user');
+    if (raw) {
+      try { return JSON.parse(raw); } catch {}
+    }
+  }
+  return null;
+};
+
+export const setCachedUser = (user: any) => {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('bookify_user', JSON.stringify(user));
+    } catch {}
+  }
+};
+
 
 // Resilient Fetch with Auto-Retry (handles Render cold-start & connection resets)
 async function fetchWithRetry(url: string, options: RequestInit = {}, retries = 3, delay = 1000): Promise<Response> {
@@ -106,13 +126,18 @@ export const api = {
       const res = await fetchWithRetry(`${API_BASE_URL}/auth/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (!res.ok) {
+      if (res.status === 401) {
         clearAuthToken();
         return null;
       }
-      return res.json();
+      if (!res.ok) {
+        return getCachedUser();
+      }
+      const data = await res.json();
+      setCachedUser(data);
+      return data;
     } catch {
-      return null;
+      return getCachedUser();
     }
   },
 
@@ -125,6 +150,27 @@ export const api = {
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
       throw new Error(data.detail || "Google orqali kirishda xatolik yuz berdi");
+    }
+    if (data.access_token) {
+      setAuthToken(data.access_token);
+      if (data.user) setCachedUser(data.user);
+    }
+    return data;
+  },
+
+  async telegramAuth(tgData: any) {
+    const res = await fetchWithRetry(`${API_BASE_URL}/auth/telegram`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(tgData)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.detail || "Telegram orqali kirishda xatolik yuz berdi");
+    }
+    if (data.access_token) {
+      setAuthToken(data.access_token);
+      if (data.user) setCachedUser(data.user);
     }
     return data;
   },

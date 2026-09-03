@@ -35,6 +35,23 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="uz" className={`${sans.variable} ${serif.variable} ${mono.variable}`}>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (typeof window !== 'undefined') {
+                window.addEventListener('error', function(e) {
+                  if (e && e.message && (e.message.indexOf('startTime') !== -1 || e.message.indexOf('reportAllChanges') !== -1)) {
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                    return true;
+                  }
+                }, true);
+              }
+            `,
+          }}
+        />
+      </head>
       <body className="font-sans antialiased bg-[#F8FAFC] dark:bg-[#080B0F] text-stone-900 dark:text-stone-100 min-h-screen">
         <Toaster position="top-center" reverseOrder={false} />
         {children}

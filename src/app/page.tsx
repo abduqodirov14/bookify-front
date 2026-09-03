@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Page, Book, Author, AudioTrack, UserProfile } from '../types';
 import { AUTHORS } from '../data/authors';
-import { api, getAuthToken, clearAuthToken } from '../services/api';
+import { api, getAuthToken, clearAuthToken, getCachedUser, setCachedUser } from '../services/api';
 
 import Sidebar from '../components/Navigation/Sidebar';
 import Header from '../components/Navigation/Header';
@@ -34,7 +34,27 @@ export default function HomeApp() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [booksList, setBooksList] = useState<Book[]>([]);
   const [isLoadingBooks, setIsLoadingBooks] = useState(true);
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => {
+    if (typeof window !== 'undefined') {
+      const cached = getCachedUser();
+      if (cached) {
+        return {
+          id: cached.id,
+          name: cached.name || cached.email?.split('@')[0] || 'Kitobxon',
+          email: cached.email || '',
+          role: cached.role === 'ADMIN' ? 'ADMIN' : 'USER',
+          avatarUrl: cached.avatar_url || cached.avatarUrl || '',
+          dailyGoalMinutes: 40,
+          todayMinutes: 40,
+          readingStreakDays: 1,
+          totalHours: cached.total_hours || 0,
+          finishedBooksCount: cached.finished_books_count || 0,
+          is2FAEnabled: cached.is_2fa_enabled ?? (cached.role === 'ADMIN')
+        };
+      }
+    }
+    return null;
+  });
   const [pendingBookToOpen, setPendingBookToOpen] = useState<string | null>(null);
 
   // Check existing session on mount
@@ -47,8 +67,8 @@ export default function HomeApp() {
           if (me) {
             setCurrentUser({
               id: me.id,
-              name: me.name || me.email.split('@')[0],
-              email: me.email,
+              name: me.name || me.email?.split('@')[0] || 'Kitobxon',
+              email: me.email || '',
               role: me.role === 'ADMIN' ? 'ADMIN' : 'USER',
               avatarUrl: me.avatar_url || me.avatarUrl || '',
               dailyGoalMinutes: 40,
@@ -60,7 +80,7 @@ export default function HomeApp() {
             });
           }
         } catch (e) {
-          clearAuthToken();
+          // If network is offline or waking up, preserve the cached session!
         }
       }
     };
