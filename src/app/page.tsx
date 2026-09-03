@@ -34,31 +34,28 @@ export default function HomeApp() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [booksList, setBooksList] = useState<Book[]>([]);
   const [isLoadingBooks, setIsLoadingBooks] = useState(true);
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => {
-    if (typeof window !== 'undefined') {
-      const cached = getCachedUser();
-      if (cached) {
-        return {
-          id: cached.id,
-          name: cached.name || cached.email?.split('@')[0] || 'Kitobxon',
-          email: cached.email || '',
-          role: cached.role === 'ADMIN' ? 'ADMIN' : 'USER',
-          avatarUrl: cached.avatar_url || cached.avatarUrl || '',
-          dailyGoalMinutes: 40,
-          todayMinutes: 40,
-          readingStreakDays: 1,
-          totalHours: cached.total_hours || 0,
-          finishedBooksCount: cached.finished_books_count || 0,
-          is2FAEnabled: cached.is_2fa_enabled ?? (cached.role === 'ADMIN')
-        };
-      }
-    }
-    return null;
-  });
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [pendingBookToOpen, setPendingBookToOpen] = useState<string | null>(null);
 
-  // Check existing session on mount
+  // Check existing session on mount (Hydration safe)
   useEffect(() => {
+    const cached = getCachedUser();
+    if (cached) {
+      setCurrentUser({
+        id: cached.id,
+        name: cached.name || cached.email?.split('@')[0] || 'Kitobxon',
+        email: cached.email || '',
+        role: cached.role === 'ADMIN' ? 'ADMIN' : 'USER',
+        avatarUrl: cached.avatar_url || cached.avatarUrl || '',
+        dailyGoalMinutes: 40,
+        todayMinutes: 40,
+        readingStreakDays: 1,
+        totalHours: cached.total_hours || 0,
+        finishedBooksCount: cached.finished_books_count || 0,
+        is2FAEnabled: cached.is_2fa_enabled ?? (cached.role === 'ADMIN')
+      });
+    }
+
     const initAuth = async () => {
       const token = getAuthToken();
       if (token) {
@@ -78,9 +75,10 @@ export default function HomeApp() {
               finishedBooksCount: me.finished_books_count || 0,
               is2FAEnabled: me.is_2fa_enabled ?? (me.role === 'ADMIN')
             });
+            setCachedUser(me);
           }
-        } catch (e) {
-          // If network is offline or waking up, preserve the cached session!
+        } catch {
+          // Token expired or invalid
         }
       }
     };

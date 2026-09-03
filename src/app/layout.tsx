@@ -34,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="uz" className={`${sans.variable} ${serif.variable} ${mono.variable}`}>
+    <html lang="uz" suppressHydrationWarning className={`${sans.variable} ${serif.variable} ${mono.variable}`}>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -52,7 +52,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="font-sans antialiased bg-[#F8FAFC] dark:bg-[#080B0F] text-stone-900 dark:text-stone-100 min-h-screen">
+      <body suppressHydrationWarning className="font-sans antialiased bg-[#F8FAFC] dark:bg-[#080B0F] text-stone-900 dark:text-stone-100 min-h-screen">
         <Toaster position="top-center" reverseOrder={false} />
         {children}
       </body>

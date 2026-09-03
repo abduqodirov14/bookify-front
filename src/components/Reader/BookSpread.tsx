@@ -147,12 +147,21 @@ export default function BookSpread({ book, onBack }: Props) {
     }
   };
 
-  // Real progress sync with backend database
+  // Real progress sync with backend database (debounced to avoid request flooding)
+  const lastSyncedPercent = React.useRef<number>(-1);
   useEffect(() => {
     const totalPages = Math.max(1, totalSpreads * 2);
     const curPage = (currentPageSpread * 2) + 1;
     const percent = Math.min(100, Math.round((curPage / totalPages) * 100));
-    api.updateProgress(book.id, percent, book.chapters[currentChapterIdx]?.id);
+
+    if (lastSyncedPercent.current === percent) return;
+
+    const timer = setTimeout(() => {
+      lastSyncedPercent.current = percent;
+      api.updateProgress(book.id, percent, book.chapters[currentChapterIdx]?.id);
+    }, 800);
+
+    return () => clearTimeout(timer);
   }, [currentPageSpread, currentChapterIdx, book.id, totalSpreads]);
 
   // Fullscreen API toggle

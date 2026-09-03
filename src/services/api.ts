@@ -285,7 +285,7 @@ export const api = {
   },
 
   // Reading Progress Sync
-  async syncProgress(bookId: string, progressPercent: number, currentChapter: number, currentSentence: number) {
+  async syncProgress(bookId: string, progressPercent: number, chapterId?: string) {
     const token = getAuthToken();
     if (!token) return null;
     try {
@@ -296,9 +296,11 @@ export const api = {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
+          percent: progressPercent,
           progress_percent: progressPercent,
-          current_chapter: currentChapter,
-          current_sentence: currentSentence
+          chapter_id: chapterId || null,
+          sentence_id: null,
+          char_offset: 0
         })
       });
       return res.ok ? res.json() : null;
@@ -308,7 +310,7 @@ export const api = {
   },
 
   async updateProgress(bookId: string, percent: number, chapterId?: string) {
-    return this.syncProgress(bookId, percent, 1, 1);
+    return this.syncProgress(bookId, percent, chapterId);
   },
 
   async getProgress(bookId: string) {
