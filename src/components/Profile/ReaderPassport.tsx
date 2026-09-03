@@ -1,3 +1,4 @@
+'use client';
 import React, { useState } from 'react';
 import { UserProfile, Book } from '../../types';
 import { api } from '../../services/api';
@@ -6,7 +7,6 @@ import {
   Award, 
   BookOpen, 
   Clock, 
-  Sparkles, 
   LogOut, 
   ShieldCheck, 
   Download, 
@@ -17,12 +17,14 @@ import {
   Medal,
   Scroll
 } from 'lucide-react';
+import OfficialCertificateModal from '../Certificate/OfficialCertificateModal';
 
 interface Props {
   user: UserProfile;
   books: Book[];
   onOpenReader: (bookId: string) => void;
   onLogout: () => void;
+  onNavigatePage?: (page: any) => void;
 }
 
 interface Certificate {
@@ -40,42 +42,30 @@ interface Certificate {
   description: string;
 }
 
-export default function ReaderPassport({ user, books, onOpenReader, onLogout }: Props) {
+export default function ReaderPassport({ user, books, onOpenReader, onLogout, onNavigatePage }: Props) {
   const [shelfMode, setShelfMode] = useState<'cover' | 'spine'>('cover');
   const [is2FA, setIs2FA] = useState<boolean>(user.is2FAEnabled ?? (user.role === 'ADMIN'));
-  const [selectedCert, setSelectedCert] = useState<Certificate | null>(null);
+  const [showCertModal, setShowCertModal] = useState<boolean>(false);
+  const [modalCertData, setModalCertData] = useState<any>(null);
 
-  // User's Permanent Cryptographically Verified Diplomas
-  const userCertificates: Certificate[] = [
+  // New registered users start with 0 certificates until they win a tournament.
+  // Admins or tournament winners have certificates.
+  const userCertificates: Certificate[] = user.role === 'ADMIN' ? [
     {
       id: 'cert-1',
-      certNumber: 'BKFY-2026-CHAMP-001',
-      title: "Oltin Meros — Gran-Pri Chempioni",
+      certNumber: 'BKF-2026-0001',
+      title: "Asoschi & Bosh Mutolaachi — Shoh Kitobxon",
       season: "Bahoriy Adabiy Chempionat 2026",
       rank: "1-O'rin (Oltin)",
       rankBadge: "🥇",
       color: "#C5A059",
-      issueDate: "15-May, 2026",
-      hours: Math.max(148, user.totalHours || 148),
-      pages: 1840,
+      issueDate: "3-Sentabr, 2026",
+      hours: 120,
+      pages: 1480,
       hash: "e7f9a2b84c1d93e502847a9cb934812f",
-      description: "Ushbu Oltin Diplom sohibi adabiy chempionatda eng yuksak mutolaa madaniyati va tezligini namoyish etib, mutlaq 1-o'rinni egalladi."
-    },
-    {
-      id: 'cert-2',
-      certNumber: 'BKFY-2026-NARR-042',
-      title: "Audio Teatr Zukkosi — Faxriy Nishon",
-      season: "Qishki Qiroat Marafoni 2026",
-      rank: "Maxsus Mukofot",
-      rankBadge: "🎖️",
-      color: "#8B5CF6",
-      issueDate: "28-Fevral, 2026",
-      hours: 64,
-      pages: 920,
-      hash: "82a93c71df50281b94e32049acbb8192",
-      description: "Durdona asarlarning audio spektakllarini to'liq tinglab, tahliliy taqrizlar yozgani uchun taqdirlandi."
+      description: "Bookify platformasi asoschisi va mutolaa marafoni peshqadami sifatida taqdirlandi."
     }
-  ];
+  ] : [];
 
   return (
     <div className="max-w-6xl mx-auto space-y-10 pb-24 animate-in fade-in duration-300">
@@ -115,14 +105,14 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout }: 
                   title="2FA xavfsizlikni yoqish / o'chirish"
                 >
                   <ShieldCheck size={13} className={is2FA ? "text-emerald-500" : "text-stone-400"} />
-                  <span>2FA Himoya: {is2FA ? "YOQILGAN (ON)" : "O'CHIRILGAN (OFF)"}</span>
+                  <span>2FA Himoya: {is2FA ? "YOQILGAN" : "O'CHIRILGAN"}</span>
                 </button>
               </div>
               <h1 className="font-serif text-3xl sm:text-4xl font-bold text-stone-950 dark:text-white">
                 {user.name}
               </h1>
               <p className="font-serif italic text-xs sm:text-sm text-stone-500 max-w-lg">
-                "Kitob — insoniyat aql-zakovati va qalbining asrlar oshib kelayotgan eng buyuk siri..."
+                "Kitob — insoniyat aql-zakovati va qalbining asrlar oshib kelayotgan eng buyuk xazinasi..."
               </p>
             </div>
           </div>
@@ -138,135 +128,140 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout }: 
         </div>
       </div>
 
-      {/* ── Concentric Stats & Reading Habits ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs space-y-1">
-          <span className="text-xs font-mono text-stone-400 uppercase">Bugungi Mutolaa</span>
-          <div className="text-3xl font-bold text-stone-950 dark:text-white font-mono">
-            {user.todayMinutes} <span className="text-xs font-sans text-stone-400">daqiqa</span>
+      {/* ── Key Reading Habits Dials ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        
+        <div className="p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+            <Clock size={28} />
           </div>
-          <span className="text-[11px] text-emerald-600 font-medium block">
-            Me'yor: {user.dailyGoalMinutes} daqiqa (100% bajarildi)
-          </span>
+          <div>
+            <span className="text-[11px] font-mono text-stone-400 block uppercase">Jami Mutolaa</span>
+            <span className="font-serif font-bold text-2xl text-stone-950 dark:text-white">
+              {user.totalHours || 12} soat
+            </span>
+          </div>
         </div>
 
-        <div className="p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs space-y-1">
-          <span className="text-xs font-mono text-stone-400 uppercase">O'qish Seriyasi</span>
-          <div className="text-3xl font-bold text-[#E05638] font-mono">
-            {user.readingStreakDays} <span className="text-xs font-sans text-stone-400">kun uzluksiz</span>
+        <div className="p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+            <BookOpen size={28} />
           </div>
-          <span className="text-[11px] text-stone-400 block">
-            🔥 Oltin marafon ishtirokchisi
-          </span>
+          <div>
+            <span className="text-[11px] font-mono text-stone-400 block uppercase">Tugatilgan Asarlar</span>
+            <span className="font-serif font-bold text-2xl text-stone-950 dark:text-white">
+              {user.finishedBooksCount ?? 0} ta kitob
+            </span>
+          </div>
         </div>
 
-        <div className="p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs space-y-1">
-          <span className="text-xs font-mono text-stone-400 uppercase">Jami Mutolaa Vaqti</span>
-          <div className="text-3xl font-bold text-stone-950 dark:text-white font-mono">
-            {user.totalHours} <span className="text-xs font-sans text-stone-400">soat</span>
+        <div className="p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-violet-500/10 text-violet-500 flex items-center justify-center shrink-0">
+            <Trophy size={28} />
           </div>
-          <span className="text-[11px] text-stone-400 block">
-            Audio va matnli mutolaa
-          </span>
+          <div>
+            <span className="text-[11px] font-mono text-stone-400 block uppercase">Mutolaa Davomiyligi</span>
+            <span className="font-serif font-bold text-2xl text-stone-950 dark:text-white">
+              {user.readingStreakDays ? `${user.readingStreakDays} kun` : '1 kun'}
+            </span>
+          </div>
         </div>
 
-        <div className="p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs space-y-1">
-          <span className="text-xs font-mono text-stone-400 uppercase">Yutuqlar & Diplomlar</span>
-          <div className="text-3xl font-bold text-[#C5A059] font-mono">
-            {userCertificates.length} <span className="text-xs font-sans text-stone-400">ta rasmiy</span>
-          </div>
-          <span className="text-[11px] text-stone-400 block">
-            Umrbod tasdiqlangan
-          </span>
-        </div>
       </div>
 
-      {/* ── PERMANENT DIPLOMAS & CERTIFICATES VAULT ── */}
+      {/* ── Rasmiy Diplomlar & Yutuqlar Xazinasi ── */}
       <div className="space-y-6">
         <div className="flex items-center justify-between border-b border-stone-200 dark:border-white/10 pb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-              <Trophy size={20} />
-            </div>
-            <div>
-              <h3 className="font-serif text-2xl font-bold text-stone-950 dark:text-white flex items-center gap-2">
-                <span>Rasmiy Diplomlar & Yutuqlar Xazinasi</span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                  Umrbod Saqlanadi
-                </span>
-              </h3>
-              <p className="text-xs text-stone-500 font-mono">
-                Adabiy chempionatlarda erishilgan rasmiy Oltin diplomlar va yuksak unvonlar
-              </p>
-            </div>
+          <div>
+            <h3 className="font-serif text-2xl font-bold text-stone-950 dark:text-white">
+              Rasmiy Diplomlar & Sertifikatlar
+            </h3>
+            <p className="text-xs text-stone-500">Adabiy chempionatlarda qo'lga kiritilgan rasmiy sertifikatlar</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {userCertificates.map(cert => (
-            <div
-              key={cert.id}
-              className="relative p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#121620] border-2 border-stone-200/90 dark:border-white/10 hover:border-[#C5A059] transition-all duration-300 shadow-xs hover:shadow-2xl space-y-6 group overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-36 h-36 bg-[#C5A059]/10 rounded-full blur-2xl pointer-events-none" />
-
-              {/* Certificate Top Header */}
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400/20 to-amber-600/30 border border-amber-500/40 text-amber-500 flex items-center justify-center text-2xl shadow-inner shrink-0">
-                    {cert.rankBadge}
+        {userCertificates.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {userCertificates.map(cert => (
+              <div
+                key={cert.id}
+                className="relative p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#121620] border-2 border-stone-200/90 dark:border-white/10 hover:border-[#C5A059] transition-all duration-300 shadow-xs hover:shadow-2xl space-y-6 group overflow-hidden"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400/20 to-amber-600/30 border border-amber-500/40 text-amber-500 flex items-center justify-center text-2xl shadow-inner shrink-0">
+                      {cert.rankBadge}
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-[#C5A059] font-bold block">
+                        {cert.season}
+                      </span>
+                      <h4 className="font-serif font-bold text-lg text-stone-950 dark:text-white group-hover:text-[#C5A059] transition-colors">
+                        {cert.title}
+                      </h4>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#C5A059] font-bold block">
-                      {cert.season}
-                    </span>
-                    <h4 className="font-serif font-bold text-lg text-stone-950 dark:text-white group-hover:text-[#C5A059] transition-colors">
-                      {cert.title}
-                    </h4>
-                  </div>
+
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-stone-100 dark:bg-white/10 text-stone-600 dark:text-stone-300 shrink-0">
+                    {cert.rank}
+                  </span>
                 </div>
 
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-stone-100 dark:bg-white/10 text-stone-600 dark:text-stone-300 shrink-0">
-                  {cert.rank}
-                </span>
-              </div>
+                <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed font-serif">
+                  "{cert.description}"
+                </p>
 
-              {/* Description */}
-              <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed font-serif">
-                "{cert.description}"
-              </p>
+                <div className="flex items-center justify-between pt-2 border-t border-stone-100 dark:border-white/5">
+                  <span className="text-[10px] font-mono text-stone-400">
+                    ID: {cert.certNumber}
+                  </span>
 
-              {/* Metrics & Hash */}
-              <div className="grid grid-cols-2 gap-3 p-3.5 rounded-2xl bg-stone-50 dark:bg-white/[0.03] border border-stone-100 dark:border-white/5 text-xs font-mono">
-                <div>
-                  <span className="text-[10px] text-stone-400 block">TASDIQLANGAN VAQT:</span>
-                  <strong className="text-stone-900 dark:text-white">{cert.hours} soat mutolaa</strong>
-                </div>
-                <div>
-                  <span className="text-[10px] text-stone-400 block">TAQDIRLANGAN SANA:</span>
-                  <strong className="text-stone-900 dark:text-white">{cert.issueDate}</strong>
-                </div>
-              </div>
-
-              {/* Footer Actions */}
-              <div className="flex items-center justify-between pt-2 border-t border-stone-100 dark:border-white/5">
-                <span className="text-[10px] font-mono text-stone-400">
-                  ID: {cert.certNumber}
-                </span>
-
-                <div className="flex items-center gap-2">
                   <button
-                    onClick={() => setSelectedCert(cert)}
-                    className="px-4 py-2 rounded-xl bg-[#C5A059] hover:bg-[#b08d48] text-stone-950 text-xs font-mono font-bold uppercase transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-1.5"
+                    onClick={() => {
+                      setModalCertData(cert);
+                      setShowCertModal(true);
+                    }}
+                    className="px-4 py-2 rounded-xl bg-[#0A0E1A] hover:bg-stone-800 text-white text-xs font-mono font-bold transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-1.5"
                   >
                     <Scroll size={14} />
-                    <span>Diplomni Ochish</span>
+                    <span>Sertifikatni Ochish</span>
                   </button>
                 </div>
               </div>
+            ))}
+          </div>
+        ) : (
+          <div className="p-8 sm:p-12 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 text-center space-y-4 max-w-2xl mx-auto shadow-xs">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-[#C5A059]/15 text-[#C5A059] flex items-center justify-center text-3xl">
+              📜
             </div>
-          ))}
-        </div>
+            <div className="space-y-1.5">
+              <h3 className="font-serif text-xl sm:text-2xl font-bold text-stone-900 dark:text-white">
+                Hozircha Rasmiy Sertifikatlar Mavjud Emas
+              </h3>
+              <p className="text-xs sm:text-sm text-stone-500 leading-relaxed max-w-md mx-auto">
+                Yangi ro'yxatdan o'tgan kitobxonlarda dastlab sertifikat bo'lmaydi. Rasmiy diplomlar faqat Adabiy Chempionatda ishtirok etib, 1, 2 yoki 3-o'rinni olgan kitobxonlarga topshiriladi.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+              <button
+                onClick={() => {
+                  setModalCertData({
+                    title: "Bahoriy Adabiy Chempionat 2026 • Shoh Kitobxon",
+                    certNumber: "BKF-2026-0001",
+                    date: "3-Sentabr, 2026",
+                    rank: 1
+                  });
+                  setShowCertModal(true);
+                }}
+                className="px-5 py-2.5 rounded-xl bg-[#0A0E1A] hover:bg-stone-800 text-white text-xs font-mono font-bold transition-all shadow-md cursor-pointer flex items-center gap-2"
+              >
+                <Award size={14} className="text-[#C5A059]" />
+                <span>O'z Nomimga Sertifikat Generatsiya Qilish</span>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Physical Bookshelf (Cover vs Spine View) ── */}
@@ -323,7 +318,6 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout }: 
             ))}
           </div>
         ) : (
-          /* Realistic Physical Shelf Spine Mode */
           <div className="p-8 rounded-3xl bg-gradient-to-r from-[#2A1E14] via-[#3E2D1F] to-[#2A1E14] border-8 border-[#1A120B] shadow-2xl flex items-end justify-center gap-3 h-72 overflow-x-auto">
             {books.slice(0, 8).map((b, idx) => (
               <div
@@ -347,92 +341,16 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout }: 
 
       </div>
 
-      {/* ── EMBOSSED GOLDEN DIPLOMA MODAL ── */}
-      {selectedCert && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
-          <div className="relative max-w-2xl w-full bg-[#FCFBF7] text-[#1A1A1A] p-8 sm:p-12 rounded-3xl shadow-2xl border-8 border-[#C5A059]/40 space-y-6 text-center animate-in zoom-in-95">
-            
-            {/* Close Button */}
-            <button
-              onClick={() => setSelectedCert(null)}
-              className="absolute top-4 right-4 p-2 rounded-xl bg-stone-200/80 hover:bg-stone-300 text-stone-700 cursor-pointer"
-            >
-              <X size={20} />
-            </button>
-
-            {/* Embossed Header */}
-            <div className="space-y-1">
-              <span className="text-xs font-mono font-bold tracking-widest text-[#C5A059] uppercase block">
-                BOOKIFY MILLIY SANATORIYSI • RASMIY FAXRIY GUVOXNOMA
-              </span>
-              <h2 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-[#1A1A1A]">
-                OLTIN MEROS DIPLOMI
-              </h2>
-              <div className="w-24 h-1 bg-[#C5A059] mx-auto rounded-full mt-2" />
-            </div>
-
-            {/* Recipient */}
-            <div className="py-4 space-y-2">
-              <span className="text-xs font-mono text-stone-500 uppercase">Ushbu diplom sohibi:</span>
-              <h3 className="font-serif text-2xl sm:text-3xl font-extrabold text-[#9A7B38] underline decoration-[#C5A059]/40">
-                {user.name}
-              </h3>
-              <p className="text-xs font-serif italic text-stone-600 max-w-lg mx-auto pt-2">
-                "{selectedCert.description}"
-              </p>
-            </div>
-
-            {/* Verification Hash & Details */}
-            <div className="p-4 rounded-2xl bg-[#F4F1EA] border border-[#E2DDD2] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-stone-700 text-left">
-              <div>
-                <div><strong>Mavsum:</strong> {selectedCert.season}</div>
-                <div><strong>Mutolaa:</strong> {selectedCert.hours} soat ({selectedCert.pages} bet)</div>
-                <div><strong>Berilgan sana:</strong> {selectedCert.issueDate}</div>
-              </div>
-              <div className="sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0 border-stone-300">
-                <div className="text-[10px] text-stone-500">TASDIQLANGAN HASH:</div>
-                <div className="text-[9px] font-mono text-stone-800 break-all">{selectedCert.hash}</div>
-                <div className="text-[10px] font-bold text-emerald-700 mt-0.5">● Rasmiy Baza Shifrlangan</div>
-              </div>
-            </div>
-
-            {/* Wax Seal & Actions */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-stone-300">
-              <div className="flex items-center gap-2">
-                <div className="w-12 h-12 rounded-full bg-[#C5A059] text-white flex items-center justify-center font-serif font-bold text-xl shadow-md border-2 border-white">
-                  🏛️
-                </div>
-                <div className="text-left text-[11px] font-mono leading-tight">
-                  <strong>BOOKIFY FOUNDATION</strong>
-                  <span className="block text-stone-500">Umrbod Saqlanuvchi Meros</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    window.print();
-                  }}
-                  className="px-5 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-mono text-xs font-bold uppercase transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-1.5"
-                >
-                  <Download size={14} />
-                  <span>PDF Chop Etish</span>
-                </button>
-                <button
-                  onClick={() => {
-                    navigator.clipboard?.writeText(window.location.href);
-                    toast.success("Diplom havolasi nusxalandi!");
-                  }}
-                  className="p-2.5 rounded-xl bg-[#C5A059]/20 text-[#84672B] hover:bg-[#C5A059]/30 transition-colors cursor-pointer"
-                  title="Ulashish"
-                >
-                  <Share2 size={16} />
-                </button>
-              </div>
-            </div>
-
-          </div>
-        </div>
+      {/* ── Official FreeCodeCamp-style Certificate Modal ── */}
+      {showCertModal && (
+        <OfficialCertificateModal
+          initialName={user.name}
+          rank={modalCertData?.rank || 1}
+          achievementTitle={modalCertData?.title || "Bahoriy Adabiy Chempionat 2026 • Shoh Kitobxon"}
+          certNumber={modalCertData?.certNumber || "BKF-2026-0001"}
+          date={modalCertData?.date || "3-Sentabr, 2026"}
+          onClose={() => setShowCertModal(false)}
+        />
       )}
 
     </div>

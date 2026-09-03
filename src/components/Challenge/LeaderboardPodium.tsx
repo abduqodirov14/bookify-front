@@ -4,6 +4,7 @@ import { api } from '../../services/api';
 import { Trophy, Award, Crown, Medal, ShieldCheck, Download, Share2, Sparkles, X, ChevronDown, Users, Flame } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { toast } from 'react-hot-toast';
+import OfficialCertificateModal from '../Certificate/OfficialCertificateModal';
 
 export default function LeaderboardPodium() {
   const [selectedChampion, setSelectedChampion] = useState<Champion | null>(null);
@@ -296,79 +297,15 @@ export default function LeaderboardPodium() {
 
       </div>
 
-      {/* ── Official Gold/Silver/Bronze Certificate Modal ── */}
+      {/* ── Official FreeCodeCamp-style Certificate Modal ── */}
       {selectedChampion && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
-          <div className="relative w-full max-w-lg bg-[#FAF6EE] text-stone-900 rounded-3xl p-8 sm:p-10 shadow-2xl border-4 border-[#C5A059] space-y-6">
-            
-            <button
-              onClick={() => setSelectedChampion(null)}
-              className="absolute top-4 right-4 p-2 rounded-full bg-stone-200/80 hover:bg-stone-300 text-stone-700 transition-colors cursor-pointer"
-            >
-              <X size={18} />
-            </button>
-
-            <div className="text-center space-y-2 border-b border-[#C5A059]/30 pb-4">
-              <span className="text-[10px] font-mono tracking-widest uppercase text-[#7F602B] font-bold">
-                O'zbekiston Respublikasi • Bookify Milliy Sanatoriysi
-              </span>
-              <h2 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-stone-950">
-                RASMIY OLTIN DIPLOM
-              </h2>
-              <span className="text-xs text-[#7F602B] font-mono font-bold">
-                № {selectedChampion.certificateId}
-              </span>
-            </div>
-
-            <div className="text-center space-y-4 py-2">
-              <p className="text-xs text-stone-600 uppercase tracking-wider font-mono">
-                Ushbu faxriy diplom bilan taqdirlanadi:
-              </p>
-              <h3 className="font-serif text-2xl sm:text-3xl font-bold text-[#E05638] underline decoration-[#C5A059] decoration-2 underline-offset-8">
-                {selectedChampion.name}
-              </h3>
-              <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-serif pt-2">
-                <strong>{selectedChampion.period}</strong> doirasida yuksak adabiy tafakkur, 
-                <strong> {selectedChampion.hours} soat</strong> sof mutolaa va <strong>{selectedChampion.pages} sahifa</strong> durdona asarlarni o'zlashtirgani uchun 
-                <strong> «{selectedChampion.badge}»</strong> oliy unvoni bilan mukofotlandi.
-              </p>
-            </div>
-
-            <div className="flex items-center justify-between pt-4 border-t border-[#C5A059]/30 text-xs font-mono text-stone-600">
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-full bg-[#C5A059]/20 border-2 border-[#C5A059] flex items-center justify-center font-serif font-bold text-[#7F602B] text-base">
-                  B
-                </div>
-                <span>Rasmiy Muhr</span>
-              </div>
-              <div className="text-right">
-                <span className="font-bold block text-stone-900">Bookify Hay'ati</span>
-                <span className="text-[10px] text-stone-500">Toshkent, 2026</span>
-              </div>
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => toast.success("Diplom PDF formatida yuklab olindi!")}
-                className="flex-1 py-3 rounded-2xl bg-stone-900 text-white font-mono font-bold text-xs uppercase hover:bg-stone-800 transition-colors cursor-pointer flex items-center justify-center gap-2"
-              >
-                <Download size={14} />
-                <span>Yuklab Olish</span>
-              </button>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(window.location.href);
-                  toast.success("Diplom havolasi nusxalandi!");
-                }}
-                className="p-3 rounded-2xl bg-stone-200 hover:bg-stone-300 text-stone-800 transition-colors cursor-pointer"
-                title="Ulashish"
-              >
-                <Share2 size={16} />
-              </button>
-            </div>
-
-          </div>
-        </div>
+        <OfficialCertificateModal
+          initialName={selectedChampion.name}
+          rank={selectedChampion.rank}
+          achievementTitle={`${selectedChampion.period} • ${selectedChampion.badge} (${selectedChampion.rank}-o'rin)`}
+          certNumber={selectedChampion.certificateId}
+          onClose={() => setSelectedChampion(null)}
+        />
       )}
 
     </div>
