@@ -1,0 +1,23 @@
+name: 24/7 Render Anti-Sleep Keep Alive
+
+on:
+  schedule:
+    # Trigger every 8 minutes (Render sleeps after 15 minutes of inactivity)
+    - cron: '*/8 * * * *'
+  workflow_dispatch:
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render Backend Health Endpoint
+        run: |
+          echo "Sending 24/7 keep-alive heartbeat to Render backend..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 45 -A "Bookify-Heartbeat-Bot/2.0" https://bookify-vz6r.onrender.com/health)
+          echo "Render HTTP Response: $STATUS"
+          if [ "$STATUS" -eq 200 ]; then
+            echo "SUCCESS: Render backend is awake and active!"
+          else
+            echo "Waking up Render backend (Retry Ping)..."
+            curl -s --max-time 60 -A "Bookify-Heartbeat-Bot/2.0" https://bookify-vz6r.onrender.com/health || true
+          fi

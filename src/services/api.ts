@@ -45,15 +45,21 @@ export const setCachedUser = (user: any) => {
 };
 
 
-// Resilient Fetch with Auto-Retry (handles Render cold-start & connection resets)
-async function fetchWithRetry(url: string, options: RequestInit = {}, retries = 3, delay = 1000): Promise<Response> {
+// Resilient Fetch with Auto-Retry (absorbs Render cold-start wake-up delays up to 25 seconds)
+async function fetchWithRetry(url: string, options: RequestInit = {}, retries = 5, delay = 1500): Promise<Response> {
   try {
     const res = await fetch(url, options);
+    // If Render returned 502/503 during server wake-up/reboot, retry automatically
+    if ((res.status === 502 || res.status === 503) && retries > 0) {
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return fetchWithRetry(url, options, retries - 1, Math.min(delay * 1.4, 4000));
+    }
     return res;
   } catch (err: any) {
     if (retries > 0) {
+      console.warn(`[Network] Re-attempting connection to ${url} (${retries} attempts left)...`);
       await new Promise(resolve => setTimeout(resolve, delay));
-      return fetchWithRetry(url, options, retries - 1, delay * 1.5);
+      return fetchWithRetry(url, options, retries - 1, Math.min(delay * 1.4, 4000));
     }
     throw err;
   }
