@@ -364,15 +364,10 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
     const toastId = toast.loading("Yangi mavsum ochilmoqda...");
 
     try {
-      const now = new Date();
-      const end = new Date();
-      end.setDate(now.getDate() + (seasonDays || 30));
-
       await api.createChallenge({
         name: seasonName.trim(),
         description: seasonDesc.trim() || `${seasonName} — barcha kitobxonlar o'rtasida adabiy bellashuv.`,
-        start_at: now.toISOString(),
-        end_at: end.toISOString()
+        days_duration: seasonDays || 30
       });
 
       toast.success("Yangi adabiy mavsum muvaffaqiyatli ochildi! 🏆", { id: toastId });
