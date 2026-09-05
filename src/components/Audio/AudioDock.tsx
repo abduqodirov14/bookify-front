@@ -42,7 +42,7 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
   // Available tracks sorted by track_number ascending (1 → 2 → 3 …)
   const tracksList: BookAudioTrack[] = useMemo(() => {
     const list = track?.trackList && track.trackList.length > 0 ? [...track.trackList] : [];
-    return list.sort((a, b) => (a.track_number ?? 0) - (b.track_number ?? 0));
+    return list.sort((a, b) => (a.trackNumber ?? 0) - (b.trackNumber ?? 0));
   }, [track]);
 
   // Active sub-track
