@@ -133,8 +133,8 @@ export const api = {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.status === 401) {
-        clearAuthToken();
-        return null;
+        // Keep cached user and do not prematurely clear token during active reading session
+        return getCachedUser();
       }
       if (!res.ok) {
         return getCachedUser();
