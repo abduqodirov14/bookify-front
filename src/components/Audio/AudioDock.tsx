@@ -10,13 +10,8 @@ import {
   BookOpen, 
   SkipBack, 
   SkipForward, 
-  ListMusic, 
-  Music, 
-  Disc, 
-  ChevronUp, 
-  ChevronDown, 
-  Check,
-  Headphones
+  Moon,
+  ChevronDown
 } from 'lucide-react';
 import { AudioTrack, BookAudioTrack } from '../../types';
 import { resolveAudioUrl } from '../../services/api';
@@ -31,14 +26,17 @@ interface Props {
 export default function AudioDock({ track, onClose, onOpenReader }: Props) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   
-  // Multi-track state
+  // Multi-track & playback state
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [duration, setDuration] = useState<number>(0);
   const [speed, setSpeed] = useState<number>(1.0);
+  const [volume, setVolume] = useState<number>(1.0);
   const [isMuted, setIsMuted] = useState<boolean>(false);
-  const [showPlaylist, setShowPlaylist] = useState<boolean>(false);
+  const [showVolumeSlider, setShowVolumeSlider] = useState<boolean>(false);
+  const [sleepTimerMinutes, setSleepTimerMinutes] = useState<number | null>(null);
+  const [sleepTimerSecondsLeft, setSleepTimerSecondsLeft] = useState<number | null>(null);
   const [isLoadingAudio, setIsLoadingAudio] = useState<boolean>(false);
 
   // Available tracks
@@ -46,7 +44,7 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
     return track?.trackList && track.trackList.length > 0 ? track.trackList : [];
   }, [track]);
 
-  // When track prop changes, initialize
+  // Initialize track on prop change
   useEffect(() => {
     if (!track) return;
     setCurrentIndex(track.currentTrackIndex || 0);
@@ -54,7 +52,43 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
     setCurrentTime(0);
   }, [track]);
 
-  // Active track information
+  // Sleep Timer Countdown Worker
+  useEffect(() => {
+    if (sleepTimerSecondsLeft === null) return;
+    if (sleepTimerSecondsLeft <= 0) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      setIsPlaying(false);
+      setSleepTimerMinutes(null);
+      setSleepTimerSecondsLeft(null);
+      toast("Uxlash taymeri yakunlandi. Audio to'xtatildi 🌙", { icon: '😴' });
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setSleepTimerSecondsLeft(prev => (prev !== null && prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [sleepTimerSecondsLeft]);
+
+  // Cycle Sleep Timer: Off -> 15m -> 30m -> 45m -> 60m -> Off
+  const cycleSleepTimer = () => {
+    const options = [null, 15, 30, 45, 60];
+    const currentIdx = options.indexOf(sleepTimerMinutes);
+    const nextVal = options[(currentIdx + 1) % options.length];
+    setSleepTimerMinutes(nextVal);
+    if (nextVal !== null) {
+      setSleepTimerSecondsLeft(nextVal * 60);
+      toast.success(`Uxlash taymeri: ${nextVal} daqiqa o'rnatildi`, { icon: '🌙' });
+    } else {
+      setSleepTimerSecondsLeft(null);
+      toast("Uxlash taymeri o'chirildi", { icon: '⏰' });
+    }
+  };
+
+  // Active sub-track
   const currentSubTrack: BookAudioTrack | null = useMemo(() => {
     if (tracksList.length > 0 && currentIndex < tracksList.length) {
       return tracksList[currentIndex];
@@ -73,21 +107,19 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
     return '';
   }, [currentSubTrack, track]);
 
-  // Track & Chapter Title
+  // Metadata strings
   const displayTitle = track?.title || 'Kitob audio spektakli';
   const displayChapter = currentSubTrack?.title || track?.chapterTitle || `Qism ${currentIndex + 1}`;
   const displayNarrator = currentSubTrack?.narrator || 'Afzal Rafiqov';
 
-  // Handle Play/Pause toggle
+  // Toggle Play/Pause
   const togglePlay = () => {
     if (!audioRef.current) return;
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current.play().catch(() => {
-        // Autoplay may be restricted
-      });
+      audioRef.current.play().catch(() => {});
       setIsPlaying(true);
     }
   };
@@ -102,19 +134,18 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
     }
   };
 
-  // Skip 15s backward
+  // Skip 15s
   const handleRewind15 = () => {
     if (!audioRef.current) return;
     audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - 15);
   };
 
-  // Skip 15s forward
   const handleForward15 = () => {
     if (!audioRef.current) return;
     audioRef.current.currentTime = Math.min(duration || Infinity, audioRef.current.currentTime + 15);
   };
 
-  // Previous Track
+  // Prev / Next track
   const handlePrevTrack = () => {
     if (audioRef.current && audioRef.current.currentTime > 3) {
       audioRef.current.currentTime = 0;
@@ -126,7 +157,6 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
     }
   };
 
-  // Next Track
   const handleNextTrack = () => {
     if (tracksList.length > 0 && currentIndex + 1 < tracksList.length) {
       setCurrentIndex(currentIndex + 1);
@@ -134,25 +164,45 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
     }
   };
 
-  // Seamless Continuous Autoplay on Track Ended ("bitta kitob uzulmasin aytishi")
+  // Continuous Autoplay
   const handleAudioEnded = () => {
     if (tracksList.length > 0 && currentIndex + 1 < tracksList.length) {
       const nextIndex = currentIndex + 1;
       setCurrentIndex(nextIndex);
       setIsPlaying(true);
       const nextTrack = tracksList[nextIndex];
-      toast.success(`Keyingi qism boshlandi: ${nextTrack.title}`, {
-        icon: '🎧',
-        duration: 3000
-      });
+      toast.success(`Keyingi qism boshlandi: ${nextTrack.title}`, { icon: '🎧', duration: 3000 });
     } else {
       setIsPlaying(false);
       setCurrentTime(0);
-      toast.success("Barcha audio qismlar yakunlandi! 👏");
+      toast.success("Barcha qismlar yakunlandi! 👏");
     }
   };
 
-  // Seek bar click
+  // Volume toggle
+  const toggleMute = () => {
+    if (!audioRef.current) return;
+    if (isMuted) {
+      audioRef.current.muted = false;
+      setIsMuted(false);
+    } else {
+      audioRef.current.muted = true;
+      setIsMuted(true);
+    }
+  };
+
+  const handleVolumeChange = (newVol: number) => {
+    setVolume(newVol);
+    if (audioRef.current) {
+      audioRef.current.volume = newVol;
+      if (newVol > 0 && isMuted) {
+        audioRef.current.muted = false;
+        setIsMuted(false);
+      }
+    }
+  };
+
+  // Seek bar
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!audioRef.current || !duration) return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -162,7 +212,6 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
     setCurrentTime(targetTime);
   };
 
-  // Format seconds -> mm:ss
   const formatTime = (secs: number) => {
     if (isNaN(secs) || secs < 0) return "00:00";
     const m = Math.floor(secs / 60);
@@ -172,7 +221,6 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
 
   const progressPercent = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
 
-  // React to track change and auto-play
   useEffect(() => {
     if (audioRef.current && activeAudioSrc) {
       audioRef.current.load();
@@ -185,7 +233,7 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
   if (!track) return null;
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-3xl animate-in slide-in-from-bottom-6 duration-300">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-3xl animate-in slide-in-from-bottom-6 duration-300 select-none">
       
       {/* Hidden HTML5 Audio Element for Real Streaming */}
       {activeAudioSrc && (
@@ -214,110 +262,10 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
         />
       )}
 
-      {/* ── PLAYLIST / TREKLAR DRAWER (POPUP LIST) ── */}
-      {showPlaylist && (
-        <div className="mb-3 w-full bg-stone-900/95 dark:bg-[#0D1117]/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl p-4 text-white animate-in slide-in-from-bottom-3 duration-200">
-          
-          <div className="flex items-center justify-between pb-3 border-b border-white/10">
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-[#E05638]/20 text-[#E05638] flex items-center justify-center">
-                <Disc size={15} />
-              </div>
-              <div>
-                <h4 className="text-xs font-serif font-bold text-white">
-                  Audio Qismlar & Mundarija
-                </h4>
-                <p className="text-[10px] font-mono text-stone-400">
-                  {tracksList.length > 0 
-                    ? `${tracksList.length} ta trek • Uzluksiz avto-ijro yoqilgan` 
-                    : "Yagona trek mavjud"}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowPlaylist(false)}
-              className="p-1.5 rounded-lg hover:bg-white/10 text-stone-400 hover:text-white transition-colors cursor-pointer"
-            >
-              <X size={15} />
-            </button>
-          </div>
-
-          {/* Tracks List */}
-          <div className="mt-3 max-h-56 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
-            {tracksList.length > 0 ? (
-              tracksList.map((t, idx) => {
-                const isActive = idx === currentIndex;
-                const sizeMb = t.fileSizeBytes ? (t.fileSizeBytes / (1024 * 1024)).toFixed(1) : null;
-                return (
-                  <div
-                    key={t.id || idx}
-                    onClick={() => {
-                      setCurrentIndex(idx);
-                      setIsPlaying(true);
-                    }}
-                    className={`flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all ${
-                      isActive 
-                        ? 'bg-[#E05638]/20 border border-[#E05638]/40 text-white shadow-sm' 
-                        : 'hover:bg-white/5 text-stone-300 border border-transparent'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className={`text-[10px] font-mono font-bold w-6 h-6 rounded-md flex items-center justify-center shrink-0 ${
-                        isActive ? 'bg-[#E05638] text-white' : 'bg-white/10 text-stone-400'
-                      }`}>
-                        {t.trackNumber || idx + 1}
-                      </span>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className={`text-xs font-medium truncate ${isActive ? 'text-amber-400 font-bold' : 'text-stone-200'}`}>
-                            {t.title}
-                          </p>
-                          {isActive && (
-                            <div className="flex items-center gap-0.5 h-3">
-                              {[30, 90, 60].map((h, i) => (
-                                <span
-                                  key={i}
-                                  className="w-0.5 bg-amber-400 rounded-full animate-pulse"
-                                  style={{ height: `${h}%` }}
-                                />
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        <p className="text-[10px] font-mono text-stone-400 truncate">
-                          {t.narrator || displayNarrator} {sizeMb && `• ${sizeMb} MB`}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="shrink-0 flex items-center gap-2 pl-2">
-                      {isActive ? (
-                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#E05638]/30 text-amber-300 border border-[#E05638]/40">
-                          Ijroda
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-mono text-stone-500 hover:text-white">
-                          Tinglash →
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="py-6 text-center text-xs font-mono text-stone-400">
-                Ushbu kitob uchun faqat bitta asosiy audio trek mavjud.
-              </div>
-            )}
-          </div>
-
-        </div>
-      )}
-
-      {/* ── MAIN FLOATING PLAYER DOCK ── */}
+      {/* ── MAIN SLEEK FLOATING PLAYER DOCK ── */}
       <div className="relative bg-white/95 dark:bg-[#121620]/95 backdrop-blur-xl border border-stone-200/90 dark:border-white/10 rounded-2xl shadow-2xl p-3.5 transition-all">
         
-        {/* Seekable Progress Bar */}
+        {/* Seekable Progress Bar at the top edge */}
         <div 
           onClick={handleSeek}
           className="absolute -top-1.5 left-3 right-3 h-2 bg-stone-200 dark:bg-white/10 rounded-full cursor-pointer overflow-hidden group shadow-inner"
@@ -331,9 +279,9 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
 
         <div className="flex items-center justify-between gap-3 pt-1">
           
-          {/* Left: Book Cover & Info */}
+          {/* Left: Book Cover & Info + Inline Part Switcher */}
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            <div className="relative w-11 h-15 rounded-md overflow-hidden shrink-0 shadow-sm border border-black/10 bg-stone-900">
+            <div className="relative w-11 h-14 rounded-md overflow-hidden shrink-0 shadow-sm border border-black/10 bg-stone-900">
               <img 
                 src={track.coverImage} 
                 alt={track.title} 
@@ -346,12 +294,37 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
             </div>
 
             <div className="flex flex-col min-w-0">
-              <h4 className="text-xs font-serif font-bold text-stone-900 dark:text-white truncate">
-                {displayTitle}
-              </h4>
+              <div className="flex items-center gap-2">
+                <h4 className="text-xs font-serif font-bold text-stone-900 dark:text-white truncate">
+                  {displayTitle}
+                </h4>
+
+                {/* Inline Part Selector Dropdown if multiple tracks */}
+                {tracksList.length > 1 && (
+                  <div className="relative inline-flex items-center shrink-0">
+                    <select
+                      value={currentIndex}
+                      onChange={(e) => {
+                        setCurrentIndex(Number(e.target.value));
+                        setIsPlaying(true);
+                      }}
+                      className="appearance-none pl-2 pr-5 py-0.5 rounded-md bg-[#E05638]/10 text-[#E05638] dark:text-amber-400 font-mono text-[10px] font-bold border border-[#E05638]/30 cursor-pointer focus:outline-none"
+                    >
+                      {tracksList.map((t, idx) => (
+                        <option key={t.id || idx} value={idx} className="bg-white dark:bg-[#121620] text-stone-900 dark:text-white">
+                          Qism {idx + 1}: {t.title}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown size={10} className="absolute right-1.5 pointer-events-none text-[#E05638] dark:text-amber-400" />
+                  </div>
+                )}
+              </div>
+
               <span className="text-[11px] text-[#E05638] dark:text-amber-400 font-mono truncate font-semibold">
                 {displayChapter}
               </span>
+
               <div className="flex items-center gap-1.5 text-[10px] text-stone-400 truncate">
                 <span>{displayNarrator}</span>
                 {duration > 0 && (
@@ -365,15 +338,15 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
           </div>
 
           {/* Center: Playback Controls */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
             
-            {/* Previous Track (Multi-track) */}
+            {/* Previous Track */}
             {tracksList.length > 1 && (
               <button 
                 onClick={handlePrevTrack}
                 disabled={currentIndex === 0}
                 className="p-1.5 rounded-lg text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-white/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                title="Oldingi trek"
+                title="Oldingi qism"
               >
                 <SkipBack size={16} />
               </button>
@@ -412,56 +385,88 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
               <RotateCw size={15} />
             </button>
 
-            {/* Next Track (Multi-track) */}
+            {/* Next Track */}
             {tracksList.length > 1 && (
               <button 
                 onClick={handleNextTrack}
                 disabled={currentIndex >= tracksList.length - 1}
                 className="p-1.5 rounded-lg text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-white/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                title="Keyingi trek"
+                title="Keyingi qism"
               >
                 <SkipForward size={16} />
               </button>
             )}
 
-            {/* Speed Selector */}
+            {/* Playback Speed */}
             <button
               onClick={cycleSpeed}
               className="px-2 py-1 rounded-md text-[10px] font-mono font-bold bg-stone-100 dark:bg-white/10 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-white/20 transition-colors cursor-pointer"
-              title="Tezlik"
+              title="Ijro tezligi"
             >
               {speed}x
             </button>
           </div>
 
-          {/* Right Actions: Playlist Drawer Toggle & Reader & Close */}
+          {/* Right Actions: Volume Control & Sleep Timer & Reader & Close */}
           <div className="flex items-center gap-1.5 shrink-0 pl-2 border-l border-stone-200 dark:border-white/10">
             
-            {/* Playlist Drawer Button */}
+            {/* Sleep Timer (Uxlash taymeri) */}
             <button
-              onClick={() => setShowPlaylist(!showPlaylist)}
+              onClick={cycleSleepTimer}
               className={`p-2 rounded-xl transition-colors cursor-pointer relative ${
-                showPlaylist 
-                  ? 'bg-[#E05638] text-white' 
-                  : 'bg-stone-100 dark:bg-white/10 hover:bg-stone-200 dark:hover:bg-white/20 text-stone-700 dark:text-stone-300'
+                sleepTimerMinutes !== null
+                  ? 'bg-amber-500/20 text-amber-500 dark:text-amber-400'
+                  : 'bg-stone-100 dark:bg-white/10 hover:bg-stone-200 dark:hover:bg-white/20 text-stone-600 dark:text-stone-300'
               }`}
-              title="Treklar ro'yxati (Mundarija)"
+              title={sleepTimerMinutes ? `Taymer: ${Math.ceil((sleepTimerSecondsLeft || 0) / 60)} daqiqa qoldi` : "Uxlash taymeri"}
             >
-              <ListMusic size={15} />
-              {tracksList.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-amber-500 text-stone-950 font-mono text-[9px] font-bold px-1 rounded-full">
-                  {tracksList.length}
+              <Moon size={14} />
+              {sleepTimerMinutes !== null && (
+                <span className="absolute -top-1 -right-1 bg-amber-500 text-stone-950 font-mono text-[8px] font-bold px-1 rounded-full">
+                  {Math.ceil((sleepTimerSecondsLeft || 0) / 60)}m
                 </span>
               )}
             </button>
 
+            {/* Volume Control with hover slider */}
+            <div 
+              className="relative hidden sm:flex items-center"
+              onMouseEnter={() => setShowVolumeSlider(true)}
+              onMouseLeave={() => setShowVolumeSlider(false)}
+            >
+              <button
+                onClick={toggleMute}
+                className="p-2 rounded-xl bg-stone-100 dark:bg-white/10 hover:bg-stone-200 dark:hover:bg-white/20 text-stone-600 dark:text-stone-300 transition-colors cursor-pointer"
+                title={isMuted ? "Ovozni yoqish" : "Ovozni o'chirish"}
+              >
+                {isMuted || volume === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
+              </button>
+
+              {showVolumeSlider && (
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-2 bg-white dark:bg-[#121620] border border-stone-200 dark:border-white/10 rounded-xl shadow-xl flex items-center gap-1.5 animate-in fade-in duration-150">
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={isMuted ? 0 : volume}
+                    onChange={(e) => handleVolumeChange(Number(e.target.value))}
+                    className="w-16 accent-[#E05638] cursor-pointer h-1 bg-stone-200 dark:bg-white/20 rounded-full"
+                  />
+                  <span className="text-[9px] font-mono text-stone-400 w-6">
+                    {Math.round((isMuted ? 0 : volume) * 100)}%
+                  </span>
+                </div>
+              )}
+            </div>
+
             {/* Open in Reader */}
             <button
               onClick={() => onOpenReader(track.bookId)}
-              className="p-2 rounded-xl bg-stone-100 dark:bg-white/10 hover:bg-[#E05638] hover:text-white text-stone-700 dark:text-stone-300 transition-colors cursor-pointer hidden sm:flex"
+              className="p-2 rounded-xl bg-stone-100 dark:bg-white/10 hover:bg-[#E05638] hover:text-white text-stone-700 dark:text-stone-300 transition-colors cursor-pointer hidden md:flex"
               title="Kitob matnini ochish (Reader)"
             >
-              <BookOpen size={15} />
+              <BookOpen size={14} />
             </button>
 
             {/* Close Button */}

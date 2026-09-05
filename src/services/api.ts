@@ -629,9 +629,9 @@ export const api = {
 
   async getBookAudioTracks(bookId: string) {
     try {
-      const res = await fetchWithRetry(`${API_BASE_URL}/books/${bookId}/audio-tracks`);
+      const res = await fetch(`${API_BASE_URL}/books/${bookId}/audio-tracks`);
       if (!res.ok) return [];
-      return res.json();
+      return await res.json();
     } catch {
       return [];
     }
