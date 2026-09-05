@@ -78,6 +78,7 @@ export interface AudioTrack {
   currentTime: number;
   playbackRate: number;
   audioUrl?: string;
+  narrator?: string;
   trackList?: BookAudioTrack[];
   currentTrackIndex?: number;
 }
