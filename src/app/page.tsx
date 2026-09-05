@@ -36,6 +36,7 @@ export default function HomeApp() {
   const [isLoadingBooks, setIsLoadingBooks] = useState(true);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [pendingBookToOpen, setPendingBookToOpen] = useState<string | null>(null);
+  const [authInitialized, setAuthInitialized] = useState(false);
 
   // Check existing session on mount (Hydration safe)
   useEffect(() => {
@@ -78,19 +79,20 @@ export default function HomeApp() {
             setCachedUser(me);
           }
         } catch {
-          // Token expired or invalid
+          // Token expired or network error
         }
       }
+      setAuthInitialized(true);
     };
     initAuth();
   }, []);
 
-  // Security Route Guard: Silent redirect away from admin if not admin
+  // Security Route Guard: Silent redirect away from admin ONLY AFTER auth is fully initialized
   useEffect(() => {
-    if (currentPage === 'admin' && currentUser?.role !== 'ADMIN') {
+    if (authInitialized && currentPage === 'admin' && currentUser?.role !== 'ADMIN') {
       setCurrentPage('home');
     }
-  }, [currentPage, currentUser]);
+  }, [currentPage, currentUser, authInitialized]);
 
   // Fetch real books from FastAPI backend
   const loadBooksFromBackend = async () => {
@@ -172,6 +174,11 @@ export default function HomeApp() {
       const bookId = params.get('book');
 
       if (view) {
+        if (view === 'auth' && getAuthToken()) {
+          const cached = getCachedUser();
+          setCurrentPage(cached?.role === 'ADMIN' ? 'admin' : 'home');
+          return;
+        }
         if (view === 'author' && authorId) setSelectedAuthorId(authorId);
         if ((view === 'reader' || view === 'book') && bookId) setSelectedBookId(bookId);
         setCurrentPage(view);
@@ -310,6 +317,7 @@ export default function HomeApp() {
     return (
       <AuthModal
         onSuccess={(user) => {
+          setCachedUser(user);
           setCurrentUser({
             id: user.id || "u-1",
             name: user.name || user.email?.split('@')[0] || "Kitobxon",
@@ -326,10 +334,9 @@ export default function HomeApp() {
           if (pendingBookToOpen) {
             const bId = pendingBookToOpen;
             setPendingBookToOpen(null);
-            setSelectedBookId(bId);
-            setCurrentPage('reader');
+            navigate('reader', bId);
           } else {
-            setCurrentPage(user.role === 'ADMIN' ? 'admin' : 'home');
+            navigate(user.role === 'ADMIN' ? 'admin' : 'home');
           }
         }}
         onCancel={() => setCurrentPage('home')}

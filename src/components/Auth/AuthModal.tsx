@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { api, setAuthToken } from '../../services/api';
+import { api, setAuthToken, setCachedUser } from '../../services/api';
 import { Lock, Mail, ShieldCheck, ArrowRight, ArrowLeft, Check } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -161,6 +161,7 @@ export default function AuthModal({ onSuccess, onCancel }: Props) {
       const data = await api.googleAuth(response.credential);
       if (data.access_token) {
         setAuthToken(data.access_token);
+        if (data.user) setCachedUser(data.user);
         onSuccess(data.user);
         toast.success(`Xush kelibsiz, ${data.user?.name || 'Kitobxon'}!`);
       }
@@ -205,6 +206,7 @@ export default function AuthModal({ onSuccess, onCancel }: Props) {
           toast.success(data.message || "5 xonali tasdiqlash kodi pochtangizga yuborildi!", { icon: '📩' });
         } else if (data.access_token) {
           setAuthToken(data.access_token);
+          if (data.user) setCachedUser(data.user);
           onSuccess(data.user);
           toast.success(`Hisobingiz ochildi! Xush kelibsiz, ${data.user?.name || 'Kitobxon'}!`);
         }
@@ -217,6 +219,7 @@ export default function AuthModal({ onSuccess, onCancel }: Props) {
           toast.success(data.message || "5 xonali tasdiqlash kodi pochtangizga yuborildi", { icon: '📩' });
         } else if (data.access_token) {
           setAuthToken(data.access_token);
+          if (data.user) setCachedUser(data.user);
           onSuccess(data.user);
           toast.success(`Xush kelibsiz, ${data.user?.name || 'Kitobxon'}!`);
         }
@@ -254,6 +257,7 @@ export default function AuthModal({ onSuccess, onCancel }: Props) {
       const data = await api.verify2FA(tempToken, otp.trim());
       if (data.access_token) {
         setAuthToken(data.access_token);
+        if (data.user) setCachedUser(data.user);
         onSuccess(data.user);
         toast.success(`Xavfsizlik tekshiruvidan muvaffaqiyatli o'tildi! Xush kelibsiz, ${data.user?.name || 'Kitobxon'}!`);
       }

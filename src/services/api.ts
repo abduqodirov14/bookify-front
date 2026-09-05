@@ -82,6 +82,10 @@ export const api = {
     if (!res.ok) {
       throw new Error(data.detail || "Ro'yxatdan o'tishda xatolik yuz berdi");
     }
+    if (data.access_token) {
+      setAuthToken(data.access_token);
+      if (data.user) setCachedUser(data.user);
+    }
     return data;
   },
 
@@ -102,7 +106,12 @@ export const api = {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.detail || 'Kirishda xatolik yuz berdi');
     }
-    return res.json();
+    const data = await res.json();
+    if (data.access_token) {
+      setAuthToken(data.access_token);
+      if (data.user) setCachedUser(data.user);
+    }
+    return data;
   },
 
   async resendOTP(tempToken: string) {
@@ -128,7 +137,12 @@ export const api = {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.detail || "5 xonali tasdiqlash kodi noto'g'ri");
     }
-    return res.json();
+    const data = await res.json();
+    if (data.access_token) {
+      setAuthToken(data.access_token);
+      if (data.user) setCachedUser(data.user);
+    }
+    return data;
   },
 
   async toggle2FA() {
