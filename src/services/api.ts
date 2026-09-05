@@ -587,7 +587,8 @@ export const api = {
     try {
       const list = await this.getChallenges();
       if (Array.isArray(list) && list.length > 0) {
-        return list[0];
+        const active = list.find((c: any) => c.status === 'ACTIVE');
+        return active || list[0];
       }
       return null;
     } catch {
