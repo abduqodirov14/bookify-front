@@ -68,14 +68,25 @@ export default function BookSpread({ book, onBack }: Props) {
     return chapter.content.split('\n\n').filter(p => p.trim().length > 0);
   }, [chapter]);
 
+  interface PageItem {
+    pageNumber: number;
+    text: string[];
+    imagePath?: string | null;
+  }
+
+  interface SpreadGroup {
+    left: PageItem;
+    right?: PageItem | null;
+  }
+
   // Authentic book pagination:
   // If book has real book_pages from database, paginate across all authentic pages!
   // Otherwise, use word-density typography pagination (~130 words per page).
-  const spreads = useMemo(() => {
+  const spreads = useMemo<SpreadGroup[]>(() => {
     if (dbPages.length > 0) {
-      const hasAnyText = dbPages.some(p => p.text && p.text.trim().length > 0);
-      if (hasAnyText) {
-        const result: { left: string[]; right: string[] }[] = [];
+      const hasAnyContent = dbPages.some(p => (p.text && p.text.trim().length > 0) || p.image_path);
+      if (hasAnyContent) {
+        const result: SpreadGroup[] = [];
         for (let i = 0; i < dbPages.length; i += 2) {
           const pLeft = dbPages[i];
           const pRight = dbPages[i + 1];
@@ -86,17 +97,31 @@ export default function BookSpread({ book, onBack }: Props) {
             ? pRight.text.split('\n\n').filter(Boolean) 
             : [];
           result.push({
-            left: leftText,
-            right: rightText
+            left: {
+              pageNumber: pLeft?.page_number || (i + 1),
+              text: leftText,
+              imagePath: pLeft?.image_path || null
+            },
+            right: pRight ? {
+              pageNumber: pRight.page_number || (i + 2),
+              text: rightText,
+              imagePath: pRight.image_path || null
+            } : null
           });
         }
-        return result.length > 0 ? result : [{ left: paragraphs, right: [] }];
+        return result.length > 0 ? result : [{
+          left: { pageNumber: 1, text: paragraphs, imagePath: null },
+          right: null
+        }];
       }
     }
 
     const rawParagraphs = paragraphs;
     if (rawParagraphs.length === 0) {
-      return [{ left: ["Sahifa bo'sh."], right: [] }];
+      return [{
+        left: { pageNumber: 1, text: ["Sahifa bo'sh."], imagePath: null },
+        right: null
+      }];
     }
 
     const pages: string[][] = [];
@@ -119,20 +144,36 @@ export default function BookSpread({ book, onBack }: Props) {
       pages.push(currentPage);
     }
 
-    const result: { left: string[]; right: string[] }[] = [];
+    const result: SpreadGroup[] = [];
     for (let i = 0; i < pages.length; i += 2) {
       result.push({
-        left: pages[i],
-        right: pages[i + 1] || []
+        left: {
+          pageNumber: i + 1,
+          text: pages[i],
+          imagePath: null
+        },
+        right: pages[i + 1] ? {
+          pageNumber: i + 2,
+          text: pages[i + 1],
+          imagePath: null
+        } : null
       });
     }
-    return result.length > 0 ? result : [{ left: rawParagraphs, right: [] }];
-  }, [chapter, dbPages, paragraphs]);
+    return result.length > 0 ? result : [{
+      left: { pageNumber: 1, text: rawParagraphs, imagePath: null },
+      right: null
+    }];
+  }, [chapter, dbPages, paragraphs, book.title]);
 
   const totalSpreads = Math.max(1, spreads.length);
-  const currentSpread = spreads[currentPageSpread] || spreads[0] || { left: [], right: [] };
-  const leftPageParagraphs = currentSpread.left;
-  const rightPageParagraphs = currentSpread.right;
+  const currentSpread = spreads[currentPageSpread] || spreads[0] || {
+    left: { pageNumber: 1, text: [] },
+    right: null
+  };
+  const leftPage = currentSpread.left;
+  const rightPage = currentSpread.right;
+  const leftPageParagraphs = leftPage.text;
+  const rightPageParagraphs = rightPage?.text || [];
 
   // Approximate remaining minutes
   const remainingMinutes = Math.max(1, Math.ceil((totalSpreads - currentPageSpread) * 1.5));
@@ -470,104 +511,150 @@ export default function BookSpread({ book, onBack }: Props) {
             setShowControls(!showControls);
           }
         }}
-        className="flex-1 flex items-center justify-center p-4 sm:p-8 lg:p-10 overflow-hidden relative"
+        className="flex-1 flex items-center justify-center p-1 sm:p-3 md:p-4 overflow-hidden relative"
       >
         
         {readingMode === 'spread' ? (
-          /* Mode A: 2-Page Physical Spread */
-          <div 
-            className="w-full max-w-5xl h-[78vh] rounded-3xl shadow-book-deep relative flex flex-col md:flex-row overflow-hidden border transition-all duration-300"
-            style={{ backgroundColor: themeStyles.pageBg, borderColor: themeStyles.border }}
-          >
-            {/* Center Spine Crease */}
-            <div className="hidden md:block book-spread-center-crease" />
-
-            {/* Left Page (Click left zone to turn prev) */}
+          /* Mode A: Widescreen Grand 2-Page Physical Spread (Matching exact user screenshot) */
+          <div className="relative w-full max-w-[97vw] 2xl:max-w-[1600px] flex items-center justify-center my-auto">
             <div 
-              onClick={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                if ((e.clientX - rect.left) / rect.width < 0.5) prevPage();
-              }}
-              className="flex-1 p-8 sm:p-12 flex flex-col justify-between overflow-y-auto border-b md:border-b-0 md:border-r select-none relative"
-              style={{ borderColor: themeStyles.border }}
+              className="w-full h-[85vh] 2xl:h-[87vh] rounded-2xl md:rounded-3xl border-[6px] sm:border-[8px] border-[#383330] dark:border-[#221F1D] shadow-[0_25px_65px_rgba(0,0,0,0.45)] relative flex flex-col md:flex-row overflow-hidden transition-all duration-300"
+              style={{ backgroundColor: themeStyles.pageBg, borderColor: '#383330' }}
             >
-              <div className="space-y-4">
-                {currentPageSpread === 0 && (
-                  <div className="pb-4 border-b border-black/10 dark:border-white/10">
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#E05638] font-bold">
-                      {book.title}
-                    </span>
-                    <h2 className="font-serif text-xl sm:text-2xl font-bold mt-1" style={{ color: themeStyles.text }}>
-                      {chapter.title}
-                    </h2>
+              {/* Center Spine Crease (Realistic Book Fold) */}
+              <div 
+                className="hidden md:block absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-10 sm:w-14 pointer-events-none z-20"
+                style={{
+                  background: 'linear-gradient(to right, rgba(0,0,0,0.13) 0%, rgba(0,0,0,0.04) 30%, rgba(0,0,0,0.01) 50%, rgba(0,0,0,0.04) 70%, rgba(0,0,0,0.13) 100%)',
+                  boxShadow: 'inset 0 0 10px rgba(0,0,0,0.05)'
+                }}
+              />
+
+              {/* Left Page (Click left zone to turn prev) */}
+              <div 
+                onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  if ((e.clientX - rect.left) / rect.width < 0.5) prevPage();
+                }}
+                className="flex-1 p-6 sm:p-10 md:p-12 lg:p-14 flex flex-col justify-between overflow-y-auto border-b md:border-b-0 md:border-r select-none relative"
+                style={{ borderColor: themeStyles.border }}
+              >
+                {leftPage.imagePath ? (
+                  <div className="w-full h-full flex items-center justify-center p-1 overflow-hidden my-auto">
+                    <img 
+                      src={leftPage.imagePath.startsWith('http') ? leftPage.imagePath : `https://bookify-vz6r.onrender.com${leftPage.imagePath}`} 
+                      alt={`Sahifa ${leftPage.pageNumber}`} 
+                      className="max-h-full max-w-full object-contain rounded-md shadow-xs select-none" 
+                    />
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {currentPageSpread === 0 && (
+                      <div className="pb-4 border-b border-black/10 dark:border-white/10">
+                        <span className="text-[10px] font-mono uppercase tracking-widest text-[#E05638] font-bold">
+                          {book.title}
+                        </span>
+                        <h2 className="font-serif text-xl sm:text-2xl font-bold mt-1" style={{ color: themeStyles.text }}>
+                          {chapter.title}
+                        </h2>
+                      </div>
+                    )}
+
+                    <div 
+                      className={`${fontClass} leading-relaxed text-justify transition-all`}
+                      style={{ fontSize: `${fontSize}px`, lineHeight: lineHeight, color: themeStyles.text }}
+                    >
+                      {leftPageParagraphs.map((p, idx) => (
+                        <p 
+                          key={idx} 
+                          className={`mb-4 text-indent-8 transition-colors p-1 rounded-md ${
+                            activeSentenceIdx === idx ? 'bg-[#E05638]/15 ring-2 ring-[#E05638]/40' : ''
+                          }`}
+                        >
+                          {p}
+                        </p>
+                      ))}
+                    </div>
                   </div>
                 )}
 
-                <div 
-                  className={`${fontClass} leading-relaxed text-justify transition-all`}
-                  style={{ fontSize: `${fontSize}px`, lineHeight: lineHeight, color: themeStyles.text }}
-                >
-                  {leftPageParagraphs.map((p, idx) => (
-                    <p 
-                      key={idx} 
-                      className={`mb-4 text-indent-8 transition-colors p-1 rounded-md ${
-                        activeSentenceIdx === idx ? 'bg-[#E05638]/15 ring-2 ring-[#E05638]/40' : ''
-                      }`}
-                    >
-                      {p}
-                    </p>
-                  ))}
+                <div className="flex items-center justify-between pt-3 border-t text-[11px] font-mono opacity-50 shrink-0 mt-2" style={{ borderColor: themeStyles.border, color: themeStyles.text }}>
+                  <span>Sahifa {leftPage.pageNumber}</span>
+                  <span>{book.authorName}</span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-4 border-t text-[11px] font-mono opacity-50" style={{ borderColor: themeStyles.border, color: themeStyles.text }}>
-                <span>Sahifa {currentPageSpread * 2 + 1}</span>
-                <span>{book.authorName}</span>
-              </div>
-            </div>
-
-            {/* Right Page (Click right zone to turn next) */}
-            <div 
-              onClick={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                if ((e.clientX - rect.left) / rect.width > 0.5) nextPage();
-              }}
-              className="hidden md:flex flex-1 p-8 sm:p-12 flex-col justify-between overflow-y-auto select-none relative"
-            >
-              <div className="space-y-4">
-                <div 
-                  className={`${fontClass} leading-relaxed text-justify transition-all`}
-                  style={{ fontSize: `${fontSize}px`, lineHeight: lineHeight, color: themeStyles.text }}
-                >
-                  {rightPageParagraphs.length > 0 ? (
-                    rightPageParagraphs.map((p, idx) => (
-                      <p 
-                        key={idx} 
-                        className={`mb-4 text-indent-8 transition-colors p-1 rounded-md ${
-                          activeSentenceIdx === (idx + 2) ? 'bg-[#E05638]/15 ring-2 ring-[#E05638]/40' : ''
-                        }`}
-                      >
-                        {p}
-                      </p>
-                    ))
-                  ) : (
-                    <div className="py-20 text-center space-y-4 opacity-70">
-                      <Sparkles size={24} className="mx-auto text-[#E05638]" />
-                      <p className="font-serif italic text-sm">
-                        "{book.featuredQuote}"
-                      </p>
-                      <span className="text-xs font-mono block">— {book.title}</span>
+              {/* Right Page (Click right zone to turn next) */}
+              <div 
+                onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  if ((e.clientX - rect.left) / rect.width > 0.5) nextPage();
+                }}
+                className="hidden md:flex flex-1 p-6 sm:p-10 md:p-12 lg:p-14 flex-col justify-between overflow-y-auto select-none relative"
+              >
+                {rightPage ? (
+                  rightPage.imagePath ? (
+                    <div className="w-full h-full flex items-center justify-center p-1 overflow-hidden my-auto">
+                      <img 
+                        src={rightPage.imagePath.startsWith('http') ? rightPage.imagePath : `https://bookify-vz6r.onrender.com${rightPage.imagePath}`} 
+                        alt={`Sahifa ${rightPage.pageNumber}`} 
+                        className="max-h-full max-w-full object-contain rounded-md shadow-xs select-none" 
+                      />
                     </div>
-                  )}
+                  ) : (
+                    <div className="space-y-4">
+                      <div 
+                        className={`${fontClass} leading-relaxed text-justify transition-all`}
+                        style={{ fontSize: `${fontSize}px`, lineHeight: lineHeight, color: themeStyles.text }}
+                      >
+                        {rightPageParagraphs.length > 0 ? (
+                          rightPageParagraphs.map((p, idx) => (
+                            <p 
+                              key={idx} 
+                              className={`mb-4 text-indent-8 transition-colors p-1 rounded-md ${
+                                activeSentenceIdx === (idx + 2) ? 'bg-[#E05638]/15 ring-2 ring-[#E05638]/40' : ''
+                              }`}
+                            >
+                              {p}
+                            </p>
+                          ))
+                        ) : (
+                          <div className="py-20 text-center space-y-4 opacity-70">
+                            <Sparkles size={24} className="mx-auto text-[#E05638]" />
+                            <p className="font-serif italic text-sm">
+                              "{book.featuredQuote}"
+                            </p>
+                            <span className="text-xs font-mono block">— {book.title}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                ) : (
+                  <div className="py-20 text-center space-y-4 opacity-70">
+                    <Sparkles size={24} className="mx-auto text-[#E05638]" />
+                    <p className="font-serif italic text-sm">
+                      "{book.featuredQuote}"
+                    </p>
+                    <span className="text-xs font-mono block">— {book.title}</span>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between pt-3 border-t text-[11px] font-mono opacity-50 shrink-0 mt-2" style={{ borderColor: themeStyles.border, color: themeStyles.text }}>
+                  <span>{chapter.title}</span>
+                  <span>Sahifa {rightPage ? rightPage.pageNumber : leftPage.pageNumber + 1}</span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-4 border-t text-[11px] font-mono opacity-50" style={{ borderColor: themeStyles.border, color: themeStyles.text }}>
-                <span>{chapter.title}</span>
-                <span>Sahifa {currentPageSpread * 2 + 2}</span>
-              </div>
             </div>
 
+            {/* Exact Bottom Capsule Indicator from screenshot */}
+            <div className="absolute -bottom-3 sm:-bottom-4 left-1/2 -translate-x-1/2 z-30 px-3.5 py-1 rounded-full bg-[#262626] border border-white/10 text-white/95 text-xs font-mono font-medium shadow-xl pointer-events-none select-none tracking-wider">
+              {dbPages.length > 0 
+                ? `${leftPage.pageNumber}${rightPage ? `-${rightPage.pageNumber}` : ''} / ${dbPages.length} sahifa`
+                : `${currentPageSpread * 2 + 1}${rightPage ? `-${currentPageSpread * 2 + 2}` : ''} / ${totalSpreads * 2} sahifa`
+              }
+            </div>
           </div>
         ) : (
           /* Mode B: Continuous Vertical Reading Scroll */
