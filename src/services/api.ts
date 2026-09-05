@@ -631,7 +631,12 @@ export const api = {
     try {
       const res = await fetch(`${API_BASE_URL}/books/${bookId}/audio-tracks`);
       if (!res.ok) return [];
-      return await res.json();
+      const tracks = await res.json();
+      // Always sort by track_number ascending (1, 2, 3, ...) before returning
+      if (Array.isArray(tracks)) {
+        return tracks.sort((a: any, b: any) => (a.track_number ?? 0) - (b.track_number ?? 0));
+      }
+      return tracks;
     } catch {
       return [];
     }

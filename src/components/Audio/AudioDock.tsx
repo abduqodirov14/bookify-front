@@ -39,9 +39,10 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
   const [sleepTimerSecondsLeft, setSleepTimerSecondsLeft] = useState<number | null>(null);
   const [isLoadingAudio, setIsLoadingAudio] = useState<boolean>(false);
 
-  // Available tracks
+  // Available tracks — sorted by track_number ascending (1, 2, 3, ...)
   const tracksList: BookAudioTrack[] = useMemo(() => {
-    return track?.trackList && track.trackList.length > 0 ? track.trackList : [];
+    const list = track?.trackList && track.trackList.length > 0 ? [...track.trackList] : [];
+    return list.sort((a, b) => (a.track_number ?? 0) - (b.track_number ?? 0));
   }, [track]);
 
   // Initialize track on prop change
