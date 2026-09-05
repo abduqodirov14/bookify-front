@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Book } from '../../types';
-import { api } from '../../services/api';
+import { Book, BookAudioTrack } from '../../types';
+import { api, resolveAudioUrl } from '../../services/api';
 import { 
   ShieldCheck, 
   BookOpen, 
@@ -18,7 +18,20 @@ import {
   MessageSquare,
   Star,
   UserCheck,
-  CheckCircle2
+  CheckCircle2,
+  Music,
+  Disc,
+  Play,
+  Pause,
+  ListMusic,
+  Volume2,
+  AlertCircle,
+  Loader2,
+  ArrowUpCircle,
+  Clock,
+  Upload,
+  ArrowRight,
+  Headphones
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -65,6 +78,23 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
   const [editDescription, setEditDescription] = useState('');
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [publishingBookId, setPublishingBookId] = useState<string | null>(null);
+
+  // Audio Tracks Management inside Edit Modal
+  const [bookAudioTracks, setBookAudioTracks] = useState<BookAudioTrack[]>([]);
+  const [isLoadingAudioTracks, setIsLoadingAudioTracks] = useState(false);
+  const [audioUploadQueue, setAudioUploadQueue] = useState<Array<{
+    id: string;
+    file: File;
+    name: string;
+    sizeMb: string;
+    status: 'queued' | 'uploading' | 'done' | 'error';
+    progress: number;
+    errorMsg?: string;
+  }>>([]);
+  const [isUploadingAudioQueue, setIsUploadingAudioQueue] = useState(false);
+  const [previewTrackId, setPreviewTrackId] = useState<string | null>(null);
+  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
+
   // Live pipeline progress for PROCESSING books  { [bookId]: { progress, step_name, pages_processed, total_pages } }
   const [processingStatuses, setProcessingStatuses] = useState<Record<string, any>>({});
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -175,7 +205,7 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
     };
   }, [books, pollProcessingBooks]);
 
-  // Open Edit Modal
+  // Open Edit Modal & Load Audio Tracks
   const handleOpenEdit = (b: Book) => {
     setEditingBook(b);
     setEditTitle(b.title);
@@ -185,6 +215,119 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
     setEditNarrator(b.narrator || 'Afzal Rafiqov');
     setEditCoverUrl(b.coverImage || '');
     setEditDescription(b.description || '');
+    setAudioUploadQueue([]);
+    setPreviewTrackId(null);
+    if (previewAudioRef.current) {
+      previewAudioRef.current.pause();
+    }
+    fetchAudioTracks(b.id);
+  };
+
+  const fetchAudioTracks = async (bookId: string) => {
+    setIsLoadingAudioTracks(true);
+    try {
+      const tracks = await api.getBookAudioTracks(bookId);
+      setBookAudioTracks(tracks || []);
+    } catch {
+      setBookAudioTracks([]);
+    } finally {
+      setIsLoadingAudioTracks(false);
+    }
+  };
+
+  const handleAudioFilesPicked = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const newItems = Array.from(files).map((file, i) => ({
+      id: `${Date.now()}_${i}_${Math.random().toString(36).slice(2, 7)}`,
+      file,
+      name: file.name,
+      sizeMb: (file.size / (1024 * 1024)).toFixed(1),
+      status: 'queued' as const,
+      progress: 0
+    }));
+
+    // Natural sort: e.g. 07. Qiyomat, 08. Qiyomat, 21. Qiyomat
+    newItems.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+
+    setAudioUploadQueue(prev => [...prev, ...newItems]);
+    e.target.value = '';
+  };
+
+  const handleStartSequentialAudioUpload = async () => {
+    if (!editingBook || isUploadingAudioQueue) return;
+    const pending = audioUploadQueue.filter(item => item.status !== 'done');
+    if (pending.length === 0) {
+      toast.error("Yuklash uchun yangi audio fayllar yo'q");
+      return;
+    }
+
+    setIsUploadingAudioQueue(true);
+    let successCount = 0;
+
+    for (let i = 0; i < audioUploadQueue.length; i++) {
+      const item = audioUploadQueue[i];
+      if (item.status === 'done') continue;
+
+      // Mark as uploading
+      setAudioUploadQueue(prev => prev.map((q, idx) => idx === i ? { ...q, status: 'uploading', progress: 0 } : q));
+
+      try {
+        await api.uploadAudioTrack(
+          editingBook.id,
+          item.file,
+          undefined, // backend auto extracts track number
+          undefined, // backend auto extracts title
+          editNarrator || 'Afzal Rafiqov',
+          (percent) => {
+            setAudioUploadQueue(prev => prev.map((q, idx) => idx === i ? { ...q, progress: percent } : q));
+          }
+        );
+
+        setAudioUploadQueue(prev => prev.map((q, idx) => idx === i ? { ...q, status: 'done', progress: 100 } : q));
+        successCount++;
+      } catch (err: any) {
+        setAudioUploadQueue(prev => prev.map((q, idx) => idx === i ? { ...q, status: 'error', errorMsg: err.message || 'Xatolik' } : q));
+      }
+    }
+
+    setIsUploadingAudioQueue(false);
+    toast.success(`${successCount} ta audio trek Telegram kabi ketma-ketlikda yuklandi! 🎧`);
+    await fetchAudioTracks(editingBook.id);
+    onRefreshBooks();
+  };
+
+  const handleDeleteAudioTrack = async (trackId: string, trackTitle: string) => {
+    if (!editingBook) return;
+    if (!confirm(`"${trackTitle}" audio trekini o'chirmoqchimisiz?`)) return;
+    try {
+      await api.deleteAudioTrack(editingBook.id, trackId);
+      toast.success(`"${trackTitle}" treki o'chirildi`);
+      if (previewTrackId === trackId && previewAudioRef.current) {
+        previewAudioRef.current.pause();
+        setPreviewTrackId(null);
+      }
+      await fetchAudioTracks(editingBook.id);
+      onRefreshBooks();
+    } catch (err: any) {
+      toast.error(err.message || "Trekni o'chirishda xatolik");
+    }
+  };
+
+  const handleTogglePreviewTrack = (track: BookAudioTrack) => {
+    if (previewTrackId === track.id) {
+      if (previewAudioRef.current) {
+        previewAudioRef.current.pause();
+      }
+      setPreviewTrackId(null);
+    } else {
+      setPreviewTrackId(track.id);
+      if (previewAudioRef.current) {
+        previewAudioRef.current.src = resolveAudioUrl(track.audioUrl);
+        previewAudioRef.current.play().catch(() => {});
+      }
+    }
   };
 
   // Save Book Edit
@@ -925,6 +1068,243 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                   onChange={(e) => setEditDescription(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl bg-white dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs leading-relaxed text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638]"
                 />
+              </div>
+
+              {/* ── AUDIO SPEKTAKL & TREKLAR (TELEGRAM-STYLE BULK QUEUE) ── */}
+              <div className="pt-5 border-t border-stone-100 dark:border-white/5 space-y-4">
+                
+                {/* Section Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                      <Headphones size={17} />
+                    </div>
+                    <div>
+                      <h4 className="font-serif font-bold text-sm text-stone-900 dark:text-white">
+                        Audio Spektakl & Treklar Boshqaruvi
+                      </h4>
+                      <p className="text-[11px] font-mono text-stone-500 dark:text-stone-400">
+                        {bookAudioTracks.length > 0 
+                          ? `Bazada ${bookAudioTracks.length} ta audio qism mavjud` 
+                          : "Kitobga yangi audio qismlarni biriktirish"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Hidden Preview Audio Player */}
+                  <audio 
+                    ref={previewAudioRef} 
+                    onEnded={() => setPreviewTrackId(null)} 
+                    onError={() => setPreviewTrackId(null)} 
+                  />
+                </div>
+
+                {/* Bulk File Picker Box */}
+                <div className="p-4 rounded-2xl bg-amber-50/60 dark:bg-amber-500/5 border border-amber-200/80 dark:border-amber-500/20 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <span className="text-xs font-serif font-bold text-amber-950 dark:text-amber-200 block">
+                        📂 Ko'p qismli audiolarni biryo'la tanlash (Ctrl + A)
+                      </span>
+                      <p className="text-[11px] font-mono text-stone-600 dark:text-stone-400 mt-0.5">
+                        Fayllarni barchasini birdan tanlang. Telegram kabi ketma-ket, serverni to'xtatmasdan yuklaydi.
+                      </p>
+                    </div>
+
+                    <label className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-950 font-mono text-xs font-bold cursor-pointer transition-all shadow-xs active:scale-95 shrink-0">
+                      <Upload size={14} />
+                      <span>Fayllarni tanlash (Ctrl+A)</span>
+                      <input
+                        type="file"
+                        multiple
+                        accept="audio/*,.mp3,.m4a,.wav,.aac"
+                        onChange={handleAudioFilesPicked}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+
+                  {/* Telegram-style Sequential Queue */}
+                  {audioUploadQueue.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-amber-200/60 dark:border-amber-500/20 space-y-3">
+                      
+                      <div className="flex items-center justify-between text-xs font-mono">
+                        <span className="font-bold text-stone-800 dark:text-stone-200">
+                          Navbat: {audioUploadQueue.length} ta fayl ({audioUploadQueue.reduce((acc, q) => acc + parseFloat(q.sizeMb || '0'), 0).toFixed(1)} MB)
+                        </span>
+
+                        <div className="flex items-center gap-2">
+                          {!isUploadingAudioQueue && (
+                            <button
+                              type="button"
+                              onClick={() => setAudioUploadQueue([])}
+                              className="text-[11px] text-stone-500 hover:text-rose-500 transition-colors cursor-pointer"
+                            >
+                              Navbatni tozalash
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            disabled={isUploadingAudioQueue}
+                            onClick={handleStartSequentialAudioUpload}
+                            className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-[11px] font-bold transition-all shadow-xs active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer"
+                          >
+                            {isUploadingAudioQueue ? (
+                              <>
+                                <Loader2 size={13} className="animate-spin" />
+                                <span>Yuklanmoqda...</span>
+                              </>
+                            ) : (
+                              <>
+                                <ArrowUpCircle size={13} />
+                                <span>Telegram kabi yuklashni boshlash</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Queue List Cards */}
+                      <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
+                        {audioUploadQueue.map((item, idx) => (
+                          <div 
+                            key={item.id}
+                            className={`p-2.5 rounded-xl border text-xs font-mono transition-all ${
+                              item.status === 'uploading'
+                                ? 'bg-amber-100/70 dark:bg-amber-500/20 border-amber-400/60 dark:border-amber-400/40'
+                                : item.status === 'done'
+                                ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/30 text-stone-600 dark:text-stone-300'
+                                : item.status === 'error'
+                                ? 'bg-rose-50 dark:bg-rose-500/10 border-rose-300 dark:border-rose-500/30 text-rose-700 dark:text-rose-300'
+                                : 'bg-white/80 dark:bg-[#080B0F]/80 border-stone-200 dark:border-white/10 text-stone-700 dark:text-stone-300'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span className="w-5 h-5 rounded-md bg-stone-200 dark:bg-white/10 flex items-center justify-center text-[10px] shrink-0 font-bold">
+                                  {idx + 1}
+                                </span>
+                                <span className="font-semibold truncate max-w-[220px] sm:max-w-xs">{item.name}</span>
+                                <span className="text-[10px] text-stone-400 shrink-0">({item.sizeMb} MB)</span>
+                              </div>
+
+                              <div className="shrink-0 flex items-center gap-1.5">
+                                {item.status === 'queued' && (
+                                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-stone-200 dark:bg-white/10 text-stone-500">
+                                    ⏳ Navbatda
+                                  </span>
+                                )}
+                                {item.status === 'uploading' && (
+                                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-amber-500 text-stone-950 font-bold animate-pulse">
+                                    ⚡ {item.progress}%
+                                  </span>
+                                )}
+                                {item.status === 'done' && (
+                                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                                    <CheckCircle2 size={11} />
+                                    Yuklandi
+                                  </span>
+                                )}
+                                {item.status === 'error' && (
+                                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold" title={item.errorMsg}>
+                                    ❌ Xatolik
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Progress bar inside uploading card */}
+                            {item.status === 'uploading' && (
+                              <div className="w-full bg-amber-200 dark:bg-amber-950/60 rounded-full h-1.5 mt-2 overflow-hidden">
+                                <div 
+                                  className="bg-amber-500 h-full rounded-full transition-all duration-150"
+                                  style={{ width: `${item.progress}%` }}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                    </div>
+                  )}
+
+                </div>
+
+                {/* Existing Tracks List from DB */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs font-mono text-stone-500 dark:text-stone-400">
+                    <span>Mavjud audio treklar ro'yxati:</span>
+                    {isLoadingAudioTracks && (
+                      <span className="flex items-center gap-1 text-[10px] text-amber-500">
+                        <Loader2 size={11} className="animate-spin" />
+                        Yuklanmoqda...
+                      </span>
+                    )}
+                  </div>
+
+                  {bookAudioTracks.length === 0 && !isLoadingAudioTracks ? (
+                    <div className="py-4 text-center border border-dashed border-stone-200 dark:border-white/10 rounded-2xl text-xs font-mono text-stone-400">
+                      Ushbu kitob uchun hali treklar mavjud emas. Yuqoridagi tugma orqali audio fayllarni yuklang.
+                    </div>
+                  ) : (
+                    <div className="max-h-56 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
+                      {bookAudioTracks.map((tr) => {
+                        const isPreviewing = previewTrackId === tr.id;
+                        const sizeMb = tr.fileSizeBytes ? (tr.fileSizeBytes / (1024 * 1024)).toFixed(1) : null;
+                        return (
+                          <div
+                            key={tr.id}
+                            className={`flex items-center justify-between p-2.5 rounded-xl border text-xs font-mono transition-all ${
+                              isPreviewing
+                                ? 'bg-[#E05638]/10 border-[#E05638]/40 text-stone-950 dark:text-white'
+                                : 'bg-stone-50 dark:bg-white/5 border-stone-200/80 dark:border-white/10 text-stone-800 dark:text-stone-200'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <span className="w-6 h-6 rounded-md bg-stone-200 dark:bg-white/10 flex items-center justify-center font-bold text-[10px] shrink-0">
+                                #{tr.trackNumber}
+                              </span>
+                              <div className="min-w-0">
+                                <p className="font-semibold truncate">{tr.title}</p>
+                                <p className="text-[10px] text-stone-400 truncate">
+                                  {tr.narrator || editNarrator} {sizeMb && `• ${sizeMb} MB`}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0">
+                              {/* Audio Preview Play/Pause */}
+                              <button
+                                type="button"
+                                onClick={() => handleTogglePreviewTrack(tr)}
+                                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                                  isPreviewing
+                                    ? 'bg-[#E05638] text-white'
+                                    : 'bg-stone-200 dark:bg-white/10 text-stone-700 dark:text-stone-300 hover:bg-stone-300 dark:hover:bg-white/20'
+                                }`}
+                                title={isPreviewing ? "To'xtatish" : "Eshitib ko'rish"}
+                              >
+                                {isPreviewing ? <Pause size={13} /> : <Play size={13} />}
+                              </button>
+
+                              {/* Delete Track */}
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteAudioTrack(tr.id, tr.title)}
+                                className="p-1.5 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500 hover:text-white transition-colors cursor-pointer"
+                                title="Trekni o'chirish"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
               </div>
 
               {/* Action Buttons */}

@@ -282,17 +282,33 @@ export default function HomeApp() {
     playAudio(book);
   };
 
-  const playAudio = (book: Book) => {
+  const playAudio = async (book: Book) => {
+    let tracks = book.audioTracks || [];
+    if (!tracks || tracks.length === 0) {
+      try {
+        tracks = await api.getBookAudioTracks(book.id);
+      } catch (e) {
+        tracks = [];
+      }
+    }
+
+    const firstTrack = tracks.length > 0 ? tracks[0] : null;
+
     setActiveAudioTrack({
       bookId: book.id,
       title: book.title,
       author: book.authorName,
       coverImage: book.coverImage,
-      chapterTitle: book.chapters[0]?.title || "1-Bob",
-      duration: book.audioDuration,
+      chapterTitle: firstTrack ? firstTrack.title : (book.chapters[0]?.title || "1-Bob"),
+      duration: firstTrack && firstTrack.durationSeconds > 0 
+        ? `${Math.floor(firstTrack.durationSeconds / 60)} daqiqa` 
+        : book.audioDuration,
       isPlaying: true,
       currentTime: 0,
-      playbackRate: 1.0
+      playbackRate: 1.0,
+      audioUrl: firstTrack?.audioUrl,
+      trackList: tracks,
+      currentTrackIndex: 0
     });
     toast.success(`"${book.title}" audio spektakli tinglanmoqda`, { icon: '🎧' });
   };

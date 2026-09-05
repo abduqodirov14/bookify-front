@@ -6,6 +6,14 @@ const getBaseApiUrl = () => {
 
 export const API_BASE_URL = getBaseApiUrl();
 
+export const resolveAudioUrl = (url?: string): string => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  const baseDomain = API_BASE_URL.replace(/\/api\/v1\/?$/, '');
+  const cleanPath = url.startsWith('/') ? url : `/${url}`;
+  return `${baseDomain}${cleanPath}`;
+};
+
 export const getAuthToken = () => {
   if (typeof window !== 'undefined') {
     return localStorage.getItem('fianny_token');
@@ -561,6 +569,84 @@ export const api = {
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.detail || "Kitobni o'chirishda xatolik");
+    }
+    return res.json();
+  },
+
+  async uploadAudioTrack(
+    bookId: string, 
+    file: File, 
+    trackNumber?: number, 
+    title?: string, 
+    narrator?: string,
+    onProgress?: (percent: number) => void
+  ): Promise<any> {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `${API_BASE_URL}/admin/books/${bookId}/audio-tracks/upload`);
+      xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+
+      if (xhr.upload && onProgress) {
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+            onProgress(percent);
+          }
+        };
+      }
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            resolve(JSON.parse(xhr.responseText));
+          } catch {
+            resolve({ status: 'success' });
+          }
+        } else {
+          try {
+            const err = JSON.parse(xhr.responseText);
+            reject(new Error(err.detail || "Audio yuklashda xatolik"));
+          } catch {
+            reject(new Error("Audio yuklashda server xatosi"));
+          }
+        }
+      };
+
+      xhr.onerror = () => reject(new Error("Tarmoq xatosi"));
+
+      const formData = new FormData();
+      formData.append('file', file);
+      if (trackNumber) formData.append('track_number', String(trackNumber));
+      if (title) formData.append('title', title);
+      if (narrator) formData.append('narrator', narrator);
+
+      xhr.send(formData);
+    });
+  },
+
+  async getBookAudioTracks(bookId: string) {
+    try {
+      const res = await fetchWithRetry(`${API_BASE_URL}/books/${bookId}/audio-tracks`);
+      if (!res.ok) return [];
+      return res.json();
+    } catch {
+      return [];
+    }
+  },
+
+  async deleteAudioTrack(bookId: string, trackId: string) {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetchWithRetry(`${API_BASE_URL}/admin/books/${bookId}/audio-tracks/${trackId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Trekni o'chirishda xatolik");
     }
     return res.json();
   },

@@ -52,6 +52,19 @@ export interface Book {
   status?: string;
   chapters: Chapter[];
   featuredQuote: string;
+  audioTracks?: BookAudioTrack[];
+}
+
+export interface BookAudioTrack {
+  id: string;
+  bookId: string;
+  trackNumber: number;
+  title: string;
+  audioUrl: string;
+  durationSeconds: number;
+  fileSizeBytes: number;
+  narrator?: string;
+  createdAt?: string;
 }
 
 export interface AudioTrack {
@@ -64,6 +77,9 @@ export interface AudioTrack {
   isPlaying: boolean;
   currentTime: number;
   playbackRate: number;
+  audioUrl?: string;
+  trackList?: BookAudioTrack[];
+  currentTrackIndex?: number;
 }
 
 export interface Bookmark {
