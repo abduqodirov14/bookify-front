@@ -574,57 +574,97 @@ export const api = {
   },
 
   async uploadAudioTrack(
-    bookId: string, 
-    file: File, 
-    trackNumber?: number, 
-    title?: string, 
+    bookId: string,
+    file: File,
+    trackNumber?: number,
+    title?: string,
     narrator?: string,
     onProgress?: (percent: number) => void
   ): Promise<any> {
     const token = getAuthToken();
     if (!token) throw new Error("Avtorizatsiya talab qilinadi");
 
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', `${API_BASE_URL}/admin/books/${bookId}/audio-tracks/upload`);
-      xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-
-      if (xhr.upload && onProgress) {
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) {
-            const percent = Math.round((event.loaded / event.total) * 100);
-            onProgress(percent);
-          }
-        };
+    // 1. Wait for server to be ready (handles Render cold-start / deployment restart)
+    const baseUrl = API_BASE_URL.replace(/\/api\/v1\/?$/, '');
+    for (let attempt = 0; attempt < 8; attempt++) {
+      try {
+        const ping = await fetch(`${baseUrl}/health`, { signal: AbortSignal.timeout(8000) });
+        if (ping.ok) break;
+      } catch {
+        // Server still waking up — wait and retry
       }
+      if (attempt < 7) {
+        onProgress?.(0); // Keep UI alive
+        await new Promise(r => setTimeout(r, 3000));
+      } else {
+        throw new Error("Server javob bermayapti. Iltimos, bir daqiqadan so'ng qayta urinib ko'ring.");
+      }
+    }
 
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            resolve(JSON.parse(xhr.responseText));
-          } catch {
-            resolve({ status: 'success' });
+    // 2. Upload with retry (up to 3 attempts on connection errors)
+    const MAX_RETRIES = 3;
+    let lastError: Error = new Error("Noma'lum xatolik");
+
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const result = await new Promise<any>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', `${API_BASE_URL}/admin/books/${bookId}/audio-tracks/upload`);
+          xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+          xhr.timeout = 5 * 60 * 1000; // 5 minutes for large MP3 files
+
+          if (xhr.upload && onProgress) {
+            xhr.upload.onprogress = (event) => {
+              if (event.lengthComputable) {
+                onProgress(Math.round((event.loaded / event.total) * 100));
+              }
+            };
           }
-        } else {
-          try {
-            const err = JSON.parse(xhr.responseText);
-            reject(new Error(err.detail || "Audio yuklashda xatolik"));
-          } catch {
-            reject(new Error("Audio yuklashda server xatosi"));
-          }
+
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try { resolve(JSON.parse(xhr.responseText)); }
+              catch { resolve({ status: 'success' }); }
+            } else {
+              try {
+                const err = JSON.parse(xhr.responseText);
+                reject(new Error(err.detail || `Server xatosi (${xhr.status})`));
+              } catch {
+                reject(new Error(`Server xatosi: ${xhr.status}`));
+              }
+            }
+          };
+
+          xhr.ontimeout = () => reject(new Error("Yuklash vaqti tugadi (5 daqiqa). Fayl juda katta bo'lishi mumkin."));
+          xhr.onerror = () => reject(new Error("ERR_CONNECTION_CLOSED"));
+
+          const formData = new FormData();
+          formData.append('file', file);
+          if (trackNumber) formData.append('track_number', String(trackNumber));
+          if (title) formData.append('title', title);
+          if (narrator) formData.append('narrator', narrator);
+
+          xhr.send(formData);
+        });
+        return result; // success — exit retry loop
+      } catch (err: any) {
+        lastError = err;
+        const isRetryable = err.message?.includes('ERR_CONNECTION_CLOSED') ||
+                            err.message?.includes('Tarmoq') ||
+                            err.message?.includes('network') ||
+                            err.message?.includes('Failed to fetch');
+
+        if (isRetryable && attempt < MAX_RETRIES) {
+          onProgress?.(0);
+          console.warn(`[AudioUpload] Attempt ${attempt} failed (${err.message}), retrying in 4s...`);
+          await new Promise(r => setTimeout(r, 4000));
+          continue;
         }
-      };
+        throw err;
+      }
+    }
 
-      xhr.onerror = () => reject(new Error("Tarmoq xatosi"));
-
-      const formData = new FormData();
-      formData.append('file', file);
-      if (trackNumber) formData.append('track_number', String(trackNumber));
-      if (title) formData.append('title', title);
-      if (narrator) formData.append('narrator', narrator);
-
-      xhr.send(formData);
-    });
+    throw lastError;
   },
 
   async getBookAudioTracks(bookId: string) {
