@@ -270,19 +270,46 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
       formData.append('pages', String(pages));
       formData.append('narrator', narrator);
       formData.append('description', description || `${title} — yangi yuklangan sara durdona asar.`);
-      formData.append('cover_image_val', coverUrl);
-      formData.append('cover_image_url', coverUrl);
+
+      // Handle cover image safely: if base64 data URL, convert to Blob file
+      if (coverUrl.startsWith('data:image/')) {
+        try {
+          const arr = coverUrl.split(',');
+          const mimeMatch = arr[0].match(/:(.*?);/);
+          const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+          const bstr = atob(arr[1]);
+          let n = bstr.length;
+          const u8arr = new Uint8Array(n);
+          while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+          }
+          const coverBlob = new Blob([u8arr], { type: mime });
+          const ext = mime.includes('png') ? 'png' : mime.includes('webp') ? 'webp' : 'jpg';
+          formData.append('cover', coverBlob, `cover_${Date.now()}.${ext}`);
+        } catch {
+          formData.append('cover_image_url', coverUrl);
+          formData.append('cover_image_val', coverUrl);
+        }
+      } else {
+        formData.append('cover_image_url', coverUrl);
+        formData.append('cover_image_val', coverUrl);
+      }
+
+      // Safe clean filename for multipart Content-Disposition (ASCII only, no quotes, no apostrophes)
+      const safeBaseName = title.trim().replace(/[^a-zA-Z0-9_-]/g, '_').replace(/_+/g, '_').slice(0, 40) || 'book_content';
 
       if (uploadTextMode === 'text' && directTextContent.trim()) {
-        const blob = new Blob([directTextContent.trim()], { type: 'text/plain' });
-        formData.append('file', blob, `${title}.txt`);
+        const blob = new Blob([directTextContent.trim()], { type: 'text/plain;charset=utf-8' });
+        formData.append('file', blob, `${safeBaseName}.txt`);
       } else if (bookFile) {
-        formData.append('file', bookFile);
+        const rawExt = bookFile.name.includes('.') ? bookFile.name.substring(bookFile.name.lastIndexOf('.')).toLowerCase() : '.pdf';
+        const cleanFile = `${safeBaseName}${rawExt}`;
+        formData.append('file', bookFile, cleanFile);
       } else {
         const blob = new Blob([
           `1-Bob: ${title}\n\nUshbu kitob muvaffaqiyatli chop etildi va ma'lumotlar bazasida to'liq saqlandi.`
-        ], { type: 'text/plain' });
-        formData.append('file', blob, `${title}.txt`);
+        ], { type: 'text/plain;charset=utf-8' });
+        formData.append('file', blob, `${safeBaseName}.txt`);
       }
 
       setUploadProgress(20);
