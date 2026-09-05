@@ -156,8 +156,28 @@ export default function BookSpread({ book, onBack }: Props) {
     }
   };
 
-  // Real progress sync with backend database (debounced to avoid request flooding)
+  // Real progress sync with backend database + Continuous Active Reading Heartbeat for Leaderboard
   const lastSyncedPercent = React.useRef<number>(-1);
+  const lastUserInteraction = React.useRef<number>(Date.now());
+
+  // Track user activity (mouse, touch, scroll, keyboard)
+  useEffect(() => {
+    const markActive = () => {
+      lastUserInteraction.current = Date.now();
+    };
+    window.addEventListener('mousemove', markActive, { passive: true });
+    window.addEventListener('scroll', markActive, { passive: true });
+    window.addEventListener('touchstart', markActive, { passive: true });
+    window.addEventListener('keydown', markActive, { passive: true });
+    return () => {
+      window.removeEventListener('mousemove', markActive);
+      window.removeEventListener('scroll', markActive);
+      window.removeEventListener('touchstart', markActive);
+      window.removeEventListener('keydown', markActive);
+    };
+  }, []);
+
+  // 1. Sync on page turn
   useEffect(() => {
     const totalPages = Math.max(1, totalSpreads * 2);
     const curPage = (currentPageSpread * 2) + 1;
@@ -167,11 +187,33 @@ export default function BookSpread({ book, onBack }: Props) {
 
     const timer = setTimeout(() => {
       lastSyncedPercent.current = percent;
-      api.updateProgress(book.id, percent, book.chapters[currentChapterIdx]?.id);
+      api.updateProgress(book.id, percent, book.chapters[currentChapterIdx]?.id, 0);
     }, 800);
 
     return () => clearTimeout(timer);
   }, [currentPageSpread, currentChapterIdx, book.id, totalSpreads]);
+
+  // 2. Continuous Active Reading Heartbeat (Every 30 seconds: logs reading time & awards Leaderboard points)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (document.hidden) return; // Tab is in background
+
+      // Allow up to 5 minutes of stillness while reading a single long page or listening to audio
+      const idleSeconds = (Date.now() - lastUserInteraction.current) / 1000;
+      const isReadingActive = idleSeconds < 300 || isAudioPlaying;
+
+      if (isReadingActive) {
+        const totalPages = Math.max(1, totalSpreads * 2);
+        const curPage = (currentPageSpread * 2) + 1;
+        const percent = Math.min(100, Math.round((curPage / totalPages) * 100));
+        
+        // Send 30 seconds of verified reading time to backend
+        api.updateProgress(book.id, percent, book.chapters[currentChapterIdx]?.id, 30);
+      }
+    }, 30000); // Pulse every 30 seconds
+
+    return () => clearInterval(interval);
+  }, [book.id, currentPageSpread, currentChapterIdx, totalSpreads, isAudioPlaying]);
 
   // Fullscreen API toggle
   const toggleFullscreen = () => {
