@@ -21,6 +21,57 @@ export default function AuthModal({ onSuccess, onCancel }: Props) {
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleReady, setGoogleReady] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
+  const [resendCountdown, setResendCountdown] = useState<number>(0);
+  const [isResending, setIsResending] = useState<boolean>(false);
+
+  // 60-second OTP resend countdown
+  useEffect(() => {
+    if (resendCountdown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCountdown(prev => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCountdown]);
+
+  // Initialize Cloudflare Turnstile Captcha
+  useEffect(() => {
+    if (step !== 'creds') return;
+    const scriptId = 'cf-turnstile-script';
+    if (!document.getElementById(scriptId)) {
+      const script = document.createElement('script');
+      script.id = scriptId;
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+
+    const initTurnstile = () => {
+      const container = document.getElementById('turnstile-widget');
+      if (container && (window as any).turnstile) {
+        container.innerHTML = '';
+        try {
+          (window as any).turnstile.render('#turnstile-widget', {
+            sitekey: process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY || '0x4AAAAAAEpTeNVFrbGyXEPM',
+            callback: (token: string) => {
+              setTurnstileToken(token);
+            },
+            'expired-callback': () => {
+              setTurnstileToken('');
+            },
+            theme: 'auto',
+            size: 'normal'
+          });
+        } catch (e) {
+          console.warn('Turnstile render warning:', e);
+        }
+      }
+    };
+
+    const timer = setTimeout(initTurnstile, 500);
+    return () => clearTimeout(timer);
+  }, [step, isRegister]);
 
   // Initialize Google Identity Services (One-Tap & Native Button)
   useEffect(() => {
@@ -146,24 +197,24 @@ export default function AuthModal({ onSuccess, onCancel }: Props) {
     setLoading(true);
     try {
       if (isRegister) {
-        const data = await api.register(email.trim(), password.trim(), name.trim());
+        const data = await api.register(email.trim(), password.trim(), name.trim(), turnstileToken);
         if (data.require_2fa) {
           setTempToken(data.temp_token);
-          if (data.otp_hint) setOtp(data.otp_hint);
           setStep('otp');
-          toast.success(data.message || "Tasdiqlash kodi yuborildi!", { icon: '🛡️' });
+          setResendCountdown(60);
+          toast.success(data.message || "5 xonali tasdiqlash kodi pochtangizga yuborildi!", { icon: '📩' });
         } else if (data.access_token) {
           setAuthToken(data.access_token);
           onSuccess(data.user);
           toast.success(`Hisobingiz ochildi! Xush kelibsiz, ${data.user?.name || 'Kitobxon'}!`);
         }
       } else {
-        const data = await api.login(email.trim(), password.trim());
+        const data = await api.login(email.trim(), password.trim(), turnstileToken);
         if (data.require_2fa) {
           setTempToken(data.temp_token);
-          if (data.otp_hint) setOtp(data.otp_hint);
           setStep('otp');
-          toast.success("Xavfsizlik 2FA tasdiqlash kodi yuborildi", { icon: '🛡️' });
+          setResendCountdown(60);
+          toast.success(data.message || "5 xonali tasdiqlash kodi pochtangizga yuborildi", { icon: '📩' });
         } else if (data.access_token) {
           setAuthToken(data.access_token);
           onSuccess(data.user);
@@ -177,10 +228,24 @@ export default function AuthModal({ onSuccess, onCancel }: Props) {
     }
   };
 
+  const handleResendOtp = async () => {
+    if (resendCountdown > 0 || isResending || !tempToken) return;
+    setIsResending(true);
+    try {
+      const res = await api.resendOTP(tempToken);
+      toast.success(res.message || "Yangi 5 xonali kod pochtangizga yuborildi!", { icon: '📩' });
+      setResendCountdown(60);
+    } catch (err: any) {
+      toast.error(err.message || "Kodni qayta yuborishda xatolik");
+    } finally {
+      setIsResending(false);
+    }
+  };
+
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!otp.trim()) {
-      toast.error("Iltimos, 6 xonali tasdiqlash kodini kiriting");
+      toast.error("Iltimos, 5 xonali tasdiqlash kodini kiriting");
       return;
     }
 
@@ -193,7 +258,7 @@ export default function AuthModal({ onSuccess, onCancel }: Props) {
         toast.success(`Xavfsizlik tekshiruvidan muvaffaqiyatli o'tildi! Xush kelibsiz, ${data.user?.name || 'Kitobxon'}!`);
       }
     } catch (err: any) {
-      toast.error(err.message || "Kod noto'g'ri yoki muddati o'tgan");
+      toast.error(err.message || "5 xonali kod noto'g'ri yoki muddati o'tgan");
     } finally {
       setLoading(false);
     }
@@ -321,6 +386,9 @@ export default function AuthModal({ onSuccess, onCancel }: Props) {
                 </div>
               </div>
 
+              {/* Cloudflare Turnstile Captcha Widget */}
+              <div id="turnstile-widget" className="flex justify-center my-2 min-h-[65px]"></div>
+
               <button
                 type="submit"
                 disabled={loading}
@@ -348,36 +416,31 @@ export default function AuthModal({ onSuccess, onCancel }: Props) {
           </div>
         )}
 
-        {/* STEP 2: 2FA OTP Challenge */}
+        {/* STEP 2: 2FA OTP Challenge (5-Digit Gmail Code) */}
         {step === 'otp' && (
           <form onSubmit={handleVerifyOtp} className="space-y-5">
-            <div className="p-4 rounded-2xl bg-stone-50 dark:bg-white/[0.03] border border-stone-200 dark:border-white/10 text-stone-800 dark:text-stone-200 space-y-1 text-center">
+            <div className="p-4 rounded-2xl bg-stone-50 dark:bg-white/[0.03] border border-stone-200 dark:border-white/10 text-stone-800 dark:text-stone-200 space-y-1.5 text-center">
               <div className="flex items-center justify-center gap-2 text-xs font-bold text-stone-900 dark:text-white">
                 <ShieldCheck size={16} className="text-emerald-500" />
-                <span>Xavfsizlik Tekshiruvi</span>
+                <span>Pochta Tasdig'i &amp; 2FA</span>
               </div>
               <p className="text-[11px] text-stone-500 leading-relaxed">
-                Hisobingiz himoyasi uchun maxsus 6 xonali kodni kiriting
+                Bir martalik <strong>5 xonali tasdiqlash kodi</strong> sizning pochtangizga (<strong className="text-[#E05638] dark:text-amber-400">{email}</strong>) yuborildi. Iltimos, pochtangizni (kerak bo'lsa Spam bo'limini) tekshiring.
               </p>
-              {otp && (
-                <p className="text-[10px] font-mono text-stone-400 pt-1">
-                  Tasdiqlash kodi: <strong className="text-[#E05638]">{otp}</strong>
-                </p>
-              )}
             </div>
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block text-center">
-                6 Xonali Kod
+                5 Xonali Tasdiqlash Kodi
               </label>
               <input
                 type="text"
                 required
-                maxLength={6}
+                maxLength={5}
                 value={otp}
-                onChange={e => setOtp(e.target.value)}
-                placeholder="••••••"
-                className="w-full text-center tracking-[0.4em] font-mono font-bold text-2xl py-3 rounded-2xl bg-stone-50 dark:bg-[#0E1218] border border-stone-200 dark:border-white/10 text-stone-900 dark:text-white outline-none focus:border-[#E05638]"
+                onChange={e => setOtp(e.target.value.replace(/\D/g, ''))}
+                placeholder="•••••"
+                className="w-full text-center tracking-[0.6em] font-mono font-bold text-3xl py-3 rounded-2xl bg-stone-50 dark:bg-[#0E1218] border border-stone-200 dark:border-white/10 text-stone-900 dark:text-white outline-none focus:border-[#E05638]"
               />
             </div>
 
@@ -390,12 +453,27 @@ export default function AuthModal({ onSuccess, onCancel }: Props) {
               <Check size={16} />
             </button>
 
+            <div className="text-center pt-1">
+              <button
+                type="button"
+                disabled={resendCountdown > 0 || isResending}
+                onClick={handleResendOtp}
+                className="text-xs text-stone-500 hover:text-[#E05638] dark:hover:text-amber-400 font-mono disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed transition-colors"
+              >
+                {isResending 
+                  ? "Yuborilmoqda..." 
+                  : resendCountdown > 0 
+                    ? `Kodni qayta yuborish (${resendCountdown}s)` 
+                    : "Kodni qayta yuborish 📩"}
+              </button>
+            </div>
+
             <button
               type="button"
               onClick={() => setStep('creds')}
               className="w-full text-center text-xs text-stone-400 hover:text-stone-600 cursor-pointer"
             >
-              ← Orqaga qaytish
+              ← Boshqa hisob bilan kirish
             </button>
           </form>
         )}

@@ -67,14 +67,15 @@ async function fetchWithRetry(url: string, options: RequestInit = {}, retries = 
 
 export const api = {
   // Auth
-  async register(email: string, password: string, name: string) {
+  async register(email: string, password: string, name: string, turnstileToken?: string) {
     const res = await fetchWithRetry(`${API_BASE_URL}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: email.trim().toLowerCase(),
         password: password.trim(),
-        name: name.trim()
+        name: name.trim(),
+        turnstile_token: turnstileToken || null
       })
     });
     const data = await res.json().catch(() => ({}));
@@ -84,10 +85,13 @@ export const api = {
     return data;
   },
 
-  async login(email: string, password: string) {
+  async login(email: string, password: string, turnstileToken?: string) {
     const formData = new URLSearchParams();
     formData.append('username', email.trim().toLowerCase());
     formData.append('password', password);
+    if (turnstileToken) {
+      formData.append('client_id', turnstileToken);
+    }
 
     const res = await fetchWithRetry(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
@@ -101,6 +105,19 @@ export const api = {
     return res.json();
   },
 
+  async resendOTP(tempToken: string) {
+    const res = await fetchWithRetry(`${API_BASE_URL}/auth/resend-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ temp_token: tempToken })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.detail || "Kodni qayta yuborishda xatolik yuz berdi");
+    }
+    return data;
+  },
+
   async verify2FA(tempToken: string, code: string) {
     const res = await fetchWithRetry(`${API_BASE_URL}/auth/verify-2fa`, {
       method: 'POST',
@@ -109,7 +126,7 @@ export const api = {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || "2FA kodi noto'g'ri");
+      throw new Error(err.detail || "5 xonali tasdiqlash kodi noto'g'ri");
     }
     return res.json();
   },
