@@ -649,24 +649,24 @@ export default function BookSpread({ book, onBack }: Props) {
             </div>
 
             {/* Exact Bottom Capsule Indicator from screenshot */}
-            <div className="absolute -bottom-3 sm:-bottom-4 left-1/2 -translate-x-1/2 z-30 px-3.5 py-1 rounded-full bg-[#262626] border border-white/10 text-white/95 text-xs font-mono font-medium shadow-xl pointer-events-none select-none tracking-wider">
+            <div className="absolute -bottom-3 sm:-bottom-4 left-1/2 -translate-x-1/2 z-30 px-4 py-1 rounded-full bg-[#262626] border border-white/10 text-white/95 text-xs font-mono font-medium shadow-xl pointer-events-none select-none tracking-wider">
               {dbPages.length > 0 
-                ? `${leftPage.pageNumber}${rightPage ? `-${rightPage.pageNumber}` : ''} / ${dbPages.length} sahifa`
-                : `${currentPageSpread * 2 + 1}${rightPage ? `-${currentPageSpread * 2 + 2}` : ''} / ${totalSpreads * 2} sahifa`
+                ? `${leftPage.pageNumber} / ${dbPages.length} sahifa`
+                : `${currentPageSpread + 1} / ${totalSpreads} sahifa`
               }
             </div>
           </div>
         ) : (
           /* Mode B: Continuous Vertical Reading Scroll */
           <div 
-            className="w-full max-w-3xl h-[82vh] overflow-y-auto p-8 sm:p-16 rounded-3xl shadow-lg border transition-all"
+            className="w-full max-w-3xl h-[85vh] 2xl:h-[87vh] overflow-y-auto rounded-3xl border shadow-2xl p-6 sm:p-12 transition-all"
             style={{ backgroundColor: themeStyles.pageBg, borderColor: themeStyles.border }}
           >
-            <div className="pb-8 border-b mb-8 border-black/10 dark:border-white/10">
+            <div className="pb-8 mb-8 border-b border-black/10 dark:border-white/10">
               <span className="text-xs font-mono uppercase tracking-widest text-[#E05638] font-bold">
                 {book.title}
               </span>
-              <h2 className="font-serif text-3xl font-bold mt-2" style={{ color: themeStyles.text }}>
+              <h2 className="font-serif text-2xl sm:text-3xl font-bold mt-1" style={{ color: themeStyles.text }}>
                 {chapter.title}
               </h2>
             </div>
@@ -686,7 +686,7 @@ export default function BookSpread({ book, onBack }: Props) {
 
       {/* ── Floating Glassmorphic Bottom Navigation HUD Pill (Mutolaa & Play Books style) ── */}
       <footer 
-        className={`fixed inset-x-0 bottom-6 z-40 flex flex-col items-center gap-2 px-4 transition-all duration-300 ${
+        className={`fixed inset-x-0 bottom-10 sm:bottom-12 z-40 flex flex-col items-center gap-2 px-4 transition-all duration-300 ${
           showControls ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0 pointer-events-none'
         }`}
       >
