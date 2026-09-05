@@ -68,25 +68,20 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
     setIsPlaying(false); // will be set to true once audio loads below
   }, [track?.bookId]); // only when book changes, not on every re-render
 
-  // When audio source changes — load and play
+  // When audio source changes — load new file, stop spinner, don't auto-play
+  // (browser autoplay policy blocks play() without user gesture → infinite spinner)
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !activeAudioSrc) return;
 
     setIsLoadingAudio(true);
+    setIsPlaying(false);
     setCurrentTime(0);
     setDuration(0);
 
     audio.src = activeAudioSrc;
     audio.load();
-
-    // Auto-play only if we were already playing or this is the first load
-    const playPromise = audio.play();
-    if (playPromise !== undefined) {
-      playPromise
-        .then(() => setIsPlaying(true))
-        .catch(() => setIsPlaying(false)); // Autoplay blocked by browser — user must press play
-    }
+    // isLoadingAudio will be cleared by onCanPlay / onLoadedMetadata events
   }, [activeAudioSrc]);
 
   // Keep speed in sync
@@ -117,10 +112,14 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
     const audio = audioRef.current;
     if (!audio) return;
     if (audio.paused) {
-      audio.play().then(() => setIsPlaying(true)).catch(() => {});
+      setIsLoadingAudio(true);
+      audio.play()
+        .then(() => { setIsPlaying(true); setIsLoadingAudio(false); })
+        .catch(() => { setIsPlaying(false); setIsLoadingAudio(false); });
     } else {
       audio.pause();
       setIsPlaying(false);
+      setIsLoadingAudio(false);
     }
   }, []);
 
