@@ -389,14 +389,15 @@ export default function BookSpread({ book, onBack }: Props) {
       style={{ backgroundColor: themeStyles.bg }}
     >
       
-      {/* ── Top Distraction-Free Header (Smooth Hide/Show) ── */}
+      {/* ── Top Distraction-Free Header (Smooth Hide/Show, Never Covers Book Words!) ── */}
       <header 
-        className={`h-16 px-6 flex items-center justify-between border-b transition-all duration-300 z-30 ${
+        className={`px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between border-b transition-all duration-300 z-30 gap-3 shrink-0 ${
           showControls ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'
         }`}
         style={{ borderColor: themeStyles.border, backgroundColor: themeStyles.bg }}
       >
-        <div className="flex items-center gap-3">
+        {/* Left: Back to library + Book Title */}
+        <div className="flex items-center gap-3 shrink-0">
           <button 
             onClick={onBack}
             className="p-2 rounded-xl transition-colors cursor-pointer hover:opacity-80 flex items-center gap-2 text-xs font-mono font-bold"
@@ -408,51 +409,119 @@ export default function BookSpread({ book, onBack }: Props) {
           </button>
           
           <div className="flex flex-col">
-            <span className="text-xs font-serif font-bold truncate max-w-[200px] sm:max-w-md" style={{ color: themeStyles.text }}>
+            <span className="text-xs font-serif font-bold truncate max-w-[130px] sm:max-w-[200px]" style={{ color: themeStyles.text }}>
               {book.title}
             </span>
-            <span className="text-[10px] font-mono opacity-60 truncate" style={{ color: themeStyles.text }}>
-              {book.authorName} • {chapter.title}
+            <span className="text-[10px] font-mono opacity-60 truncate max-w-[130px] sm:max-w-[200px]" style={{ color: themeStyles.text }}>
+              {chapter.title}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Center: Page Scrubber Rail & Progress Pill (Moved to Header so it never covers words!) */}
+        <div 
+          className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-1.5 rounded-full border shadow-xs select-none"
+          style={{ backgroundColor: themeStyles.pageBg, borderColor: themeStyles.border }}
+        >
+          <button 
+            onClick={prevPage}
+            disabled={currentPageSpread === 0 && currentChapterIdx === 0}
+            className="p-1 rounded-md hover:opacity-70 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
+            style={{ color: themeStyles.text }}
+            title="Oldingi sahifa (←)"
+          >
+            <ChevronLeft size={15} />
+          </button>
+
+          <input 
+            type="range"
+            min="0"
+            max={Math.max(0, totalSpreads - 1)}
+            value={currentPageSpread}
+            onChange={(e) => setCurrentPageSpread(Number(e.target.value))}
+            className="w-20 sm:w-28 md:w-36 lg:w-44 accent-[#E05638] cursor-pointer h-1.5 bg-black/20 dark:bg-white/20 rounded-full"
+            title="Sahifani siljitish"
+          />
+
+          <button 
+            onClick={nextPage}
+            disabled={currentPageSpread >= totalSpreads - 1 && currentChapterIdx >= book.chapters.length - 1}
+            className="p-1 rounded-md hover:opacity-70 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
+            style={{ color: themeStyles.text }}
+            title="Keyingi sahifa (→)"
+          >
+            <ChevronRight size={15} />
+          </button>
+
+          <span className="opacity-30 font-mono text-xs">•</span>
+
+          <span className="text-xs font-mono font-bold whitespace-nowrap" style={{ color: themeStyles.text }}>
+            {dbPages.length > 0 
+              ? `Sahifa ${currentPageSpread * 2 + 1}${dbPages[currentPageSpread * 2 + 1] ? `-${currentPageSpread * 2 + 2}` : ''} / ${dbPages.length}`
+              : `${currentPageSpread + 1} / ${totalSpreads} sahifa`
+            }
+          </span>
+
+          <span className="opacity-30 font-mono text-xs hidden lg:inline">•</span>
+
+          <span className="text-[11px] font-mono opacity-70 whitespace-nowrap hidden lg:inline" style={{ color: themeStyles.text }}>
+            ~{remainingMinutes} daq qoldi
+          </span>
+        </div>
+
+        {/* Right: Controls & Reading Settings */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Audio Reading Toggle */}
           <button
             onClick={() => {
               setIsAudioPlaying(!isAudioPlaying);
               toast.success(isAudioPlaying ? "Audio to'xtatildi" : "Sinxron ovozli mutolaa faollashdi!", { icon: '🎧' });
             }}
-            className={`px-3 py-1.5 rounded-full text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+            className={`px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
               isAudioPlaying 
                 ? 'bg-[#E05638] text-white shadow-md animate-pulse' 
                 : 'bg-black/10 dark:bg-white/10 hover:bg-[#E05638] hover:text-white'
             }`}
             style={{ color: isAudioPlaying ? '#FFF' : themeStyles.text }}
+            title="Ovozli o'qish"
           >
             {isAudioPlaying ? <Pause size={14} /> : <Play size={14} />}
-            <span>{isAudioPlaying ? "Ovozli O'qish" : "Tinglash"}</span>
+            <span className="hidden md:inline">{isAudioPlaying ? "Ovozli O'qish" : "Tinglash"}</span>
+          </button>
+
+          {/* Reading Mode Toggle (Spread vs Vertical) */}
+          <button
+            onClick={() => setReadingMode(readingMode === 'spread' ? 'vertical' : 'spread')}
+            className="p-2 rounded-xl transition-colors cursor-pointer hover:opacity-80 flex items-center gap-1"
+            style={{ color: themeStyles.text }}
+            title={readingMode === 'spread' ? "Vertikal o'qish rejimiga o'tish" : "2-Varaqli Yoyilmaga o'tish"}
+          >
+            {readingMode === 'spread' ? <Rows size={17} /> : <Columns size={17} />}
+            <span className="hidden xl:inline text-xs font-mono">
+              {readingMode === 'spread' ? "Vertikal" : "Yoyilma"}
+            </span>
           </button>
 
           {/* Table of Contents Drawer Toggle */}
           <button
             onClick={() => setShowToc(true)}
-            className="p-2 rounded-xl transition-colors cursor-pointer hover:opacity-80"
+            className="p-2 rounded-xl transition-colors cursor-pointer hover:opacity-80 flex items-center gap-1"
             style={{ color: themeStyles.text }}
             title="Mundarija (T)"
           >
-            <List size={18} />
+            <List size={17} />
+            <span className="hidden xl:inline text-xs font-mono">Mundarija</span>
           </button>
 
           {/* Typography Settings Drawer Toggle */}
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className="p-2 rounded-xl transition-colors cursor-pointer hover:opacity-80"
+            className="p-2 rounded-xl transition-colors cursor-pointer hover:opacity-80 flex items-center gap-1"
             style={{ color: themeStyles.text }}
-            title="Matn sozlamalari"
+            title="Matn sozlamalari & Mavzular"
           >
-            <Settings2 size={18} />
+            <Settings2 size={17} />
+            <span className="hidden xl:inline text-xs font-mono">Shrift</span>
           </button>
 
           {/* Fullscreen Toggle */}
@@ -462,7 +531,7 @@ export default function BookSpread({ book, onBack }: Props) {
             style={{ color: themeStyles.text }}
             title="To'liq ekran (F)"
           >
-            {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+            {isFullscreen ? <Minimize2 size={17} /> : <Maximize2 size={17} />}
           </button>
         </div>
       </header>
@@ -684,108 +753,34 @@ export default function BookSpread({ book, onBack }: Props) {
 
       </main>
 
-      {/* ── Floating Glassmorphic Bottom Navigation HUD Pill (Mutolaa & Play Books style) ── */}
-      <footer 
-        className={`fixed inset-x-0 bottom-10 sm:bottom-12 z-40 flex flex-col items-center gap-2 px-4 transition-all duration-300 ${
-          showControls ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0 pointer-events-none'
-        }`}
-      >
-        
-        {/* Floating Page Progress Pill */}
-        <div 
-          className="flex items-center gap-3 rounded-full px-5 py-1.5 text-xs shadow-xl backdrop-blur-xl border border-white/10"
-          style={{ backgroundColor: themeStyles.hudBg, color: themeStyles.hudText }}
-        >
-          <span className="font-medium truncate max-w-[140px]">{chapter.title}</span>
-          <span className="opacity-30">•</span>
-          <span className="font-mono">
-            {dbPages.length > 0 
-              ? `Sahifa ${currentPageSpread * 2 + 1}${dbPages[currentPageSpread * 2 + 1] ? `-${currentPageSpread * 2 + 2}` : ''} / ${dbPages.length}`
-              : `${currentPageSpread + 1} / ${totalSpreads} sahifa`
-            }
-          </span>
-          <span className="opacity-30">•</span>
-          <span className="opacity-80 font-mono">~{remainingMinutes} daqiqa qoldi</span>
-        </div>
+      {/* ── Side Page Turn Chevrons (Positioned in the outer margins, completely outside the book text!) ── */}
+      {readingMode === 'spread' && (
+        <>
+          <button
+            onClick={prevPage}
+            disabled={currentPageSpread === 0 && currentChapterIdx === 0}
+            className={`fixed left-2 sm:left-4 top-1/2 -translate-y-1/2 z-30 p-2.5 sm:p-3 rounded-full shadow-xl border border-black/10 dark:border-white/10 backdrop-blur-md transition-all disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer hover:scale-110 active:scale-95 ${
+              showControls ? 'opacity-80 hover:opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+            style={{ backgroundColor: themeStyles.pageBg, color: themeStyles.text }}
+            title="Oldingi sahifa (←)"
+          >
+            <ChevronLeft size={22} />
+          </button>
 
-        {/* Floating Control Toolbar Pill */}
-        <div 
-          className="flex flex-col items-center gap-2 rounded-3xl p-3 shadow-2xl backdrop-blur-xl border border-white/10 w-full max-w-xl"
-          style={{ backgroundColor: themeStyles.hudBg, color: themeStyles.hudText }}
-        >
-          {/* Interactive Scrub Rail Slider */}
-          <div className="w-full px-3 flex items-center gap-3">
-            <button 
-              onClick={prevPage}
-              disabled={currentPageSpread === 0 && currentChapterIdx === 0}
-              className="p-1 text-white/70 hover:text-white disabled:opacity-30 cursor-pointer"
-            >
-              <ChevronLeft size={16} />
-            </button>
-
-            <input 
-              type="range"
-              min="0"
-              max={Math.max(0, totalSpreads - 1)}
-              value={currentPageSpread}
-              onChange={(e) => setCurrentPageSpread(Number(e.target.value))}
-              className="flex-1 accent-[#E05638] cursor-pointer h-1 bg-white/20 rounded-full"
-            />
-
-            <button 
-              onClick={nextPage}
-              disabled={currentPageSpread >= totalSpreads - 1 && currentChapterIdx >= book.chapters.length - 1}
-              className="p-1 text-white/70 hover:text-white disabled:opacity-30 cursor-pointer"
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
-
-          {/* Quick HUD Action Buttons */}
-          <div className="flex items-center justify-between w-full px-3 pt-1 border-t border-white/10 text-xs">
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => setShowToc(true)}
-                className="p-2 rounded-xl hover:bg-white/10 flex items-center gap-1.5 cursor-pointer"
-                title="Mundarija"
-              >
-                <List size={15} />
-                <span className="hidden sm:inline">Mundarija</span>
-              </button>
-
-              <button 
-                onClick={() => setReadingMode(readingMode === 'spread' ? 'vertical' : 'spread')}
-                className="p-2 rounded-xl hover:bg-white/10 flex items-center gap-1.5 cursor-pointer"
-                title="Rejimni almashtirish"
-              >
-                {readingMode === 'spread' ? <Rows size={15} /> : <Columns size={15} />}
-                <span className="hidden sm:inline">{readingMode === 'spread' ? "Vertikal o'qish" : "2-Varaqli Yoyilma"}</span>
-              </button>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => setShowSettings(!showSettings)}
-                className="p-2 rounded-xl hover:bg-white/10 flex items-center gap-1.5 cursor-pointer"
-                title="Shrift & Mavzu"
-              >
-                <Settings2 size={15} />
-                <span className="hidden sm:inline">Shrift</span>
-              </button>
-
-              <button 
-                onClick={toggleFullscreen}
-                className="p-2 rounded-xl hover:bg-white/10 cursor-pointer"
-                title="To'liq ekran"
-              >
-                {isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
-              </button>
-            </div>
-          </div>
-
-        </div>
-
-      </footer>
+          <button
+            onClick={nextPage}
+            disabled={currentPageSpread >= totalSpreads - 1 && currentChapterIdx >= book.chapters.length - 1}
+            className={`fixed right-2 sm:right-4 top-1/2 -translate-y-1/2 z-30 p-2.5 sm:p-3 rounded-full shadow-xl border border-black/10 dark:border-white/10 backdrop-blur-md transition-all disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer hover:scale-110 active:scale-95 ${
+              showControls ? 'opacity-80 hover:opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+            style={{ backgroundColor: themeStyles.pageBg, color: themeStyles.text }}
+            title="Keyingi sahifa (→)"
+          >
+            <ChevronRight size={22} />
+          </button>
+        </>
+      )}
 
       {/* ── Table of Contents (Mundarija) Slide-in Drawer ── */}
       {showToc && (
