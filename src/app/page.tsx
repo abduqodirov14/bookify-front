@@ -94,42 +94,12 @@ export default function HomeApp() {
     }
   }, [currentPage, currentUser, authInitialized]);
 
-  // Fetch real books from FastAPI backend
+  // Fetch real books from FastAPI backend (Fast direct mapping & local caching)
   const loadBooksFromBackend = async () => {
-    setIsLoadingBooks(true);
     try {
-      // Pass includeAll=true so AdminPanel and lists receive all books (READY, PROCESSING, etc.)
       const data = await api.getBooks(true);
-      const formatted: Book[] = await Promise.all(data.map(async (b: any) => {
-        let chaptersData: any[] = [];
-        try {
-          const detail = await api.getBookReader(b.id);
-          if (detail && detail.chapters && detail.chapters.length > 0) {
-            chaptersData = detail.chapters.map((ch: any) => ({
-              id: String(ch.id),
-              number: ch.index,
-              title: ch.title,
-              content: ch.sentences && ch.sentences.length > 0
-                ? ch.sentences.map((s: any) => s.text).join('\n\n')
-                : `${b.title} asarining ${ch.title} bobi.`
-            }));
-          }
-        } catch {
-          // fallback
-        }
-
-        if (chaptersData.length === 0) {
-          chaptersData = [
-            {
-              id: `c1-${b.id}`,
-              number: 1,
-              title: `1-Bob: ${b.title}`,
-              content: b.description || `${b.title} asari mutolaaga tayyor.`
-            }
-          ];
-        }
-
-        return {
+      if (Array.isArray(data) && data.length > 0) {
+        const formatted: Book[] = data.map((b: any) => ({
           id: String(b.id),
           title: b.title,
           authorId: b.author ? b.author.toLowerCase().replace(/\s+/g, '-').replace(/['`]/g, '') : 'abdulla-qodiriy',
@@ -146,21 +116,60 @@ export default function HomeApp() {
           narrator: b.narrator || 'Afzal Rafiqov',
           featuredQuote: "Moziyga qaytib ish ko'rmak xayrlidir...",
           status: b.status || 'PUBLISHED',
-          chapters: chaptersData
-        };
-      }));
-      setBooksList(formatted);
-      if (formatted.length > 0 && !selectedBookId) {
-        setSelectedBookId(formatted[0].id);
+          chapters: [
+            {
+              id: `c1-${b.id}`,
+              number: 1,
+              title: `1-Bob: ${b.title}`,
+              content: b.description || `${b.title} asari mutolaaga tayyor.`
+            }
+          ]
+        }));
+
+        setBooksList(formatted);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('bookify_cached_books', JSON.stringify(formatted));
+        }
+        if (!selectedBookId && formatted.length > 0) {
+          setSelectedBookId(formatted[0].id);
+        }
       }
     } catch (e) {
       console.error("Backend books fetch error:", e);
+      // If network fails (e.g. Render cold boot), restore from localStorage cache
+      if (typeof window !== 'undefined') {
+        const cached = localStorage.getItem('bookify_cached_books');
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setBooksList(parsed);
+              if (!selectedBookId) setSelectedBookId(parsed[0].id);
+            }
+          } catch {}
+        }
+      }
     } finally {
       setIsLoadingBooks(false);
     }
   };
 
   useEffect(() => {
+    // 1. Immediately restore cached books so screen is NEVER empty on refresh
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('bookify_cached_books');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setBooksList(parsed);
+            setSelectedBookId(parsed[0].id);
+            setIsLoadingBooks(false);
+          }
+        }
+      } catch {}
+    }
+    // 2. Refresh from backend
     loadBooksFromBackend();
   }, []);
 
