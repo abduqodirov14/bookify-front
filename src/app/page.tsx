@@ -293,6 +293,7 @@ export default function HomeApp() {
     }
 
     const firstTrack = tracks.length > 0 ? tracks[0] : null;
+    const resolvedUrl = firstTrack?.audioUrl || (firstTrack as any)?.audio_url || '';
 
     setActiveAudioTrack({
       bookId: book.id,
@@ -300,17 +301,23 @@ export default function HomeApp() {
       author: book.authorName,
       coverImage: book.coverImage,
       chapterTitle: firstTrack ? firstTrack.title : (book.chapters[0]?.title || "1-Bob"),
-      duration: firstTrack && firstTrack.durationSeconds > 0 
-        ? `${Math.floor(firstTrack.durationSeconds / 60)} daqiqa` 
+      duration: firstTrack && (firstTrack.durationSeconds || (firstTrack as any)?.duration_seconds) > 0 
+        ? `${Math.floor((firstTrack.durationSeconds || (firstTrack as any)?.duration_seconds) / 60)} daqiqa` 
         : book.audioDuration,
-      isPlaying: true,
+      isPlaying: Boolean(resolvedUrl),
       currentTime: 0,
       playbackRate: 1.0,
-      audioUrl: firstTrack?.audioUrl,
+      audioUrl: resolvedUrl,
+      narrator: firstTrack?.narrator || book.narrator || 'Afzal Rafiqov',
       trackList: tracks,
       currentTrackIndex: 0
     });
-    toast.success(`"${book.title}" audio spektakli tinglanmoqda`, { icon: '🎧' });
+
+    if (resolvedUrl) {
+      toast.success(`"${book.title}" audio spektakli tinglanmoqda`, { icon: '🎧' });
+    } else {
+      toast("Ushbu asar uchun hozircha audio trek yuklanmagan. Boshqaruv panelidan yangi audio yuklashingiz mumkin.", { icon: 'ℹ️', duration: 4500 });
+    }
   };
 
   const publishedBooks = booksList.filter(b => !b.status || b.status === 'PUBLISHED');

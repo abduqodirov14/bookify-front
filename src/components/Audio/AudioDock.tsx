@@ -24,7 +24,7 @@ interface Props {
 }
 
 export default function AudioDock({ track, onClose, onOpenReader }: Props) {
-  // Always-mounted audio element — never conditional
+  // Always-mounted audio element — never null
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const [currentIndex, setCurrentIndex] = useState<number>(0);
@@ -39,10 +39,15 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
   const [sleepTimerSecondsLeft, setSleepTimerSecondsLeft] = useState<number | null>(null);
   const [isLoadingAudio, setIsLoadingAudio] = useState<boolean>(false);
 
-  // Available tracks sorted by track_number ascending (1 → 2 → 3 …)
+  // Available tracks sorted by track number ascending (1 → 2 → 3 …)
+  // Handles both camelCase (trackNumber) and snake_case (track_number)
   const tracksList: BookAudioTrack[] = useMemo(() => {
     const list = track?.trackList && track.trackList.length > 0 ? [...track.trackList] : [];
-    return list.sort((a, b) => (a.trackNumber ?? 0) - (b.trackNumber ?? 0));
+    return list.sort((a, b) => {
+      const numA = (a.trackNumber ?? (a as any).track_number ?? 1);
+      const numB = (b.trackNumber ?? (b as any).track_number ?? 1);
+      return numA - numB;
+    });
   }, [track]);
 
   // Active sub-track
@@ -52,41 +57,64 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
       : null;
   }, [tracksList, currentIndex]);
 
-  // Audio URL for current track/sub-track
+  // Audio URL for current track/sub-track (handles both audioUrl and audio_url)
   const activeAudioSrc = useMemo(() => {
-    if (currentSubTrack?.audioUrl) return resolveAudioUrl(currentSubTrack.audioUrl);
-    if (track?.audioUrl) return resolveAudioUrl(track.audioUrl);
+    const raw = currentSubTrack?.audioUrl || 
+                (currentSubTrack as any)?.audio_url || 
+                track?.audioUrl || 
+                (track as any)?.audio_url;
+    if (raw) return resolveAudioUrl(raw);
     return '';
   }, [currentSubTrack, track]);
 
-  // When track prop changes — reset index and start playing
+  // When book changes — reset index
   useEffect(() => {
     if (!track) return;
     setCurrentIndex(track.currentTrackIndex ?? 0);
     setCurrentTime(0);
     setDuration(0);
-    setIsPlaying(false); // will be set to true once audio loads below
-  }, [track?.bookId]); // only when book changes, not on every re-render
+  }, [track?.bookId]);
 
-  // When audio source changes — load new file, stop spinner, don't auto-play
-  // (browser autoplay policy blocks play() without user gesture → infinite spinner)
+  // When audio source changes — load and play immediately
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || !activeAudioSrc) return;
+    if (!audio) return;
+
+    if (!activeAudioSrc) {
+      audio.removeAttribute('src');
+      setIsLoadingAudio(false);
+      setIsPlaying(false);
+      return;
+    }
 
     setIsLoadingAudio(true);
-    setIsPlaying(false);
     setCurrentTime(0);
     setDuration(0);
 
     audio.src = activeAudioSrc;
     audio.load();
-    // isLoadingAudio will be cleared by onCanPlay / onLoadedMetadata events
+
+    // Trigger immediate playback on user selection
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          setIsPlaying(true);
+          setIsLoadingAudio(false);
+        })
+        .catch((err) => {
+          console.warn("[AudioDock] Autoplay delayed or requires tap:", err);
+          setIsPlaying(false);
+          setIsLoadingAudio(false);
+        });
+    }
   }, [activeAudioSrc]);
 
-  // Keep speed in sync
+  // Keep playback speed in sync
   useEffect(() => {
-    if (audioRef.current) audioRef.current.playbackRate = speed;
+    if (audioRef.current) {
+      audioRef.current.playbackRate = speed;
+    }
   }, [speed]);
 
   // Sleep Timer countdown
@@ -106,22 +134,35 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
     return () => clearInterval(interval);
   }, [sleepTimerSecondsLeft]);
 
-  // ── Controls ──────────────────────────────────────────────────
+  // ── Playback Controls ─────────────────────────────────────────
 
   const togglePlay = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
+
+    if (!activeAudioSrc) {
+      toast("Ushbu asar uchun audio fayl yuklanmagan", { icon: '🎧' });
+      return;
+    }
+
     if (audio.paused) {
       setIsLoadingAudio(true);
       audio.play()
-        .then(() => { setIsPlaying(true); setIsLoadingAudio(false); })
-        .catch(() => { setIsPlaying(false); setIsLoadingAudio(false); });
+        .then(() => {
+          setIsPlaying(true);
+          setIsLoadingAudio(false);
+        })
+        .catch((err) => {
+          console.error("Play failed:", err);
+          setIsPlaying(false);
+          setIsLoadingAudio(false);
+        });
     } else {
       audio.pause();
       setIsPlaying(false);
       setIsLoadingAudio(false);
     }
-  }, []);
+  }, [activeAudioSrc]);
 
   const cycleSpeed = () => {
     const speeds = [1.0, 1.25, 1.5, 2.0];
@@ -137,7 +178,8 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
 
   const handleForward15 = () => {
     if (!audioRef.current) return;
-    audioRef.current.currentTime = Math.min(audioRef.current.duration || Infinity, audioRef.current.currentTime + 15);
+    const dur = audioRef.current.duration || duration || Infinity;
+    audioRef.current.currentTime = Math.min(dur, audioRef.current.currentTime + 15);
   };
 
   const handlePrevTrack = () => {
@@ -145,11 +187,15 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
       audioRef.current.currentTime = 0;
       return;
     }
-    if (currentIndex > 0) setCurrentIndex(i => i - 1);
+    if (currentIndex > 0) {
+      setCurrentIndex(i => i - 1);
+    }
   };
 
   const handleNextTrack = () => {
-    if (currentIndex + 1 < tracksList.length) setCurrentIndex(i => i + 1);
+    if (currentIndex + 1 < tracksList.length) {
+      setCurrentIndex(i => i + 1);
+    }
   };
 
   const handleAudioEnded = () => {
@@ -185,12 +231,13 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
     const audio = audioRef.current;
     if (!audio) return;
-    const dur = audio.duration;
-    if (!dur || isNaN(dur)) return;
+    const dur = audio.duration || duration;
+    if (!dur || isNaN(dur) || dur <= 0) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    audio.currentTime = ratio * dur;
-    setCurrentTime(ratio * dur);
+    const target = ratio * dur;
+    audio.currentTime = target;
+    setCurrentTime(target);
   };
 
   const cycleSleepTimer = () => {
@@ -215,7 +262,7 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
 
   const progressPercent = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
 
-  const displayTitle = track?.title || 'Kitob audio';
+  const displayTitle = track?.title || 'Kitob audio spektakli';
   const displayChapter = currentSubTrack?.title || track?.chapterTitle || `Qism ${currentIndex + 1}`;
   const displayNarrator = currentSubTrack?.narrator || track?.narrator || 'Afzal Rafiqov';
 
@@ -224,23 +271,38 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-3xl animate-in slide-in-from-bottom-6 duration-300 select-none">
 
-      {/* Always-mounted audio element — ref is always valid */}
+      {/* Always-mounted HTML5 Audio element */}
       <audio
         ref={audioRef}
-        preload="metadata"
+        preload="auto"
         onTimeUpdate={() => {
           if (audioRef.current) setCurrentTime(audioRef.current.currentTime);
         }}
         onLoadedMetadata={() => {
           if (audioRef.current) {
-            setDuration(audioRef.current.duration);
-            setIsLoadingAudio(false);
+            setDuration(audioRef.current.duration || 0);
           }
         }}
-        onWaiting={() => setIsLoadingAudio(true)}
-        onCanPlay={() => setIsLoadingAudio(false)}
-        onPlaying={() => { setIsLoadingAudio(false); setIsPlaying(true); }}
-        onPause={() => setIsPlaying(false)}
+        onCanPlay={() => {
+          setIsLoadingAudio(false);
+        }}
+        onPlaying={() => {
+          setIsLoadingAudio(false);
+          setIsPlaying(true);
+        }}
+        onWaiting={() => {
+          // Buffering
+        }}
+        onPause={() => {
+          setIsPlaying(false);
+        }}
+        onError={() => {
+          setIsLoadingAudio(false);
+          setIsPlaying(false);
+          if (activeAudioSrc) {
+            console.warn("[AudioDock] Audio source load error:", activeAudioSrc);
+          }
+        }}
         onEnded={handleAudioEnded}
       />
 
@@ -337,7 +399,7 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
               <RotateCcw size={15} />
             </button>
 
-            {/* Play / Pause */}
+            {/* Play / Pause Button */}
             <button
               onClick={togglePlay}
               className="w-10 h-10 rounded-full bg-[#E05638] hover:bg-[#C74326] text-white flex items-center justify-center shadow-md hover:shadow-lg transition-transform active:scale-95 cursor-pointer"

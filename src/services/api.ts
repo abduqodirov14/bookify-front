@@ -672,11 +672,27 @@ export const api = {
       const res = await fetch(`${API_BASE_URL}/books/${bookId}/audio-tracks`);
       if (!res.ok) return [];
       const tracks = await res.json();
-      // Always sort by track_number ascending (1, 2, 3, ...) before returning
       if (Array.isArray(tracks)) {
-        return tracks.sort((a: any, b: any) => (a.track_number ?? 0) - (b.track_number ?? 0));
+        const normalized = tracks.map((t: any) => ({
+          ...t,
+          id: t.id,
+          bookId: t.book_id || t.bookId || bookId,
+          book_id: t.book_id || t.bookId || bookId,
+          trackNumber: Number(t.track_number ?? t.trackNumber ?? 1),
+          track_number: Number(t.track_number ?? t.trackNumber ?? 1),
+          title: t.title || "Nomsiz qism",
+          audioUrl: t.audio_url || t.audioUrl || '',
+          audio_url: t.audio_url || t.audioUrl || '',
+          durationSeconds: Number(t.duration_seconds ?? t.durationSeconds ?? 0),
+          duration_seconds: Number(t.duration_seconds ?? t.durationSeconds ?? 0),
+          fileSizeBytes: Number(t.file_size_bytes ?? t.fileSizeBytes ?? 0),
+          file_size_bytes: Number(t.file_size_bytes ?? t.fileSizeBytes ?? 0),
+          narrator: t.narrator || 'Afzal Rafiqov',
+          createdAt: t.created_at || t.createdAt
+        }));
+        return normalized.sort((a: any, b: any) => (a.trackNumber ?? 0) - (b.trackNumber ?? 0));
       }
-      return tracks;
+      return [];
     } catch {
       return [];
     }
