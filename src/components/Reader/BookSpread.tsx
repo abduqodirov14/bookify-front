@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { 
   ArrowLeft, 
   ChevronLeft, 
@@ -62,6 +62,21 @@ export default function BookSpread({ book, onBack, onPlayAudio, isAudioActive = 
     }).catch(() => {});
     return () => { isMounted = false; };
   }, [book.id]);
+
+  // Restore saved reading progress on mount
+  useEffect(() => {
+    let isMounted = true;
+    api.getProgress(book.id).then(prog => {
+      if (isMounted && prog && typeof prog.percent === 'number' && prog.percent > 0) {
+        const numChapters = Math.max(1, book.chapters?.length || 1);
+        const chapterWeight = 100 / numChapters;
+        const chapIdx = Math.min(numChapters - 1, Math.floor(prog.percent / chapterWeight));
+        setCurrentChapterIdx(chapIdx);
+        lastSyncedPercent.current = Math.round(prog.percent);
+      }
+    }).catch(() => {});
+    return () => { isMounted = false; };
+  }, [book.id, book.chapters?.length]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const chapter = book.chapters[currentChapterIdx] || book.chapters[0];
@@ -220,21 +235,29 @@ export default function BookSpread({ book, onBack, onPlayAudio, isAudioActive = 
     };
   }, []);
 
-  // 1. Sync on page turn
-  useEffect(() => {
+  // Calculate true book reading percentage across all chapters and spreads
+  const computePercent = useCallback(() => {
     const totalPages = Math.max(1, totalSpreads * 2);
     const curPage = (currentPageSpread * 2) + 1;
-    const percent = Math.min(100, Math.round((curPage / totalPages) * 100));
+    const numChapters = Math.max(1, book.chapters?.length || 1);
+    const chapterWeight = 100 / numChapters;
+    const chapterProgress = (curPage / totalPages) * chapterWeight;
+    return Math.min(100, Math.max(1, Math.round((currentChapterIdx * chapterWeight) + chapterProgress)));
+  }, [totalSpreads, currentPageSpread, currentChapterIdx, book.chapters?.length]);
+
+  // 1. Sync on page turn or initial book entry
+  useEffect(() => {
+    const percent = computePercent();
 
     if (lastSyncedPercent.current === percent) return;
 
     const timer = setTimeout(() => {
       lastSyncedPercent.current = percent;
       api.updateProgress(book.id, percent, book.chapters[currentChapterIdx]?.id, 0);
-    }, 800);
+    }, 600);
 
     return () => clearTimeout(timer);
-  }, [currentPageSpread, currentChapterIdx, book.id, totalSpreads]);
+  }, [computePercent, currentChapterIdx, book.id]);
 
   // 2. Continuous Active Reading Heartbeat (Every 30 seconds: logs reading time & awards Leaderboard points)
   useEffect(() => {
@@ -246,17 +269,14 @@ export default function BookSpread({ book, onBack, onPlayAudio, isAudioActive = 
       const isReadingActive = idleSeconds < 300 || isAudioPlaying;
 
       if (isReadingActive) {
-        const totalPages = Math.max(1, totalSpreads * 2);
-        const curPage = (currentPageSpread * 2) + 1;
-        const percent = Math.min(100, Math.round((curPage / totalPages) * 100));
-        
+        const percent = computePercent();
         // Send 30 seconds of verified reading time to backend
         api.updateProgress(book.id, percent, book.chapters[currentChapterIdx]?.id, 30);
       }
     }, 30000); // Pulse every 30 seconds
 
     return () => clearInterval(interval);
-  }, [book.id, currentPageSpread, currentChapterIdx, totalSpreads, isAudioPlaying]);
+  }, [computePercent, book.id, currentChapterIdx, isAudioPlaying]);
 
   // Fullscreen API toggle
   const toggleFullscreen = () => {

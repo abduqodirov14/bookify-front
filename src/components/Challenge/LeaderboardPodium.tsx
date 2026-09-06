@@ -109,15 +109,20 @@ export default function LeaderboardPodium() {
           <div className="order-2 sm:order-1 p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs text-center space-y-3 flex flex-col items-center">
             <div className="relative">
               <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-slate-300 shadow-lg">
-                <img src={participants[1].avatar || participants[1].avatar_url} alt={participants[1].name} className="w-full h-full object-cover" />
+                <img src={participants[1].avatar || participants[1].avatar_url} alt={participants[1].name || participants[1].user_name} className="w-full h-full object-cover" />
               </div>
               <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-slate-300 text-stone-900 font-mono font-bold text-xs flex items-center justify-center shadow-md">
                 2
               </div>
             </div>
             <div>
-              <h4 className="font-serif font-bold text-base text-stone-950 dark:text-white">{participants[1].name}</h4>
-              <span className="text-xs text-[#E05638] font-mono font-bold">{participants[1].hours} soat mutolaa</span>
+              <h4 className="font-serif font-bold text-base text-stone-950 dark:text-white">{participants[1].name || participants[1].user_name}</h4>
+              <div className="flex items-center justify-center gap-1.5 mt-0.5">
+                <span className="text-xs text-[#E05638] font-mono font-bold">{participants[1].verified_reading_score || 0} ball</span>
+                <span className="text-stone-300 dark:text-white/20">•</span>
+                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-mono font-semibold">{participants[1].reading_percent || 0}% mutolaa</span>
+              </div>
+              <span className="text-[11px] text-stone-400 font-mono block mt-0.5">{participants[1].reading_time_text || `${participants[1].hours || 0} soat`}</span>
             </div>
             <button
               onClick={() => triggerCelebration(participants[1])}
@@ -132,7 +137,7 @@ export default function LeaderboardPodium() {
             <Crown size={32} className="text-[#C5A059] animate-bounce" />
             <div className="relative">
               <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-[#C5A059] shadow-2xl ring-4 ring-[#C5A059]/30">
-                <img src={participants[0].avatar || participants[0].avatar_url} alt={participants[0].name} className="w-full h-full object-cover" />
+                <img src={participants[0].avatar || participants[0].avatar_url} alt={participants[0].name || participants[0].user_name} className="w-full h-full object-cover" />
               </div>
               <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[#C5A059] text-stone-950 font-mono font-bold text-xs shadow-md">
                 1-O'RIN
@@ -142,8 +147,13 @@ export default function LeaderboardPodium() {
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#C5A059]/20 text-[#C5A059] uppercase tracking-wider">
                 {participants[0].badge || "Shoh Kitobxon"}
               </span>
-              <h3 className="font-serif font-bold text-xl text-stone-950 dark:text-white mt-1">{participants[0].name}</h3>
-              <span className="text-sm text-[#E05638] font-mono font-bold">{participants[0].hours} soat mutolaa</span>
+              <h3 className="font-serif font-bold text-xl text-stone-950 dark:text-white mt-1">{participants[0].name || participants[0].user_name}</h3>
+              <div className="flex items-center justify-center gap-2 mt-1">
+                <span className="text-sm text-[#E05638] font-mono font-bold">{participants[0].verified_reading_score || 0} ball</span>
+                <span className="text-stone-300 dark:text-white/20">•</span>
+                <span className="text-sm text-emerald-600 dark:text-emerald-400 font-mono font-bold">{participants[0].reading_percent || 0}% mutolaa</span>
+              </div>
+              <span className="text-xs text-stone-500 font-mono block mt-0.5">{participants[0].reading_time_text || `${participants[0].hours || 0} soat`} faol mutolaa</span>
             </div>
             <button
               onClick={() => triggerCelebration(participants[0])}
@@ -158,15 +168,20 @@ export default function LeaderboardPodium() {
           <div className="order-3 p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs text-center space-y-3 flex flex-col items-center">
             <div className="relative">
               <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-amber-600/50 shadow-lg">
-                <img src={participants[2].avatar || participants[2].avatar_url} alt={participants[2].name} className="w-full h-full object-cover" />
+                <img src={participants[2].avatar || participants[2].avatar_url} alt={participants[2].name || participants[2].user_name} className="w-full h-full object-cover" />
               </div>
               <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-amber-600 text-white font-mono font-bold text-xs flex items-center justify-center shadow-md">
                 3
               </div>
             </div>
             <div>
-              <h4 className="font-serif font-bold text-base text-stone-950 dark:text-white">{participants[2].name}</h4>
-              <span className="text-xs text-[#E05638] font-mono font-bold">{participants[2].hours} soat mutolaa</span>
+              <h4 className="font-serif font-bold text-base text-stone-950 dark:text-white">{participants[2].name || participants[2].user_name}</h4>
+              <div className="flex items-center justify-center gap-1.5 mt-0.5">
+                <span className="text-xs text-[#E05638] font-mono font-bold">{participants[2].verified_reading_score || 0} ball</span>
+                <span className="text-stone-300 dark:text-white/20">•</span>
+                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-mono font-semibold">{participants[2].reading_percent || 0}% mutolaa</span>
+              </div>
+              <span className="text-[11px] text-stone-400 font-mono block mt-0.5">{participants[2].reading_time_text || `${participants[2].hours || 0} soat`}</span>
             </div>
             <button
               onClick={() => triggerCelebration(participants[2])}
@@ -255,8 +270,14 @@ export default function LeaderboardPodium() {
 
                   <div className="flex items-center gap-4 shrink-0">
                     <div className="text-right">
-                      <div className="font-mono font-bold text-sm text-[#E05638]">{hoursCount} soat</div>
-                      <span className="text-[10px] text-stone-400 font-mono">99.2% aniqlik</span>
+                      <div className="font-mono font-bold text-sm text-[#E05638]">
+                        {p.verified_reading_score !== undefined ? `${p.verified_reading_score} ball` : `${hoursCount} soat`}
+                      </div>
+                      <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono font-semibold flex items-center justify-end gap-1 mt-0.5">
+                        <span>{p.reading_percent !== undefined ? p.reading_percent : 0}% mutolaa</span>
+                        <span className="text-stone-300 dark:text-white/20">•</span>
+                        <span className="text-stone-500 dark:text-stone-400">{p.reading_time_text || `${hoursCount} soat`}</span>
+                      </div>
                     </div>
 
                     <button

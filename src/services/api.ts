@@ -332,6 +332,13 @@ export const api = {
 
   // Reading Progress Sync
   async syncProgress(bookId: string, progressPercent: number, chapterId?: string, readingSeconds: number = 0) {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`bookify_progress_${bookId}`, JSON.stringify({
+        percent: progressPercent,
+        readingSeconds,
+        updatedAt: Date.now()
+      }));
+    }
     const token = getAuthToken();
     if (!token) return null;
     try {
@@ -362,15 +369,21 @@ export const api = {
 
   async getProgress(bookId: string) {
     const token = getAuthToken();
-    if (!token) return null;
-    try {
-      const res = await fetchWithRetry(`${API_BASE_URL}/users/me/progress/books/${bookId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      return res.ok ? res.json() : null;
-    } catch {
-      return null;
+    if (token) {
+      try {
+        const res = await fetchWithRetry(`${API_BASE_URL}/users/me/progress/books/${bookId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) return await res.json();
+      } catch {}
     }
+    if (typeof window !== 'undefined') {
+      const local = localStorage.getItem(`bookify_progress_${bookId}`);
+      if (local) {
+        try { return JSON.parse(local); } catch {}
+      }
+    }
+    return null;
   },
 
   // Bookmarks
