@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Book } from '../../types';
 import { api } from '../../services/api';
+import { BOOK_CATEGORIES } from '../../data/categories';
 import { Search, BookOpen, Headphones, BookmarkPlus } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -14,12 +15,18 @@ export default function DiscoverCatalog({ books, onOpenReader, onPlayAudio }: Pr
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('Barchasi');
 
-  const categories = ["Barchasi", "Mumtoz Meros", "Tarixiy Romanlar", "Jadid Adabiyoti", "Falsafa & Ma'rifat", "Badiiy Adabiyot"];
+  const categories = ["Barchasi", ...BOOK_CATEGORIES];
 
   const filteredBooks = books.filter(b => {
-    const matchCat = selectedCategory === 'Barchasi' || b.category === selectedCategory;
+    let matchCat = selectedCategory === 'Barchasi';
+    if (!matchCat && b.category) {
+      const bCat = b.category.toLowerCase();
+      const sCat = selectedCategory.toLowerCase();
+      matchCat = bCat === sCat || bCat.includes(sCat) || sCat.includes(bCat);
+    }
     const matchSearch = b.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                        b.authorName.toLowerCase().includes(searchQuery.toLowerCase());
+                        b.authorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        (b.category && b.category.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchCat && matchSearch;
   });
 
@@ -69,12 +76,12 @@ export default function DiscoverCatalog({ books, onOpenReader, onPlayAudio }: Pr
         </div>
 
         {/* Category Tabs */}
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 max-w-full scrollbar-thin">
           {categories.map(c => (
             <button
               key={c}
               onClick={() => setSelectedCategory(c)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono transition-colors cursor-pointer shrink-0 ${
                 selectedCategory === c
                   ? 'bg-[#E05638] text-white font-bold shadow-xs'
                   : 'bg-stone-100 dark:bg-white/10 text-stone-600 dark:text-stone-300 hover:bg-stone-200'

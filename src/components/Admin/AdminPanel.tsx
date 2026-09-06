@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Book, BookAudioTrack } from '../../types';
 import { api, resolveAudioUrl } from '../../services/api';
+import { BOOK_CATEGORIES, CATEGORY_GROUPS } from '../../data/categories';
 import { 
   ShieldCheck, 
   BookOpen, 
@@ -31,7 +32,13 @@ import {
   Clock,
   Upload,
   ArrowRight,
-  Headphones
+  Headphones,
+  Search,
+  Tag,
+  ChevronDown,
+  ChevronUp,
+  SlidersHorizontal,
+  Filter
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -55,7 +62,7 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
   // Book Upload State
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
-  const [category, setCategory] = useState('Falsafiy Roman');
+  const [category, setCategory] = useState('Badiiy adabiyot');
   const [pages, setPages] = useState(460);
   const [narrator, setNarrator] = useState('Afzal Rafiqov');
   const [description, setDescription] = useState('');
@@ -94,9 +101,61 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
   const [isUploadingAudioQueue, setIsUploadingAudioQueue] = useState(false);
   const [previewTrackId, setPreviewTrackId] = useState<string | null>(null);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
-
   // Live pipeline progress for PROCESSING books  { [bookId]: { progress, step_name, pages_processed, total_pages } }
   const [processingStatuses, setProcessingStatuses] = useState<Record<string, any>>({});
+
+  // Category & Search Filters for Dashboard
+  const [selectedCategory, setSelectedCategory] = useState<string>('Barchasi');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedStatus, setSelectedStatus] = useState<'ALL' | 'PUBLISHED' | 'READY' | 'PROCESSING' | 'NEEDS_RETRY'>('ALL');
+  const [isCategoryExpanded, setIsCategoryExpanded] = useState<boolean>(false);
+  const [categorySearchQuery, setCategorySearchQuery] = useState<string>('');
+
+  // Category counts across all books
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const b of books) {
+      const cat = (b.category || '').trim();
+      if (cat) {
+        counts[cat] = (counts[cat] || 0) + 1;
+      }
+    }
+    return counts;
+  }, [books]);
+
+  // Categories filtered by the category search input
+  const visibleCategories = useMemo(() => {
+    if (!categorySearchQuery.trim()) return BOOK_CATEGORIES;
+    const q = categorySearchQuery.toLowerCase().trim();
+    return BOOK_CATEGORIES.filter(c => c.toLowerCase().includes(q));
+  }, [categorySearchQuery]);
+
+  // Books filtered by category, status, and search query
+  const filteredBooks = useMemo(() => {
+    return books.filter(b => {
+      // Category match
+      let catMatch = true;
+      if (selectedCategory !== 'Barchasi') {
+        const bCat = (b.category || '').toLowerCase();
+        const sCat = selectedCategory.toLowerCase();
+        catMatch = bCat === sCat || bCat.includes(sCat) || sCat.includes(bCat);
+      }
+
+      // Status match
+      const statusMatch = selectedStatus === 'ALL' || b.status === selectedStatus;
+
+      // Search match
+      const q = searchQuery.toLowerCase().trim();
+      const searchMatch = !q || 
+        (b.title && b.title.toLowerCase().includes(q)) || 
+        (b.authorName && b.authorName.toLowerCase().includes(q)) ||
+        (b.category && b.category.toLowerCase().includes(q)) ||
+        (b.narrator && b.narrator.toLowerCase().includes(q));
+
+      return catMatch && statusMatch && searchMatch;
+    });
+  }, [books, selectedCategory, selectedStatus, searchQuery]);
+
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const handlePublishBook = async (bookId: string, bookTitle: string) => {
@@ -673,15 +732,187 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
             </div>
           )}
 
+          {/* ── LUXURY 40-CATEGORY & SEARCH FILTER BAR (HUMAN-MADE DESIGN) ── */}
+          <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 space-y-4 shadow-xs">
+            
+            {/* Row 1: Search & Status Filters */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+              
+              {/* Search Bar */}
+              <div className="relative flex-1 max-w-xl">
+                <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Asar nomi, muallif yoki janr bo'yicha tezkor qidiruv..."
+                  className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-stone-50 dark:bg-white/5 border border-stone-200/80 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white placeholder:text-stone-400 focus:outline-none focus:border-[#E05638] transition-colors"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-0.5 cursor-pointer"
+                    title="Tozalash"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+
+              {/* Status Segmented Pills */}
+              <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-stone-100 dark:bg-white/5 border border-stone-200/80 dark:border-white/10 shrink-0">
+                {[
+                  { id: 'ALL', label: 'Barcha Holatlar' },
+                  { id: 'PUBLISHED', label: 'Nashr qilingan' },
+                  { id: 'READY', label: 'Tayyor (READY)' },
+                  { id: 'PROCESSING', label: 'Konveyerda' }
+                ].map(st => (
+                  <button
+                    key={st.id}
+                    onClick={() => setSelectedStatus(st.id as any)}
+                    className={`px-3 py-1.5 rounded-xl text-[11px] font-mono font-bold transition-all cursor-pointer ${
+                      selectedStatus === st.id
+                        ? 'bg-[#E05638] text-white shadow-xs'
+                        : 'text-stone-600 dark:text-stone-400 hover:text-stone-950 dark:hover:text-white'
+                    }`}
+                  >
+                    {st.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Row 2: Category Header with Count, Search & Expand/Collapse Toggle */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-stone-100 dark:border-white/5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Tag size={15} className="text-[#E05638]" />
+                <span className="text-xs font-serif font-bold text-stone-900 dark:text-white">
+                  Janrlar & Kategoriyalar
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-stone-100 dark:bg-white/10 text-[10px] font-mono font-bold text-stone-500">
+                  40 ta janr
+                </span>
+                {selectedCategory !== 'Barchasi' && (
+                  <button
+                    onClick={() => setSelectedCategory('Barchasi')}
+                    className="text-[11px] font-mono text-[#E05638] hover:underline cursor-pointer ml-1 inline-flex items-center gap-1"
+                  >
+                    <span>Filtr: <strong>{selectedCategory}</strong></span>
+                    <span>✕</span>
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                {/* Janr izlash */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={categorySearchQuery}
+                    onChange={(e) => setCategorySearchQuery(e.target.value)}
+                    placeholder="Janrni topish..."
+                    className="w-36 sm:w-44 px-3 py-1.5 rounded-xl bg-stone-50 dark:bg-white/5 border border-stone-200/80 dark:border-white/10 text-[11px] font-mono text-stone-800 dark:text-stone-200 placeholder:text-stone-400 focus:outline-none focus:border-[#E05638]"
+                  />
+                  {categorySearchQuery && (
+                    <button
+                      onClick={() => setCategorySearchQuery('')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 p-0.5"
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Expand / Collapse All 40 Categories Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setIsCategoryExpanded(!isCategoryExpanded)}
+                  className="px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-white/10 hover:bg-stone-200 dark:hover:bg-white/15 text-stone-700 dark:text-stone-300 text-[11px] font-mono font-bold transition-colors cursor-pointer flex items-center gap-1 shrink-0"
+                >
+                  <span>{isCategoryExpanded ? "Yig'ish" : "Barchasini ko'rsatish (40)"}</span>
+                  {isCategoryExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Row 3: 40 Categories Chips Bar */}
+            <div className={`transition-all duration-300 ${
+              isCategoryExpanded 
+                ? "flex flex-wrap gap-2 pt-1" 
+                : "flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-stone-300 dark:scrollbar-thumb-stone-700"
+            }`}>
+              {/* Barchasi Chip */}
+              <button
+                type="button"
+                onClick={() => setSelectedCategory('Barchasi')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-semibold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                  selectedCategory === 'Barchasi'
+                    ? 'bg-[#E05638] text-white shadow-sm ring-2 ring-[#E05638]/20 font-bold'
+                    : 'bg-stone-100 dark:bg-white/5 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-white/10 border border-stone-200/60 dark:border-white/5'
+                }`}
+              >
+                <span>Barchasi</span>
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                  selectedCategory === 'Barchasi' ? 'bg-black/20 text-white' : 'bg-stone-200 dark:bg-white/10 text-stone-500'
+                }`}>
+                  {books.length}
+                </span>
+              </button>
+
+              {/* 40 Categories Chips */}
+              {visibleCategories.map(cat => {
+                const count = categoryCounts[cat] || 0;
+                const isSelected = selectedCategory === cat;
+
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setSelectedCategory(isSelected ? 'Barchasi' : cat)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-mono transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                      isSelected
+                        ? 'bg-[#E05638] text-white shadow-sm ring-2 ring-[#E05638]/20 font-bold'
+                        : count > 0
+                        ? 'bg-amber-500/10 text-amber-900 dark:text-amber-300 border border-amber-500/30 hover:bg-amber-500/20 font-semibold'
+                        : 'bg-stone-100 dark:bg-white/5 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-white/10 border border-stone-200/60 dark:border-white/5'
+                    }`}
+                  >
+                    <span>{cat}</span>
+                    {count > 0 && (
+                      <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                        isSelected ? 'bg-black/20 text-white' : 'bg-[#E05638] text-white'
+                      }`}>
+                        {count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Quick Match Status Indicator */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] font-mono text-stone-400 pt-1 border-t border-stone-100 dark:border-white/5">
+              <span>
+                Tanlangan filtr: <strong className="text-stone-700 dark:text-stone-200">{selectedCategory}</strong>
+                {selectedStatus !== 'ALL' && <span> • Holat: <strong className="text-stone-700 dark:text-stone-200">{selectedStatus}</strong></span>}
+                {searchQuery && <span> • Qidiruv: "<strong className="text-[#E05638]">{searchQuery}</strong>"</span>}
+              </span>
+              <span>
+                Mos keldi: <strong className="text-[#E05638] font-bold">{filteredBooks.length}</strong> / {books.length} ta asar
+              </span>
+            </div>
+
+          </div>
+
           {/* Books Management Table */}
           <div className="bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 rounded-3xl overflow-hidden shadow-xs">
-            <div className="p-6 border-b border-stone-100 dark:border-white/5 flex items-center justify-between">
+            <div className="p-6 border-b border-stone-100 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h3 className="font-serif text-lg font-bold text-stone-950 dark:text-white">
                   Kutubxona Asarlari Ro'yxati
                 </h3>
                 <p className="text-xs text-stone-500 mt-0.5">
-                  Asarlarni tahrirlash, muqova rasmini yangilash yoki asarlar qo'shish
+                  Jami {books.length} ta asar • Ko'rsatilmoqda: {filteredBooks.length} ta asar
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -702,9 +933,9 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
               </div>
             </div>
 
-            {books.length > 0 ? (
+            {filteredBooks.length > 0 ? (
               <div className="divide-y divide-stone-100 dark:divide-white/5">
-                {books.map(b => (
+                {filteredBooks.map(b => (
                   <div key={b.id} className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-stone-50 dark:hover:bg-white/[0.02] transition-colors">
                     
                     {/* Book Info with Real Cover Thumbnail */}
@@ -829,19 +1060,44 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                 ))}
               </div>
             ) : (
-              <div className="p-16 text-center space-y-4">
-                <div className="w-12 h-12 rounded-2xl bg-stone-100 dark:bg-white/5 text-stone-400 flex items-center justify-center mx-auto">
-                  <BookOpen size={24} />
+              <div className="p-12 sm:p-16 text-center space-y-4">
+                <div className="w-14 h-14 rounded-2xl bg-[#E05638]/10 text-[#E05638] flex items-center justify-center mx-auto shadow-2xs">
+                  <Tag size={24} />
                 </div>
-                <div className="text-sm font-serif text-stone-500">
-                  Hozircha kitoblar yuklanmagan.
+                <div className="space-y-1">
+                  <h4 className="font-serif font-bold text-base text-stone-900 dark:text-white">
+                    {selectedCategory !== 'Barchasi' || selectedStatus !== 'ALL' || searchQuery
+                      ? "Tanlangan filtrlar bo'yicha asarlar topilmadi"
+                      : "Hozircha kutubxonada asarlar yuklanmagan"}
+                  </h4>
+                  <p className="text-xs text-stone-500 font-mono max-w-md mx-auto leading-relaxed">
+                    {selectedCategory !== 'Barchasi'
+                      ? `"${selectedCategory}" janrida hozircha asar kiritilmagan. Yangi asar qo'shishingiz yoki filtrlarni tozalashingiz mumkin.`
+                      : searchQuery
+                      ? `"${searchQuery}" so'rovi bo'yicha birorta ham asar topilmadi.`
+                      : "Yangi adabiy durdonalarni yuklash uchun quyidagi tugmani bosing."}
+                  </p>
                 </div>
-                <button
-                  onClick={() => setTab('upload')}
-                  className="px-5 py-2.5 rounded-xl bg-[#E05638] text-white text-xs font-mono font-bold uppercase cursor-pointer"
-                >
-                  Yangi Kitob Qo'shish
-                </button>
+                <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                  {(selectedCategory !== 'Barchasi' || selectedStatus !== 'ALL' || searchQuery) && (
+                    <button
+                      onClick={() => { setSelectedCategory('Barchasi'); setSearchQuery(''); setSelectedStatus('ALL'); }}
+                      className="px-4 py-2 rounded-xl bg-stone-100 dark:bg-white/10 hover:bg-stone-200 dark:hover:bg-white/20 text-stone-700 dark:text-stone-300 text-xs font-mono font-bold transition-colors cursor-pointer"
+                    >
+                      Filtrlarni tozalash ✕
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      if (selectedCategory !== 'Barchasi') setCategory(selectedCategory);
+                      setTab('upload');
+                    }}
+                    className="px-5 py-2.5 rounded-xl bg-[#E05638] text-white text-xs font-mono font-bold uppercase shadow-xs hover:bg-[#c9452a] transition-all cursor-pointer inline-flex items-center gap-1.5"
+                  >
+                    <Plus size={14} />
+                    <span>Yangi Kitob Qo'shish</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -1022,12 +1278,13 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                     onChange={(e) => setEditCategory(e.target.value)}
                     className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638]"
                   >
-                    <option value="Falsafiy Roman">Falsafiy Roman</option>
-                    <option value="Mumtoz Meros">Mumtoz Meros</option>
-                    <option value="Jadid Merosi">Jadid Merosi</option>
-                    <option value="Tarixiy Asar">Tarixiy Asar</option>
-                    <option value="Jahon Adabiyoti">Jahon Adabiyoti</option>
-                    <option value="Badiiy Nasr">Badiiy Nasr</option>
+                    {CATEGORY_GROUPS.map(group => (
+                      <optgroup key={group.name} label={`${group.icon} ${group.name}`}>
+                        {group.items.map(item => (
+                          <option key={item} value={item}>{item}</option>
+                        ))}
+                      </optgroup>
+                    ))}
                   </select>
                 </div>
 
@@ -1468,12 +1725,13 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                   onChange={(e) => setCategory(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl bg-white dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638]"
                 >
-                  <option value="Falsafiy Roman">Falsafiy Roman</option>
-                  <option value="Mumtoz Meros">Mumtoz Meros</option>
-                  <option value="Jadid Merosi">Jadid Merosi</option>
-                  <option value="Tarixiy Asar">Tarixiy Asar</option>
-                  <option value="Jahon Adabiyoti">Jahon Adabiyoti</option>
-                  <option value="Badiiy Nasr">Badiiy Nasr</option>
+                  {CATEGORY_GROUPS.map(group => (
+                    <optgroup key={group.name} label={`${group.icon} ${group.name}`}>
+                      {group.items.map(item => (
+                        <option key={item} value={item}>{item}</option>
+                      ))}
+                    </optgroup>
+                  ))}
                 </select>
               </div>
 
