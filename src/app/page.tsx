@@ -110,7 +110,7 @@ export default function HomeApp() {
           description: b.description || `${b.title} — sara milliy asar.`,
           publishedYear: b.year || 1925,
           pages: b.pages || 350,
-          audioDuration: b.audio_duration || '12 soat 00 daqiqa',
+          audioDuration: b.audio_duration || '',
           rating: 5.0,
           reviewsCount: 1,
           narrator: b.narrator || 'Afzal Rafiqov',
@@ -459,7 +459,7 @@ export default function HomeApp() {
                           ✦ Bosh Muharrir Tanlovi
                         </span>
                         <span className="px-3 py-1 rounded-full text-xs font-mono bg-stone-100 dark:bg-white/10 text-stone-600 dark:text-stone-300">
-                          {featuredBook.pages} sahifa • {featuredBook.audioDuration}
+                          {featuredBook.pages} sahifa {featuredBook.audioDuration ? `• 🎧 ${featuredBook.audioDuration}` : `• ⏱ ~${Math.max(1, Math.round((featuredBook.pages || 100) * 1.5 / 60))} soat`}
                         </span>
                       </div>
 
@@ -597,7 +597,11 @@ export default function HomeApp() {
 
                             <div className="flex items-center gap-3 text-[11px] font-mono text-stone-400 pt-2">
                               <span>📖 {b.pages} bet</span>
-                              <span>🎧 {b.audioDuration}</span>
+                              {b.audioDuration ? (
+                                <span className="text-[#E05638] dark:text-amber-400 font-medium">🎧 {b.audioDuration}</span>
+                              ) : (
+                                <span>⏱ ~{Math.max(1, Math.round((b.pages || 100) * 1.5 / 60))} soat</span>
+                              )}
                             </div>
                           </div>
                         </div>

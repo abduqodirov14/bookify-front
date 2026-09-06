@@ -142,7 +142,11 @@ export default function AuthorDetail({
 
                   <div className="flex items-center gap-3 text-[11px] font-mono text-stone-400 pt-2">
                     <span>📖 {b.pages} bet</span>
-                    <span>🎧 {b.audioDuration}</span>
+                    {b.audioDuration ? (
+                      <span className="text-[#E05638] dark:text-amber-400 font-medium">🎧 {b.audioDuration}</span>
+                    ) : (
+                      <span>⏱ ~{Math.max(1, Math.round((b.pages || 100) * 1.5 / 60))} soat</span>
+                    )}
                   </div>
                 </div>
               </div>
