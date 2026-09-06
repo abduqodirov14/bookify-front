@@ -38,7 +38,15 @@ import {
   ChevronDown,
   ChevronUp,
   SlidersHorizontal,
-  Filter
+  Filter,
+  Users,
+  User,
+  KeyRound,
+  Lock,
+  UserX,
+  Mail,
+  Calendar,
+  EyeOff
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -57,8 +65,22 @@ const COVER_PRESETS = [
 ];
 
 export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props) {
-  const [tab, setTab] = useState<'dashboard' | 'upload' | 'seasons' | 'comments'>('dashboard');
+  const [tab, setTab] = useState<'dashboard' | 'users' | 'upload' | 'seasons' | 'comments'>('dashboard');
   
+  // Registered Users State
+  const [adminUsers, setAdminUsers] = useState<any[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [userRoleFilter, setUserRoleFilter] = useState<'ALL' | 'USER' | 'ADMIN'>('ALL');
+  const [userStatusFilter, setUserStatusFilter] = useState<'ALL' | 'ACTIVE' | 'BANNED'>('ALL');
+  
+  // Password Reset Modal State
+  const [resetModalUser, setResetModalUser] = useState<any>(null);
+  const [newPasswordInput, setNewPasswordInput] = useState('');
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [togglingUserId, setTogglingUserId] = useState<string | null>(null);
+
   // Book Upload State
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
@@ -213,13 +235,113 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
     }
   };
 
+  const fetchUsers = useCallback(async () => {
+    setIsLoadingUsers(true);
+    try {
+      const data = await api.getAdminUsers();
+      setAdminUsers(Array.isArray(data) ? data : []);
+    } catch (err: any) {
+      console.warn("Failed to fetch admin users:", err);
+    } finally {
+      setIsLoadingUsers(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
   useEffect(() => {
     if (tab === 'seasons') {
       fetchChallenges();
     } else if (tab === 'comments') {
       fetchAdminComments();
+    } else if (tab === 'users') {
+      fetchUsers();
     }
-  }, [tab]);
+  }, [tab, fetchUsers]);
+
+  const isNewUser = useCallback((user: any) => {
+    if (!user?.created_at) return false;
+    try {
+      const created = new Date(user.created_at).getTime();
+      const now = Date.now();
+      return (now - created) < 48 * 3600 * 1000;
+    } catch {
+      return false;
+    }
+  }, []);
+
+  const formatUserDate = useCallback((dateStr?: string) => {
+    if (!dateStr) return "—";
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleDateString('uz-UZ', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return dateStr;
+    }
+  }, []);
+
+  const filteredUsers = useMemo(() => {
+    return adminUsers.filter(u => {
+      const q = userSearchQuery.toLowerCase().trim();
+      const matchSearch = !q || 
+        (u.name && u.name.toLowerCase().includes(q)) || 
+        (u.email && u.email.toLowerCase().includes(q));
+      
+      const matchRole = userRoleFilter === 'ALL' || u.role === userRoleFilter;
+      const matchStatus = userStatusFilter === 'ALL' || (u.status || 'ACTIVE') === userStatusFilter;
+
+      return matchSearch && matchRole && matchStatus;
+    });
+  }, [adminUsers, userSearchQuery, userRoleFilter, userStatusFilter]);
+
+  const handleResetPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetModalUser || !newPasswordInput.trim()) return;
+    if (newPasswordInput.trim().length < 6) {
+      toast.error("Parol kamida 6 ta belgidan iborat bo'lishi kerak");
+      return;
+    }
+
+    setIsResettingPassword(true);
+    try {
+      await api.resetUserPassword(resetModalUser.id, newPasswordInput.trim());
+      toast.success(`${resetModalUser.name} uchun yangi parol o'rnatildi! ✅`);
+      setResetModalUser(null);
+      setNewPasswordInput('');
+      fetchUsers();
+    } catch (err: any) {
+      toast.error(err.message || "Parolni o'zgartirishda xatolik yuz berdi");
+    } finally {
+      setIsResettingPassword(false);
+    }
+  };
+
+  const handleToggleUserStatus = async (user: any) => {
+    if (user.is_admin || user.email?.toLowerCase() === 'abduqodirovdilshodbek317@gmail.com') {
+      toast.error("Bosh administrator hisobini bloklash mumkin emas!");
+      return;
+    }
+    setTogglingUserId(user.id);
+    const isCurrentlyBanned = user.status === 'BANNED';
+    try {
+      await api.toggleUserStatus(user.id, !isCurrentlyBanned);
+      toast.success(isCurrentlyBanned ? `${user.name} hisobi faollashtirildi! 🟢` : `${user.name} hisobi bloklandi! 🔴`);
+      fetchUsers();
+    } catch (err: any) {
+      toast.error(err.message || "Statusni o'zgartirishda xatolik");
+    } finally {
+      setTogglingUserId(null);
+    }
+  };
 
   // ── Auto-poll live progress for PROCESSING books every 2 seconds ──
   const pollProcessingBooks = useCallback(async () => {
@@ -653,6 +775,18 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
           </button>
 
           <button
+            onClick={() => setTab('users')}
+            className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
+              tab === 'users' 
+                ? 'bg-[#E05638] text-white font-bold shadow-xs' 
+                : 'text-stone-600 dark:text-stone-300 hover:text-stone-950'
+            }`}
+          >
+            <Users size={14} />
+            <span>Kitobxonlar ({adminUsers.length})</span>
+          </button>
+
+          <button
             onClick={() => setTab('comments')}
             className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
               tab === 'comments' 
@@ -693,22 +827,112 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
       {/* ── 1. DASHBOARD VIEW (BOOKS LIST WITH FULL CRUD) ── */}
       {tab === 'dashboard' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 space-y-2 shadow-xs">
               <span className="text-xs font-mono text-stone-400 uppercase">Jami Asarlar</span>
               <div className="font-serif text-3xl font-bold text-stone-950 dark:text-white">{books.length} ta</div>
             </div>
+
+            <button
+              onClick={() => setTab('users')}
+              className="p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 space-y-2 shadow-xs text-left hover:border-[#E05638]/50 transition-all cursor-pointer group"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono text-stone-400 uppercase group-hover:text-[#E05638] transition-colors">Kitobxonlar</span>
+                {adminUsers.filter(isNewUser).length > 0 && (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                    +{adminUsers.filter(isNewUser).length} yangi
+                  </span>
+                )}
+              </div>
+              <div className="font-serif text-3xl font-bold text-stone-950 dark:text-white flex items-center justify-between">
+                <span>{adminUsers.length} nafar</span>
+                <Users size={20} className="text-stone-400 group-hover:text-[#E05638] transition-colors" />
+              </div>
+            </button>
+
             <div className="p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 space-y-2 shadow-xs">
               <span className="text-xs font-mono text-stone-400 uppercase">Faol Mavsumlar</span>
               <div className="font-serif text-3xl font-bold text-[#E05638]">
                 {challengesList.filter(c => c.status === 'ACTIVE').length} ta
               </div>
             </div>
+
             <div className="p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 space-y-2 shadow-xs">
               <span className="text-xs font-mono text-stone-400 uppercase">Baza Holati</span>
               <div className="font-mono text-xs font-bold text-emerald-500 pt-3">● PostgreSQL 5432 / Cloud Ulangan</div>
             </div>
           </div>
+
+          {/* ── RECENT REGISTERED USERS WIDGET (DASHBOARD PREVIEW) ── */}
+          {adminUsers.length > 0 && (
+            <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 space-y-4 shadow-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-100 dark:border-white/5 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-[#E05638]/10 text-[#E05638] flex items-center justify-center">
+                    <Users size={16} />
+                  </div>
+                  <div>
+                    <h3 className="font-serif font-bold text-base text-stone-950 dark:text-white">
+                      Ro'yxatdan O'tgan Kitobxonlar ({adminUsers.length} nafar)
+                    </h3>
+                    <p className="text-xs text-stone-500">So'nggi qo'shilgan kitobxonlar va ularning hisoblari</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setTab('users')}
+                  className="text-xs font-mono font-bold text-[#E05638] hover:underline flex items-center gap-1 cursor-pointer self-start sm:self-auto"
+                >
+                  <span>Barcha {adminUsers.length} kitobxonni ko'rish & boshqarish</span>
+                  <ArrowRight size={13} />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {adminUsers.slice(0, 4).map(u => (
+                  <div 
+                    key={u.id}
+                    className="p-3.5 rounded-2xl bg-stone-50 dark:bg-white/5 border border-stone-200/80 dark:border-white/10 flex items-center gap-3 hover:border-[#E05638]/30 transition-all"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#E05638] to-[#C5A059] text-white font-bold flex items-center justify-center text-sm shrink-0 uppercase shadow-xs">
+                      {u.avatar_url ? (
+                        <img src={u.avatar_url} alt={u.name} className="w-full h-full rounded-full object-cover" />
+                      ) : (
+                        (u.name || u.email || 'U').charAt(0)
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-serif font-bold text-xs text-stone-950 dark:text-white truncate">
+                          {u.name || "Nomsiz kitobxon"}
+                        </span>
+                        {isNewUser(u) && (
+                          <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 shrink-0">
+                            Yangi
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[11px] font-mono text-stone-500 dark:text-stone-400 truncate">
+                        {u.email}
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold ${
+                          u.is_admin || u.role === 'ADMIN'
+                            ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
+                            : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                        }`}>
+                          {u.is_admin || u.role === 'ADMIN' ? 'ADMIN' : 'KITOBXON'}
+                        </span>
+                        <span className="text-[10px] font-mono text-stone-400">
+                          {formatUserDate(u.created_at).split(',')[0]}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* ── READY BOOKS ALERT BANNER ── */}
           {books.filter(b => b.status === 'READY').length > 0 && (
@@ -1951,6 +2175,403 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
             )}
           </div>
 
+        </div>
+      )}
+
+      {/* ── 5. REGISTERED USERS MANAGEMENT VIEW ── */}
+      {tab === 'users' && (
+        <div className="space-y-6">
+          
+          {/* Top KPI Cards for Users */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 space-y-2 shadow-xs">
+              <span className="text-xs font-mono text-stone-400 uppercase">Jami Ro'yxatdan O'tganlar</span>
+              <div className="font-serif text-3xl font-bold text-stone-950 dark:text-white flex items-center justify-between">
+                <span>{adminUsers.length} nafar</span>
+                <Users size={22} className="text-[#E05638]" />
+              </div>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 space-y-2 shadow-xs">
+              <span className="text-xs font-mono text-stone-400 uppercase">Yangi Kitobxonlar (48s)</span>
+              <div className="font-serif text-3xl font-bold text-emerald-500 flex items-center justify-between">
+                <span>{adminUsers.filter(isNewUser).length} nafar</span>
+                <Sparkles size={22} className="text-emerald-500" />
+              </div>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 space-y-2 shadow-xs">
+              <span className="text-xs font-mono text-stone-400 uppercase">Faol Hisoblar</span>
+              <div className="font-serif text-3xl font-bold text-blue-500 flex items-center justify-between">
+                <span>{adminUsers.filter(u => (u.status || 'ACTIVE') === 'ACTIVE').length} nafar</span>
+                <UserCheck size={22} className="text-blue-500" />
+              </div>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 space-y-2 shadow-xs">
+              <span className="text-xs font-mono text-stone-400 uppercase">Administratorlar</span>
+              <div className="font-serif text-3xl font-bold text-purple-500 flex items-center justify-between">
+                <span>{adminUsers.filter(u => u.is_admin || u.role === 'ADMIN').length} nafar</span>
+                <ShieldCheck size={22} className="text-purple-500" />
+              </div>
+            </div>
+          </div>
+
+          {/* Filter & Search Toolbar */}
+          <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 space-y-4 shadow-xs">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              
+              {/* Search Box */}
+              <div className="relative flex-1 max-w-lg">
+                <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+                <input
+                  type="text"
+                  value={userSearchQuery}
+                  onChange={(e) => setUserSearchQuery(e.target.value)}
+                  placeholder="Ism, familiya yoki email orqali qidirish..."
+                  className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-stone-50 dark:bg-white/5 border border-stone-200/80 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white placeholder:text-stone-400 focus:outline-none focus:border-[#E05638] transition-colors"
+                />
+                {userSearchQuery && (
+                  <button
+                    onClick={() => setUserSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-0.5 cursor-pointer"
+                    title="Tozalash"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+
+              {/* Filters & Refresh */}
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Role Filter */}
+                <div className="flex items-center gap-1 p-1 rounded-2xl bg-stone-100 dark:bg-white/5 border border-stone-200/80 dark:border-white/10">
+                  {(['ALL', 'USER', 'ADMIN'] as const).map(role => (
+                    <button
+                      key={role}
+                      onClick={() => setUserRoleFilter(role)}
+                      className={`px-3 py-1.5 rounded-xl text-[11px] font-mono font-bold transition-all cursor-pointer ${
+                        userRoleFilter === role
+                          ? 'bg-[#E05638] text-white shadow-xs'
+                          : 'text-stone-600 dark:text-stone-400 hover:text-stone-950 dark:hover:text-white'
+                      }`}
+                    >
+                      {role === 'ALL' ? 'Barcha Rollar' : role === 'ADMIN' ? 'Adminlar' : 'Kitobxonlar'}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Status Filter */}
+                <div className="flex items-center gap-1 p-1 rounded-2xl bg-stone-100 dark:bg-white/5 border border-stone-200/80 dark:border-white/10">
+                  {(['ALL', 'ACTIVE', 'BANNED'] as const).map(st => (
+                    <button
+                      key={st}
+                      onClick={() => setUserStatusFilter(st)}
+                      className={`px-3 py-1.5 rounded-xl text-[11px] font-mono font-bold transition-all cursor-pointer ${
+                        userStatusFilter === st
+                          ? 'bg-[#E05638] text-white shadow-xs'
+                          : 'text-stone-600 dark:text-stone-400 hover:text-stone-950 dark:hover:text-white'
+                      }`}
+                    >
+                      {st === 'ALL' ? 'Barchasi' : st === 'ACTIVE' ? 'Faollar' : 'Bloklanganlar'}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Refresh Button */}
+                <button
+                  onClick={fetchUsers}
+                  disabled={isLoadingUsers}
+                  className="p-2.5 rounded-xl bg-stone-100 dark:bg-white/5 hover:bg-stone-200 dark:hover:bg-white/10 text-stone-600 dark:text-stone-300 transition-colors cursor-pointer border border-stone-200/80 dark:border-white/10"
+                  title="Ro'yxatni yangilash"
+                >
+                  <RefreshCw size={15} className={isLoadingUsers ? "animate-spin text-[#E05638]" : ""} />
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Users Table */}
+          <div className="bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 rounded-3xl overflow-hidden shadow-xs">
+            <div className="p-6 border-b border-stone-100 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="font-serif text-lg font-bold text-stone-950 dark:text-white flex items-center gap-2">
+                  <span>Ro'yxatdan O'tgan Kitobxonlar</span>
+                  <span className="px-2.5 py-0.5 rounded-full text-xs bg-stone-100 dark:bg-white/10 text-stone-600 dark:text-stone-400 font-mono">
+                    {filteredUsers.length} / {adminUsers.length}
+                  </span>
+                </h3>
+                <p className="text-xs text-stone-500 mt-0.5">
+                  Foydalanuvchilar hisoblari, rollari, xavfsizlik sozlamalari va parollarni boshqarish
+                </p>
+              </div>
+            </div>
+
+            {isLoadingUsers ? (
+              <div className="p-12 text-center space-y-3">
+                <Loader2 size={32} className="animate-spin text-[#E05638] mx-auto" />
+                <p className="text-xs font-mono text-stone-400">Kitobxonlar ro'yxati yuklanmoqda...</p>
+              </div>
+            ) : filteredUsers.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-stone-100 dark:border-white/5 bg-stone-50/50 dark:bg-white/[0.02] text-[11px] font-mono uppercase tracking-wider text-stone-400">
+                      <th className="py-3.5 px-6 font-bold">Foydalanuvchi</th>
+                      <th className="py-3.5 px-6 font-bold">Rol</th>
+                      <th className="py-3.5 px-6 font-bold">Holat</th>
+                      <th className="py-3.5 px-6 font-bold">Xavfsizlik (2FA)</th>
+                      <th className="py-3.5 px-6 font-bold">Qo'shilgan Sana</th>
+                      <th className="py-3.5 px-6 font-bold text-right">Boshqaruv</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100 dark:divide-white/5 text-xs font-mono">
+                    {filteredUsers.map((u) => {
+                      const isSuperAdmin = u.is_admin || u.email?.toLowerCase() === 'abduqodirovdilshodbek317@gmail.com';
+                      const isBanned = u.status === 'BANNED';
+                      const isToggling = togglingUserId === u.id;
+
+                      return (
+                        <tr key={u.id} className="hover:bg-stone-50/70 dark:hover:bg-white/[0.02] transition-colors">
+                          
+                          {/* User Name & Email */}
+                          <td className="py-4 px-6">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#E05638] to-[#C5A059] text-white font-bold flex items-center justify-center text-sm shrink-0 uppercase shadow-xs">
+                                {u.avatar_url ? (
+                                  <img src={u.avatar_url} alt={u.name} className="w-full h-full rounded-full object-cover" />
+                                ) : (
+                                  (u.name || u.email || 'U').charAt(0)
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-serif font-bold text-sm text-stone-900 dark:text-white truncate">
+                                    {u.name || "Nomsiz foydalanuvchi"}
+                                  </span>
+                                  {isNewUser(u) && (
+                                    <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                                      YANGI
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-xs text-stone-500 flex items-center gap-1 mt-0.5">
+                                  <Mail size={12} className="shrink-0 text-stone-400" />
+                                  <span className="truncate">{u.email}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Role */}
+                          <td className="py-4 px-6">
+                            {isSuperAdmin || u.role === 'ADMIN' ? (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30">
+                                <ShieldCheck size={13} />
+                                <span>ADMIN</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30">
+                                <BookOpen size={13} />
+                                <span>KITOBXON</span>
+                              </span>
+                            )}
+                          </td>
+
+                          {/* Status */}
+                          <td className="py-4 px-6">
+                            {isBanned ? (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30">
+                                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                                <span>BLOKLANGAN</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                <span>FAOL</span>
+                              </span>
+                            )}
+                          </td>
+
+                          {/* 2FA Status */}
+                          <td className="py-4 px-6">
+                            <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">
+                              <CheckCircle2 size={14} />
+                              <span>Himoyalangan (OTP)</span>
+                            </span>
+                          </td>
+
+                          {/* Registration Date */}
+                          <td className="py-4 px-6 text-stone-500">
+                            <div className="flex items-center gap-1.5">
+                              <Calendar size={13} className="text-stone-400 shrink-0" />
+                              <span>{formatUserDate(u.created_at)}</span>
+                            </div>
+                          </td>
+
+                          {/* Actions */}
+                          <td className="py-4 px-6 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              {/* Reset Password Button */}
+                              <button
+                                onClick={() => {
+                                  setResetModalUser(u);
+                                  setNewPasswordInput('');
+                                  setShowResetPassword(false);
+                                }}
+                                className="px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-white/5 hover:bg-[#E05638]/10 hover:text-[#E05638] border border-stone-200/80 dark:border-white/10 text-stone-700 dark:text-stone-300 text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                                title="Foydalanuvchi parolini o'zgartirish"
+                              >
+                                <KeyRound size={13} />
+                                <span className="hidden sm:inline">Parol</span>
+                              </button>
+
+                              {/* Toggle Ban/Active */}
+                              {!isSuperAdmin && (
+                                <button
+                                  onClick={() => handleToggleUserStatus(u)}
+                                  disabled={isToggling}
+                                  className={`px-3 py-1.5 rounded-xl border text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                                    isBanned
+                                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20'
+                                      : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 hover:bg-rose-500/20'
+                                  }`}
+                                  title={isBanned ? "Hisobni faollashtirish" : "Hisobni bloklash"}
+                                >
+                                  {isToggling ? (
+                                    <Loader2 size={13} className="animate-spin" />
+                                  ) : isBanned ? (
+                                    <>
+                                      <UserCheck size={13} />
+                                      <span className="hidden sm:inline">Faollashtirish</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Lock size={13} />
+                                      <span className="hidden sm:inline">Bloklash</span>
+                                    </>
+                                  )}
+                                </button>
+                              )}
+                            </div>
+                          </td>
+
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="p-12 text-center space-y-3">
+                <Users size={36} className="text-stone-400 mx-auto opacity-50" />
+                <h4 className="font-serif font-bold text-base text-stone-900 dark:text-white">
+                  Hech qanday kitobxon topilmadi
+                </h4>
+                <p className="text-xs text-stone-500 max-w-sm mx-auto">
+                  Qidiruv so'rovi yoki tanlangan filtrlarni o'zgartirib ko'ring.
+                </p>
+              </div>
+            )}
+          </div>
+
+        </div>
+      )}
+
+      {/* ── PASSWORD RESET MODAL ── */}
+      {resetModalUser && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-white dark:bg-[#121620] border border-stone-200 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+            
+            {/* Modal Header */}
+            <div className="flex items-start justify-between gap-3 border-b border-stone-100 dark:border-white/5 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-[#E05638]/10 text-[#E05638] flex items-center justify-center shrink-0">
+                  <KeyRound size={20} />
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-lg text-stone-950 dark:text-white">
+                    Parolni Yangilash
+                  </h3>
+                  <p className="text-xs text-stone-500 font-mono">
+                    {resetModalUser.name} ({resetModalUser.email})
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setResetModalUser(null);
+                  setNewPasswordInput('');
+                }}
+                className="p-1.5 rounded-xl hover:bg-stone-100 dark:hover:bg-white/10 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleResetPasswordSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-mono font-bold text-stone-700 dark:text-stone-300 block">
+                  Yangi Parol (kamida 6 ta belgi):
+                </label>
+                <div className="relative">
+                  <input
+                    type={showResetPassword ? "text" : "password"}
+                    value={newPasswordInput}
+                    onChange={(e) => setNewPasswordInput(e.target.value)}
+                    placeholder="Yangi kuchli parolni kiriting..."
+                    autoFocus
+                    required
+                    minLength={6}
+                    className="w-full pl-4 pr-11 py-3 rounded-xl bg-stone-50 dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638] transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowResetPassword(!showResetPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-1 cursor-pointer"
+                  >
+                    {showResetPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                <p className="text-[11px] text-stone-500">
+                  Ushbu foydalanuvchi keyingi kirishida yangi paroldan foydalanadi.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone-100 dark:border-white/5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setResetModalUser(null);
+                    setNewPasswordInput('');
+                  }}
+                  className="px-4 py-2.5 rounded-xl text-xs font-mono text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                >
+                  Bekor Qilish
+                </button>
+                <button
+                  type="submit"
+                  disabled={isResettingPassword || newPasswordInput.trim().length < 6}
+                  className="px-5 py-2.5 rounded-xl bg-[#E05638] hover:bg-[#C74326] disabled:opacity-50 text-white text-xs font-mono font-bold transition-all shadow-md cursor-pointer flex items-center gap-2"
+                >
+                  {isResettingPassword ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      <span>Saqlanmoqda...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check size={14} />
+                      <span>Yangi Parolni Saqlash</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+
+          </div>
         </div>
       )}
 
