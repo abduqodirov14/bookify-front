@@ -328,10 +328,24 @@ export default function HomeApp() {
   // Full Screen Reader View
   if (currentPage === 'reader' && selectedBook) {
     return (
-      <BookSpread
-        book={selectedBook}
-        onBack={goBack}
-      />
+      <div className="relative min-h-screen">
+        <BookSpread
+          book={selectedBook}
+          onBack={goBack}
+          onPlayAudio={() => playAudio(selectedBook)}
+          isAudioActive={Boolean(activeAudioTrack && activeAudioTrack.bookId === selectedBook.id)}
+        />
+        {activeAudioTrack && (
+          <AudioDock
+            track={activeAudioTrack}
+            onClose={() => setActiveAudioTrack(null)}
+            onOpenReader={(bookId) => {
+              setSelectedBookId(bookId);
+              setCurrentPage('reader');
+            }}
+          />
+        )}
+      </div>
     );
   }
 

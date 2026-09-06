@@ -29,9 +29,11 @@ import { toast } from 'react-hot-toast';
 interface Props {
   book: Book;
   onBack: () => void;
+  onPlayAudio?: () => void;
+  isAudioActive?: boolean;
 }
 
-export default function BookSpread({ book, onBack }: Props) {
+export default function BookSpread({ book, onBack, onPlayAudio, isAudioActive = false }: Props) {
   // Reading States
   const [currentChapterIdx, setCurrentChapterIdx] = useState(0);
   const [currentPageSpread, setCurrentPageSpread] = useState(0);
@@ -474,19 +476,23 @@ export default function BookSpread({ book, onBack }: Props) {
           {/* Audio Reading Toggle */}
           <button
             onClick={() => {
-              setIsAudioPlaying(!isAudioPlaying);
-              toast.success(isAudioPlaying ? "Audio to'xtatildi" : "Sinxron ovozli mutolaa faollashdi!", { icon: '🎧' });
+              if (onPlayAudio) {
+                onPlayAudio();
+              } else {
+                setIsAudioPlaying(!isAudioPlaying);
+                toast.success(isAudioPlaying ? "Audio to'xtatildi" : "Sinxron ovozli mutolaa faollashdi!", { icon: '🎧' });
+              }
             }}
             className={`px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-              isAudioPlaying 
+              (isAudioActive || isAudioPlaying) 
                 ? 'bg-[#E05638] text-white shadow-md animate-pulse' 
                 : 'bg-black/10 dark:bg-white/10 hover:bg-[#E05638] hover:text-white'
             }`}
-            style={{ color: isAudioPlaying ? '#FFF' : themeStyles.text }}
-            title="Ovozli o'qish"
+            style={{ color: (isAudioActive || isAudioPlaying) ? '#FFF' : themeStyles.text }}
+            title="Audio tinglash"
           >
-            {isAudioPlaying ? <Pause size={14} /> : <Play size={14} />}
-            <span className="hidden md:inline">{isAudioPlaying ? "Ovozli O'qish" : "Tinglash"}</span>
+            {(isAudioActive || isAudioPlaying) ? <Pause size={14} /> : <Play size={14} />}
+            <span className="hidden md:inline">{(isAudioActive || isAudioPlaying) ? "Tinglanmoqda" : "Tinglash"}</span>
           </button>
 
           {/* Reading Mode Toggle (Spread vs Vertical) */}
