@@ -311,6 +311,10 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
       return;
     }
 
+    if (!window.confirm(`Haqiqatan ham ${resetModalUser.name} (${resetModalUser.email}) hisobi uchun yangi parol o'rnatmoqchimisiz?`)) {
+      return;
+    }
+
     setIsResettingPassword(true);
     try {
       await api.resetUserPassword(resetModalUser.id, newPasswordInput.trim());
@@ -2521,8 +2525,10 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                     type={showResetPassword ? "text" : "password"}
                     value={newPasswordInput}
                     onChange={(e) => setNewPasswordInput(e.target.value)}
-                    placeholder="Yangi kuchli parolni kiriting..."
-                    autoFocus
+                    placeholder="Yangi parolni o'zingiz yozing..."
+                    autoComplete="new-password"
+                    name="admin_custom_manual_password"
+                    data-lpignore="true"
                     required
                     minLength={6}
                     className="w-full pl-4 pr-11 py-3 rounded-xl bg-stone-50 dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638] transition-colors"
@@ -2535,9 +2541,14 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                     {showResetPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
-                <p className="text-[11px] text-stone-500">
-                  Ushbu foydalanuvchi keyingi kirishida yangi paroldan foydalanadi.
-                </p>
+                <div className="space-y-1">
+                  <p className="text-[11px] text-stone-500">
+                    Ushbu foydalanuvchi keyingi kirishida yangi paroldan foydalanadi.
+                  </p>
+                  <p className="text-[10.5px] text-amber-600 dark:text-amber-400 bg-amber-500/10 p-2 rounded-lg border border-amber-500/20">
+                    💡 <strong>Eslatma:</strong> Google hisobi orqali kiruvchi foydalanuvchilar har doim "Google hisobi orqali kirish" tugmasi orqali parolsiz ham tizimga bemalol kira olishadi.
+                  </p>
+                </div>
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone-100 dark:border-white/5">
