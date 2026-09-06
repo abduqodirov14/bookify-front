@@ -611,7 +611,7 @@ export const api = {
           const xhr = new XMLHttpRequest();
           xhr.open('POST', `${API_BASE_URL}/admin/books/${bookId}/audio-tracks/upload`);
           xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-          xhr.timeout = 5 * 60 * 1000; // 5 minutes for large MP3 files
+          xhr.timeout = 15 * 60 * 1000; // 15 minutes for very large audio files
 
           if (xhr.upload && onProgress) {
             xhr.upload.onprogress = (event) => {
