@@ -114,6 +114,13 @@ export default function HomeApp() {
     }
   }, [currentPage, currentUser, authInitialized]);
 
+  // Refresh books whenever entering Admin panel
+  useEffect(() => {
+    if (currentPage === 'admin') {
+      loadBooksFromBackend();
+    }
+  }, [currentPage]);
+
   // Fetch real books from FastAPI backend (Fast direct mapping & local caching)
   const loadBooksFromBackend = async () => {
     try {

@@ -243,6 +243,18 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
     }
   };
 
+  const [isManualRefreshing, setIsManualRefreshing] = useState(false);
+
+  const handleManualRefresh = async () => {
+    setIsManualRefreshing(true);
+    try {
+      await onRefreshBooks();
+      toast.success("Asarlar ro'yxati yangilandi! 🔄", { duration: 2000 });
+    } finally {
+      setTimeout(() => setIsManualRefreshing(false), 600);
+    }
+  };
+
   const fetchUsers = useCallback(async () => {
     setIsLoadingUsers(true);
     try {
@@ -257,17 +269,28 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
 
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers]);
+    onRefreshBooks();
+  }, [fetchUsers, onRefreshBooks]);
 
   useEffect(() => {
-    if (tab === 'seasons') {
+    if (tab === 'dashboard') {
+      onRefreshBooks();
+    } else if (tab === 'seasons') {
       fetchChallenges();
     } else if (tab === 'comments') {
       fetchAdminComments();
     } else if (tab === 'users') {
       fetchUsers();
     }
-  }, [tab, fetchUsers]);
+  }, [tab, fetchUsers, onRefreshBooks]);
+
+  // Periodic background check so newly uploaded books (e.g. from volunteers) appear live
+  useEffect(() => {
+    const interval = setInterval(() => {
+      onRefreshBooks();
+    }, 12000);
+    return () => clearInterval(interval);
+  }, [onRefreshBooks]);
 
   const isNewUser = useCallback((user: any) => {
     if (!user?.created_at) return false;
@@ -1016,6 +1039,13 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                   </p>
                 </div>
               </div>
+              <button
+                onClick={() => setSelectedStatus('READY')}
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-mono font-bold transition-all shadow-sm cursor-pointer shrink-0 flex items-center gap-1.5"
+              >
+                <span>Faqat Tayyor Asarlarni Ko'rish</span>
+                <ArrowRight size={14} />
+              </button>
             </div>
           )}
 
@@ -1204,11 +1234,13 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={onRefreshBooks}
-                  className="p-2.5 rounded-xl bg-stone-100 dark:bg-white/10 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-white/20 transition-colors cursor-pointer"
-                  title="Qayta yuklash"
+                  onClick={handleManualRefresh}
+                  disabled={isManualRefreshing}
+                  className="px-3 py-2 rounded-xl bg-stone-100 dark:bg-white/10 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-white/20 transition-colors cursor-pointer flex items-center gap-1.5"
+                  title="Qayta yuklash (Serverdan yangilash)"
                 >
-                  <RefreshCw size={14} />
+                  <RefreshCw size={14} className={isManualRefreshing ? 'animate-spin text-emerald-600' : ''} />
+                  <span className="text-[11px] font-mono hidden sm:inline">Yangilash</span>
                 </button>
                 <button
                   onClick={() => setTab('upload')}
