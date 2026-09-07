@@ -26,6 +26,7 @@ interface Props {
   onLogout: () => void;
   isMobileOpen?: boolean;
   onCloseMobile?: () => void;
+  onOpenVipModal?: () => void;
 }
 
 export default function Sidebar({
@@ -36,7 +37,8 @@ export default function Sidebar({
   onToggleTheme,
   onLogout,
   isMobileOpen = false,
-  onCloseMobile
+  onCloseMobile,
+  onOpenVipModal
 }: Props) {
   const isAdmin = currentUser?.role === 'ADMIN';
   const isVolunteer = Boolean(
@@ -99,6 +101,43 @@ export default function Sidebar({
               <X size={20} />
             </button>
           )}
+        </div>
+
+        {/* 👑 VIP Membership Banner in Sidebar */}
+        <div 
+          onClick={() => {
+            if (onOpenVipModal) onOpenVipModal();
+            if (onCloseMobile) onCloseMobile();
+          }}
+          className="p-3 rounded-2xl cursor-pointer transition-all duration-300 relative overflow-hidden group border border-amber-500/30 hover:border-amber-500/60 shadow-md hover:shadow-lg"
+          style={{
+            background: 'linear-gradient(135deg, rgba(247,151,30,0.15) 0%, rgba(255,210,0,0.08) 100%)',
+          }}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div 
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-sm shadow-sm"
+                style={{ background: 'linear-gradient(135deg, #f7971e, #ffd200)' }}
+              >
+                👑
+              </div>
+              <div>
+                <div className="text-xs font-bold text-stone-900 dark:text-white flex items-center gap-1 group-hover:text-[#E05638] transition-colors">
+                  VIP Obuna Bo'lish
+                </div>
+                <div className="text-[10px] text-stone-500 dark:text-stone-400">
+                  Barcha pullik kitoblar
+                </div>
+              </div>
+            </div>
+            <span 
+              className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded shadow-xs"
+              style={{ background: 'linear-gradient(135deg, #f7971e, #ffd200)', color: '#000' }}
+            >
+              29k/oy
+            </span>
+          </div>
         </div>
 
         {/* Navigation Links */}

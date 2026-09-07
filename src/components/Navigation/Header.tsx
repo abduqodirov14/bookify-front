@@ -25,6 +25,7 @@ interface Props {
   books: Book[];
   onOpenBookReader: (bookId: string) => void;
   onNavigatePage: (page: any) => void;
+  onOpenVipModal?: () => void;
 }
 
 export default function Header({
@@ -39,7 +40,8 @@ export default function Header({
   onNavigateProfile,
   books,
   onOpenBookReader,
-  onNavigatePage
+  onNavigatePage,
+  onOpenVipModal
 }: Props) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
@@ -147,7 +149,23 @@ export default function Header({
       </div>
 
       {/* Right Controls */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5 sm:gap-3">
+
+        {/* 👑 VIP Obuna Button */}
+        <button
+          onClick={onOpenVipModal}
+          className="px-3 sm:px-3.5 py-1.5 rounded-full text-xs font-bold font-mono transition-all duration-300 flex items-center gap-1.5 cursor-pointer shadow-md hover:scale-105 active:scale-95 border border-amber-400/40"
+          style={{
+            background: 'linear-gradient(135deg, #f7971e, #ffd200)',
+            color: '#000',
+            boxShadow: '0 2px 10px rgba(247,151,30,0.35)'
+          }}
+          title="Bookify VIP Obuna tariflari va imtiyozlari"
+        >
+          <span>💎</span>
+          <span className="hidden sm:inline font-bold">VIP Obuna</span>
+          <span className="px-1.5 py-0.2 rounded bg-black/15 text-[10px] hidden md:inline">29k/oy</span>
+        </button>
         
         {/* Dark/Light Theme Toggle */}
         <button

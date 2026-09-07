@@ -42,6 +42,7 @@ export default function HomeApp() {
   const [verifyCertSerial, setVerifyCertSerial] = useState<string>('');
   const [authInitialized, setAuthInitialized] = useState(false);
   const [paywallBook, setPaywallBook] = useState<Book | null>(null);
+  const [isVipModalOpen, setIsVipModalOpen] = useState(false);
 
   // Check existing session on mount (Hydration safe)
   useEffect(() => {
@@ -326,7 +327,7 @@ export default function HomeApp() {
 
     if (isPremium) {
       try {
-        const access = await api.checkBookAccess(Number(bookId));
+        const access = await api.checkBookAccess(bookId);
         // If user already bought the book or has VIP subscription (not just raw admin bypass), let them read!
         if (access.has_access && access.reason !== 'ADMIN_ACCESS') {
           setSelectedBookId(bookId);
@@ -413,8 +414,7 @@ export default function HomeApp() {
             track={activeAudioTrack}
             onClose={() => setActiveAudioTrack(null)}
             onOpenReader={(bookId) => {
-              setSelectedBookId(bookId);
-              setCurrentPage('reader');
+              handleOpenReader(bookId);
             }}
           />
         )}
@@ -479,6 +479,7 @@ export default function HomeApp() {
         }}
         isMobileOpen={isMobileMenuOpen}
         onCloseMobile={() => setIsMobileMenuOpen(false)}
+        onOpenVipModal={() => setIsVipModalOpen(true)}
       />
 
       {/* ── Center / Right Main Canvas ── */}
@@ -501,10 +502,10 @@ export default function HomeApp() {
           onNavigateProfile={() => navigate('profile')}
           books={booksList}
           onOpenBookReader={(bookId) => {
-            setSelectedBookId(bookId);
-            navigate('reader');
+            handleOpenReader(bookId);
           }}
           onNavigatePage={(p) => navigate(p)}
+          onOpenVipModal={() => setIsVipModalOpen(true)}
         />
 
         {/* Scrollable Page Body */}
@@ -522,44 +523,67 @@ export default function HomeApp() {
                   <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
                     
                     <div className="space-y-6 flex-1 text-center lg:text-left">
-                      <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
-                        <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#E05638]/10 text-[#E05638] dark:text-amber-400 border border-[#E05638]/20">
-                          ✦ Bosh Muharrir Tanlovi
-                        </span>
-                        <span className="px-3 py-1 rounded-full text-xs font-mono bg-stone-100 dark:bg-white/10 text-stone-600 dark:text-stone-300">
-                          {featuredBook.pages} sahifa {featuredBook.audioDuration ? `• 🎧 ${featuredBook.audioDuration}` : `• ⏱ ~${Math.max(1, Math.round((featuredBook.pages || 100) * 1.5 / 60))} soat`}
-                        </span>
-                      </div>
+                      {(() => {
+                        const isFeaturedPremium = Boolean(featuredBook && (featuredBook.is_premium || (featuredBook as any).is_premium));
+                        const featPrice = (featuredBook as any).price || 15000;
+                        return (
+                          <>
+                            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
+                              {isFeaturedPremium ? (
+                                <span 
+                                  className="px-3.5 py-1 rounded-full text-xs font-mono font-bold flex items-center gap-1.5 shadow-md"
+                                  style={{ background: 'linear-gradient(135deg, #f7971e, #ffd200)', color: '#000' }}
+                                >
+                                  <span>💎</span>
+                                  <span>VIP ASAR • {new Intl.NumberFormat('uz-UZ').format(featPrice)} SO'M</span>
+                                </span>
+                              ) : (
+                                <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#E05638]/10 text-[#E05638] dark:text-amber-400 border border-[#E05638]/20">
+                                  ✦ Bosh Muharrir Tanlovi
+                                </span>
+                              )}
+                              <span className="px-3 py-1 rounded-full text-xs font-mono bg-stone-100 dark:bg-white/10 text-stone-600 dark:text-stone-300">
+                                {featuredBook.pages} sahifa {featuredBook.audioDuration ? `• 🎧 ${featuredBook.audioDuration}` : `• ⏱ ~${Math.max(1, Math.round((featuredBook.pages || 100) * 1.5 / 60))} soat`}
+                              </span>
+                            </div>
 
-                      <h1 className="font-serif text-4xl sm:text-6xl font-bold text-stone-950 dark:text-white tracking-tight leading-[1.1]">
-                        {featuredBook.title}
-                      </h1>
+                            <h1 className="font-serif text-4xl sm:text-6xl font-bold text-stone-950 dark:text-white tracking-tight leading-[1.1]">
+                              {featuredBook.title}
+                            </h1>
 
-                      <p className="font-serif italic text-stone-600 dark:text-stone-300 text-base sm:text-lg max-w-xl leading-relaxed">
-                        "{featuredBook.featuredQuote}"
-                      </p>
+                            <p className="font-serif italic text-stone-600 dark:text-stone-300 text-base sm:text-lg max-w-xl leading-relaxed">
+                              "{featuredBook.featuredQuote}"
+                            </p>
 
-                      <p className="text-xs sm:text-sm text-stone-500 max-w-xl leading-relaxed">
-                        {featuredBook.description}
-                      </p>
+                            <p className="text-xs sm:text-sm text-stone-500 max-w-xl leading-relaxed">
+                              {featuredBook.description}
+                            </p>
 
-                      <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-2">
-                        <button
-                          onClick={() => handleOpenReader(featuredBook.id)}
-                          className="px-8 py-4 rounded-2xl bg-[#E05638] hover:bg-[#C74326] text-white font-bold text-xs font-mono uppercase tracking-wider transition-transform active:scale-95 shadow-xl hover:shadow-2xl cursor-pointer flex items-center gap-2"
-                        >
-                          <BookOpen size={16} />
-                          <span>Mutolaani Boshlash</span>
-                        </button>
+                            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-2">
+                              <button
+                                onClick={() => handleOpenReader(featuredBook.id)}
+                                className={`px-8 py-4 rounded-2xl font-bold text-xs font-mono uppercase tracking-wider transition-transform active:scale-95 shadow-xl hover:shadow-2xl cursor-pointer flex items-center gap-2 ${
+                                  isFeaturedPremium
+                                    ? 'text-black hover:opacity-90'
+                                    : 'bg-[#E05638] hover:bg-[#C74326] text-white'
+                                }`}
+                                style={isFeaturedPremium ? { background: 'linear-gradient(135deg, #f7971e, #ffd200)' } : {}}
+                              >
+                                {isFeaturedPremium ? <span>💎</span> : <BookOpen size={16} />}
+                                <span>{isFeaturedPremium ? `Sotib Olish (${new Intl.NumberFormat('uz-UZ').format(featPrice)} so'm)` : "Mutolaani Boshlash"}</span>
+                              </button>
 
-                        <button
-                          onClick={() => handlePlayAudio(featuredBook)}
-                          className="px-8 py-4 rounded-2xl bg-stone-100 hover:bg-stone-200 dark:bg-white/10 dark:hover:bg-white/20 text-stone-900 dark:text-white font-bold text-xs font-mono uppercase tracking-wider transition-transform active:scale-95 border border-stone-200 dark:border-white/10 cursor-pointer flex items-center gap-2"
-                        >
-                          <Headphones size={16} className="text-[#C5A059]" />
-                          <span>Audio Tinglash</span>
-                        </button>
-                      </div>
+                              <button
+                                onClick={() => handlePlayAudio(featuredBook)}
+                                className="px-8 py-4 rounded-2xl bg-stone-100 hover:bg-stone-200 dark:bg-white/10 dark:hover:bg-white/20 text-stone-900 dark:text-white font-bold text-xs font-mono uppercase tracking-wider transition-transform active:scale-95 border border-stone-200 dark:border-white/10 cursor-pointer flex items-center gap-2"
+                              >
+                                <Headphones size={16} className="text-[#C5A059]" />
+                                <span>Audio Tinglash</span>
+                              </button>
+                            </div>
+                          </>
+                        );
+                      })()}
                     </div>
 
                     <div className="relative group cursor-pointer" onClick={() => handleOpenReader(featuredBook.id)}>
@@ -571,6 +595,14 @@ export default function HomeApp() {
                             className="w-full h-full object-cover" 
                           />
                           <div className="book-spine-hinge" />
+                          {Boolean(featuredBook.is_premium || (featuredBook as any).is_premium) && (
+                            <div
+                              className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-xs font-bold font-mono shadow-xl z-20"
+                              style={{ background: 'linear-gradient(135deg, #f7971e, #ffd200)', color: '#000' }}
+                            >
+                              💎 VIP ASAR
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -835,23 +867,39 @@ export default function HomeApp() {
       </div>
 
       {/* ── Global Book Paywall & VIP Subscription Modal ── */}
-      {paywallBook && (
+      {(paywallBook || isVipModalOpen) && (
         <BookPaywallModal
-          book={{
-            id: Number(paywallBook.id),
+          book={paywallBook ? {
+            id: paywallBook.id,
             title: paywallBook.title,
             author: paywallBook.authorName,
             cover_url: paywallBook.coverImage,
             price: paywallBook.price || (paywallBook as any).price || 15000,
             is_premium: true,
-          }}
+          } : null}
+          initialTab={isVipModalOpen && !paywallBook ? 'vip' : 'book'}
           isAdmin={currentUser?.role === 'ADMIN'}
-          onClose={() => setPaywallBook(null)}
-          onAccessGranted={() => {
-            const bId = paywallBook.id;
+          onClose={() => {
             setPaywallBook(null);
-            setSelectedBookId(bId);
-            setCurrentPage('reader');
+            setIsVipModalOpen(false);
+          }}
+          onRequireAuth={() => {
+            setPaywallBook(null);
+            setIsVipModalOpen(false);
+            setCurrentPage('auth');
+            toast.error("Iltimos, to'lovni davom ettirish uchun tizimga kiring!");
+          }}
+          onAccessGranted={() => {
+            if (paywallBook) {
+              const bId = paywallBook.id;
+              setPaywallBook(null);
+              setIsVipModalOpen(false);
+              setSelectedBookId(bId);
+              setCurrentPage('reader');
+            } else {
+              setIsVipModalOpen(false);
+              toast.success("VIP a'zolik faollashtirildi! 👑");
+            }
           }}
         />
       )}

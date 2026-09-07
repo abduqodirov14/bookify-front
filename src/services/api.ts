@@ -1097,10 +1097,10 @@ export const api = {
     }
   },
 
-  async checkBookAccess(bookId: number): Promise<{ has_access: boolean; is_premium: boolean; price: number; reason?: string }> {
+  async checkBookAccess(bookId: string | number): Promise<{ has_access: boolean; is_premium: boolean; price: number; reason?: string }> {
     const token = getAuthToken();
     try {
-      const res = await fetchWithRetry(`${API_BASE_URL}/payments/my-access/${bookId}`, {
+      const res = await fetchWithRetry(`${API_BASE_URL}/payments/my-access/${String(bookId)}`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
       if (!res.ok) return { has_access: true, is_premium: false, price: 0, reason: 'DEFAULT_FREE' };
@@ -1111,10 +1111,10 @@ export const api = {
   },
 
   async createPaymentOrder(payload: {
-    book_id?: number;
+    book_id?: string | number;
     plan_type?: 'book' | 'vip_monthly' | 'vip_yearly';
     return_url?: string;
-  }): Promise<{ success: boolean; pay_url?: string; order_id?: string; message?: string }> {
+  }): Promise<{ success: boolean; pay_url?: string; order_id?: string; pay_links?: { click?: string; payme?: string }; message?: string }> {
     const token = getAuthToken();
     const res = await fetchWithRetry(`${API_BASE_URL}/payments/create-order`, {
       method: 'POST',

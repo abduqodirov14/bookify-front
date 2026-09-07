@@ -17,6 +17,7 @@ interface Props {
 export default function DiscoverCatalog({ books, onOpenReader, onPlayAudio }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('Barchasi');
+  const [pricingFilter, setPricingFilter] = useState<'all' | 'premium' | 'free'>('all');
   const [paywallBook, setPaywallBook] = useState<Book | null>(null);
 
   const categories = ["Barchasi", ...BOOK_CATEGORIES];
@@ -31,7 +32,13 @@ export default function DiscoverCatalog({ books, onOpenReader, onPlayAudio }: Pr
     const matchSearch = b.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                         b.authorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                         (b.category && b.category.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchCat && matchSearch;
+    const isPrem = Boolean((b as any).is_premium);
+    const matchPricing = pricingFilter === 'all' 
+      ? true 
+      : pricingFilter === 'premium' 
+        ? isPrem 
+        : !isPrem;
+    return matchCat && matchSearch && matchPricing;
   });
 
   const handleSaveToLibrary = async (book: Book) => {
@@ -44,11 +51,7 @@ export default function DiscoverCatalog({ books, onOpenReader, onPlayAudio }: Pr
   };
 
   const handleOpenBook = (b: Book) => {
-    if ((b as any).is_premium) {
-      setPaywallBook(b);
-    } else {
-      onOpenReader(b.id);
-    }
+    onOpenReader(b.id);
   };
 
   return (
@@ -67,9 +70,47 @@ export default function DiscoverCatalog({ books, onOpenReader, onPlayAudio }: Pr
           </p>
         </div>
 
-        <span className="px-4 py-2 rounded-2xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 text-xs font-mono font-bold text-stone-700 dark:text-stone-300 self-start sm:self-auto shadow-xs">
-          Mavjud: {filteredBooks.length} ta asar
-        </span>
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+          {/* Pricing Filter Buttons */}
+          <div className="flex items-center gap-1 p-1 rounded-2xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs">
+            <button
+              onClick={() => setPricingFilter('all')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
+                pricingFilter === 'all'
+                  ? 'bg-stone-900 dark:bg-white text-white dark:text-stone-900 shadow-xs'
+                  : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+              }`}
+            >
+              Barchasi ({books.length})
+            </button>
+            <button
+              onClick={() => setPricingFilter('premium')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                pricingFilter === 'premium'
+                  ? 'text-black font-bold shadow-md'
+                  : 'text-amber-500 hover:text-amber-400'
+              }`}
+              style={pricingFilter === 'premium' ? { background: 'linear-gradient(135deg, #f7971e, #ffd200)' } : {}}
+            >
+              <span>💎</span>
+              <span>VIP Asarlar ({books.filter(b => (b as any).is_premium).length})</span>
+            </button>
+            <button
+              onClick={() => setPricingFilter('free')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
+                pricingFilter === 'free'
+                  ? 'bg-stone-900 dark:bg-white text-white dark:text-stone-900 shadow-xs'
+                  : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+              }`}
+            >
+              Bepul ({books.filter(b => !(b as any).is_premium).length})
+            </button>
+          </div>
+
+          <span className="px-3.5 py-2 rounded-2xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 text-xs font-mono font-bold text-stone-700 dark:text-stone-300 shadow-xs">
+            Natija: {filteredBooks.length} ta asar
+          </span>
+        </div>
       </div>
 
       {/* Search & Category Pills */}
@@ -214,11 +255,11 @@ export default function DiscoverCatalog({ books, onOpenReader, onPlayAudio }: Pr
       {paywallBook && (
         <BookPaywallModal
           book={{
-            id: Number(paywallBook.id),
+            id: paywallBook.id,
             title: paywallBook.title,
             author: paywallBook.authorName,
             cover_url: paywallBook.coverImage,
-            price: (paywallBook as any).price,
+            price: (paywallBook as any).price || 15000,
             is_premium: (paywallBook as any).is_premium,
           }}
           onClose={() => setPaywallBook(null)}

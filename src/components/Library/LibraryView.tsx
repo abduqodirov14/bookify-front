@@ -69,51 +69,78 @@ export default function LibraryView({ allBooks, onOpenReader, onPlayAudio, onGoT
       {/* Books Grid or Empty State */}
       {savedBooks.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {savedBooks.map(b => (
-            <div
-              key={b.id}
-              className="p-5 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between space-y-4 group"
-            >
-              <div className="flex gap-4">
-                <div className="book-card-3d shrink-0">
-                  <div className="book-card-inner relative w-24 h-34 rounded-xl overflow-hidden shadow-book border border-black/10">
-                    <img src={b.coverImage} alt={b.title} className="w-full h-full object-cover" />
-                    <div className="book-spine-hinge" />
+          {savedBooks.map(b => {
+            const isPremium = Boolean(b.is_premium || (b as any).is_premium);
+            const bookPrice = (b as any).price || 0;
+            return (
+              <div
+                key={b.id}
+                className="p-5 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between space-y-4 group"
+                style={isPremium ? { borderColor: 'rgba(247,151,30,0.35)' } : {}}
+              >
+                <div className="flex gap-4">
+                  <div className="book-card-3d shrink-0">
+                    <div className="book-card-inner relative w-24 h-34 rounded-xl overflow-hidden shadow-book border border-black/10">
+                      <img src={b.coverImage} alt={b.title} className="w-full h-full object-cover" />
+                      <div className="book-spine-hinge" />
+                      {isPremium && (
+                        <div
+                          className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded text-[9px] font-bold shadow-md z-10"
+                          style={{ background: 'linear-gradient(135deg, #f7971e, #ffd200)', color: '#000' }}
+                        >
+                          💎 VIP
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col justify-between flex-1 min-w-0">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[10px] font-mono font-bold text-[#E05638] uppercase tracking-wider">
+                          {b.category}
+                        </span>
+                        {isPremium && bookPrice > 0 && (
+                          <span
+                            className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded"
+                            style={{ background: 'rgba(247,151,30,0.12)', color: '#f7971e' }}
+                          >
+                            {new Intl.NumberFormat('uz-UZ').format(bookPrice)} so'm
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="font-serif text-base font-bold text-stone-950 dark:text-white truncate group-hover:text-[#E05638] transition-colors">
+                        {b.title}
+                      </h4>
+                      <span className="text-xs text-stone-500 font-medium block truncate">
+                        {b.authorName}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-[11px] font-mono text-stone-400 pt-2">
+                      <span>📖 {b.pages} bet</span>
+                      {b.audioDuration ? (
+                        <span className="text-[#E05638] dark:text-amber-400 font-medium">🎧 {b.audioDuration}</span>
+                      ) : (
+                        <span>⏱ ~{Math.max(1, Math.round((b.pages || 100) * 1.5 / 60))} soat</span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex flex-col justify-between flex-1 min-w-0">
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-mono font-bold text-[#E05638] uppercase tracking-wider">
-                      {b.category}
-                    </span>
-                    <h4 className="font-serif text-base font-bold text-stone-950 dark:text-white truncate group-hover:text-[#E05638] transition-colors">
-                      {b.title}
-                    </h4>
-                    <span className="text-xs text-stone-500 font-medium block truncate">
-                      {b.authorName}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-3 text-[11px] font-mono text-stone-400 pt-2">
-                    <span>📖 {b.pages} bet</span>
-                    {b.audioDuration ? (
-                      <span className="text-[#E05638] dark:text-amber-400 font-medium">🎧 {b.audioDuration}</span>
-                    ) : (
-                      <span>⏱ ~{Math.max(1, Math.round((b.pages || 100) * 1.5 / 60))} soat</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 pt-2 border-t border-stone-100 dark:border-white/5">
-                <button
-                  onClick={() => onOpenReader(b.id)}
-                  className="flex-1 py-2.5 rounded-xl bg-[#E05638] hover:bg-[#C74326] text-white font-semibold text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-md"
-                >
-                  <BookOpen size={14} />
-                  <span>Mutolaani Davom Ettirish</span>
-                </button>
+                <div className="flex items-center gap-2 pt-2 border-t border-stone-100 dark:border-white/5">
+                  <button
+                    onClick={() => onOpenReader(b.id)}
+                    className={`flex-1 py-2.5 rounded-xl font-semibold text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-md ${
+                      isPremium
+                        ? 'text-black hover:opacity-90 font-bold'
+                        : 'bg-[#E05638] hover:bg-[#C74326] text-white'
+                    }`}
+                    style={isPremium ? { background: 'linear-gradient(135deg, #f7971e, #ffd200)' } : {}}
+                  >
+                    {isPremium ? <span>💎</span> : <BookOpen size={14} />}
+                    <span>{isPremium ? "Xarid Qilish / Mutolaa" : "Mutolaani Davom Ettirish"}</span>
+                  </button>
 
                 <button
                   onClick={() => onPlayAudio(b)}
@@ -132,7 +159,8 @@ export default function LibraryView({ allBooks, onOpenReader, onPlayAudio, onGoT
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         /* Empty State */

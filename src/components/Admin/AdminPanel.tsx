@@ -1375,6 +1375,33 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                         </button>
                       )}
 
+                      {/* Quick 1-Click VIP / Free Toggle */}
+                      <button
+                        onClick={async () => {
+                          const newIsPrem = !(b as any).is_premium;
+                          const defaultPrice = newIsPrem ? 15000 : 0;
+                          const tId = toast.loading(newIsPrem ? "Pullik (VIP) qilinmoqda..." : "Bepul qilinmoqda...");
+                          try {
+                            await api.updateBook(b.id, {
+                              is_premium: newIsPrem,
+                              price: defaultPrice
+                            });
+                            toast.success(newIsPrem ? `"${b.title}" pullik (15 000 so'm) qilindi! 💎` : `"${b.title}" bepul qilindi! 🎁`, { id: tId });
+                            onRefreshBooks();
+                          } catch (e: any) {
+                            toast.error(e.message || "Xatolik yuz berdi", { id: tId });
+                          }
+                        }}
+                        className={`px-3 py-2 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
+                          (b as any).is_premium
+                            ? 'bg-amber-500/20 text-amber-500 hover:bg-amber-500 hover:text-black border border-amber-500/40'
+                            : 'bg-stone-100 dark:bg-white/10 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-white/20'
+                        }`}
+                        title={(b as any).is_premium ? "Bepul qilish" : "Pullik (VIP) qilish"}
+                      >
+                        <span>{(b as any).is_premium ? "💎 VIP" : "🎁 Bepul"}</span>
+                      </button>
+
                       <button
                         onClick={() => handleOpenEdit(b)}
                         className="px-3 py-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500 hover:text-white text-xs font-mono font-bold transition-colors cursor-pointer flex items-center gap-1.5"
