@@ -17,7 +17,8 @@ import {
   ArrowRight,
   ShieldCheck,
   Send,
-  FileText
+  FileText,
+  Upload
 } from 'lucide-react';
 import VolunteerOnboardingModal from './VolunteerOnboardingModal';
 import { Book, UserProfile, Page } from '../../types';
@@ -324,6 +325,33 @@ export default function VolunteerPortal({
               Har bir audiobobni 10-15 daqiqa (18 MB gacha) qilib yuboring. Bot fayllarni asarga tartib bilan ulaydi.
             </p>
           </div>
+        </div>
+
+        {/* 📖 New Book Upload notice for volunteers */}
+        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <Upload size={18} />
+            </div>
+            <div>
+              <h5 className="font-semibold text-stone-900 dark:text-white flex items-center gap-2">
+                <span>Yangi Kitob Yuklash (PDF / EPUB / FB2)</span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold">Botda Mavjud</span>
+              </h5>
+              <p className="text-stone-500 dark:text-stone-400 text-[11px] mt-0.5">
+                Telegram botimizda «📖 Kitob Yuklash (Volontyor)» tugmasini bosib, yangi elektron kitob faylini yuborishingiz mumkin. Kitob konveyerdan o'tib, moderator (admin) tasdiqlab chop etishi bilan saytda e'lon qilinadi!
+              </p>
+            </div>
+          </div>
+          <a
+            href={`https://t.me/book1fy_bot?start=vol_${volunteerCode}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs shrink-0 inline-flex items-center gap-1.5 transition-colors self-start sm:self-auto shadow-2xs"
+          >
+            <span>Botda Yuklash</span>
+            <ExternalLink size={13} />
+          </a>
         </div>
       </div>
 
