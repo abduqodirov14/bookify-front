@@ -1129,5 +1129,25 @@ export const api = {
       throw new Error(err.detail || 'To\'lov yaratishda xatolik');
     }
     return res.json();
+  },
+
+  async verifyPaymentStatus(orderId: string): Promise<{ success: boolean; status: string; amount?: number; plan_type?: string }> {
+    try {
+      const res = await fetchWithRetry(`${API_BASE_URL}/payments/verify-status/${orderId}`);
+      if (!res.ok) return { success: false, status: 'unknown' };
+      return await res.json();
+    } catch {
+      return { success: false, status: 'error' };
+    }
+  },
+
+  async getFiscalReceipt(orderId: string): Promise<any> {
+    try {
+      const res = await fetchWithRetry(`${API_BASE_URL}/payments/fiscal/${orderId}`);
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
   }
 };
