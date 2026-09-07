@@ -399,14 +399,18 @@ export default function HomeApp() {
             id: user.id || "u-1",
             name: user.name || user.email?.split('@')[0] || "Kitobxon",
             email: user.email,
-            role: user.role === 'ADMIN' ? 'ADMIN' : 'USER',
+            role: user.role === 'ADMIN' ? 'ADMIN' : user.role === 'VOLUNTEER' ? 'VOLUNTEER' : 'USER',
             avatarUrl: user.avatar_url || user.avatarUrl || '',
             dailyGoalMinutes: 40,
             todayMinutes: 40,
             readingStreakDays: 1,
             totalHours: user.total_hours || 0,
             finishedBooksCount: user.finished_books_count || 0,
-            is2FAEnabled: user.is_2fa_enabled ?? (user.role === 'ADMIN')
+            is2FAEnabled: user.is_2fa_enabled ?? (user.role === 'ADMIN'),
+            volunteer_code: user.volunteer_code,
+            volunteer_title: user.volunteer_title,
+            volunteer_hours: user.volunteer_hours || 0,
+            is_volunteer: user.is_volunteer || (user.role === 'VOLUNTEER') || Boolean(user.volunteer_code)
           });
           if (pendingBookToOpen) {
             const bId = pendingBookToOpen;
