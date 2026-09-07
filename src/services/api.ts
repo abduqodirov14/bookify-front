@@ -1083,7 +1083,51 @@ export const api = {
     } catch {
       return [];
     }
+  },
+
+  // ─── Payment / InPay ───────────────────────────────────────────────────────
+
+  async getPaymentPlans(): Promise<any> {
+    try {
+      const res = await fetchWithRetry(`${API_BASE_URL}/payments/plans`);
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  },
+
+  async checkBookAccess(bookId: number): Promise<{ has_access: boolean; is_premium: boolean; price: number }> {
+    const token = getAuthToken();
+    try {
+      const res = await fetchWithRetry(`${API_BASE_URL}/payments/my-access/${bookId}`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+      if (!res.ok) return { has_access: true, is_premium: false, price: 0 };
+      return await res.json();
+    } catch {
+      return { has_access: true, is_premium: false, price: 0 };
+    }
+  },
+
+  async createPaymentOrder(payload: {
+    book_id?: number;
+    plan_type?: 'book' | 'vip_monthly' | 'vip_yearly';
+    return_url?: string;
+  }): Promise<{ success: boolean; pay_url?: string; order_id?: string; message?: string }> {
+    const token = getAuthToken();
+    const res = await fetchWithRetry(`${API_BASE_URL}/payments/create-order`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'To\'lov yaratishda xatolik');
+    }
+    return res.json();
   }
 };
-
-

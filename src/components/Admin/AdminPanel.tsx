@@ -113,6 +113,8 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
   const [editNarrator, setEditNarrator] = useState('');
   const [editCoverUrl, setEditCoverUrl] = useState('');
   const [editDescription, setEditDescription] = useState('');
+  const [editIsPremium, setEditIsPremium] = useState(false);
+  const [editPrice, setEditPrice] = useState(0);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [publishingBookId, setPublishingBookId] = useState<string | null>(null);
 
@@ -482,6 +484,8 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
     setEditNarrator(b.narrator || 'Afzal Rafiqov');
     setEditCoverUrl(b.coverImage || '');
     setEditDescription(b.description || '');
+    setEditIsPremium(!!(b as any).is_premium);
+    setEditPrice((b as any).price || 0);
     setAudioUploadQueue([]);
     setPreviewTrackId(null);
     if (previewAudioRef.current) {
@@ -618,7 +622,9 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
         pages: editPages,
         narrator: editNarrator,
         cover_image: editCoverUrl,
-        description: editDescription
+        description: editDescription,
+        is_premium: editIsPremium,
+        price: editIsPremium ? editPrice : 0
       });
 
       toast.success("Kitob ma'lumotlari muvaffaqiyatli yangilandi! 🎉", { id: toastId });
@@ -1289,6 +1295,18 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                               QAYTA URINISH
                             </span>
                           )}
+                          {(b as any).is_premium && (
+                            <span
+                              className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold shrink-0"
+                              style={{
+                                background: 'linear-gradient(135deg, rgba(247,151,30,0.15), rgba(255,210,0,0.08))',
+                                color: '#f7971e',
+                                border: '1px solid rgba(247,151,30,0.4)'
+                              }}
+                            >
+                              💎 PREMIUM {(b as any).price ? `• ${new Intl.NumberFormat('uz-UZ').format((b as any).price)} so'm` : ''}
+                            </span>
+                          )}
                         </div>
                         <div className="text-xs text-stone-500 font-mono">
                           Muallif: <strong className="text-stone-800 dark:text-stone-300">{b.authorName}</strong> • {b.pages} bet • {b.narrator || 'Ovozli'}
@@ -1881,6 +1899,74 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                   )}
                 </div>
 
+              </div>
+
+              {/* ── Premium Settings ───────────────────────────── */}
+              <div
+                className="rounded-2xl p-4 mt-2"
+                style={{
+                  background: editIsPremium
+                    ? 'linear-gradient(135deg, rgba(247,151,30,0.12), rgba(255,210,0,0.06))'
+                    : 'rgba(255,255,255,0.03)',
+                  border: editIsPremium ? '1px solid rgba(247,151,30,0.4)' : '1px solid rgba(255,255,255,0.08)',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                {/* Toggle row */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">💎</span>
+                    <div>
+                      <p className="text-sm font-bold text-stone-800 dark:text-white">Premium Kontent</p>
+                      <p className="text-xs text-stone-500 dark:text-stone-400">Faqat to'lov amalga oshirilgandan so'ng o'qiladi</p>
+                    </div>
+                  </div>
+                  {/* Custom Toggle */}
+                  <button
+                    type="button"
+                    onClick={() => setEditIsPremium(v => !v)}
+                    className="relative w-12 h-6 rounded-full transition-all duration-300 shrink-0 cursor-pointer"
+                    style={{
+                      background: editIsPremium
+                        ? 'linear-gradient(135deg, #f7971e, #ffd200)'
+                        : 'rgba(0,0,0,0.15)',
+                      border: editIsPremium ? 'none' : '1px solid rgba(0,0,0,0.2)',
+                    }}
+                  >
+                    <span
+                      className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-300"
+                      style={{ transform: editIsPremium ? 'translateX(24px)' : 'translateX(0)' }}
+                    />
+                  </button>
+                </div>
+
+                {/* Price input (shown when premium) */}
+                {editIsPremium && (
+                  <div className="mt-3 pt-3 border-t border-amber-200/20">
+                    <label className="block text-xs font-semibold text-amber-600 dark:text-amber-400 mb-1.5">
+                      💰 Kitob narxi (so'm)
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        min={1000}
+                        step={500}
+                        value={editPrice}
+                        onChange={e => setEditPrice(Number(e.target.value))}
+                        className="w-full px-4 py-2.5 rounded-xl bg-white/10 dark:bg-black/20 border border-amber-300/30 text-stone-900 dark:text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-amber-400/50 placeholder-stone-400"
+                        placeholder="Masalan: 15000"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-stone-400 dark:text-amber-500 font-semibold">
+                        UZS
+                      </span>
+                    </div>
+                    {editPrice > 0 && (
+                      <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                        = {new Intl.NumberFormat('uz-UZ').format(editPrice)} so'm
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons */}

@@ -143,6 +143,8 @@ export default function HomeApp() {
           narrator: b.narrator || 'Afzal Rafiqov',
           featuredQuote: "Moziyga qaytib ish ko'rmak xayrlidir...",
           status: b.status || 'PUBLISHED',
+          is_premium: b.is_premium || false,
+          price: b.price || 0,
           chapters: [
             {
               id: `c1-${b.id}`,
