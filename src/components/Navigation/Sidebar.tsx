@@ -50,7 +50,7 @@ export default function Sidebar({
     { id: 'discover', label: 'Xazina & Katalog', icon: Compass },
     { id: 'author', label: 'Buyuk Allomalar', icon: Users2 },
     { id: 'library', label: 'Mening Javonim', icon: Library },
-    { id: 'volunteer' as Page, label: 'Volontyorlar', icon: HeartHandshake, badge: isVolunteer ? 'VIP' : undefined },
+    ...(isVolunteer || isAdmin ? [{ id: 'volunteer' as Page, label: 'Volontyorlik', icon: HeartHandshake, badge: 'VIP' }] : []),
     { id: 'time', label: 'Sokin Mutolaa', icon: Clock },
     { id: 'challenge', label: 'Adabiy Chempionat', icon: Trophy },
     { id: 'vision' as Page, label: 'Kelajak & Rejalar', icon: Layers },

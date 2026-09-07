@@ -98,9 +98,18 @@ export default function HomeApp() {
     initAuth();
   }, []);
 
-  // Security Route Guard: Silent redirect away from admin ONLY AFTER auth is fully initialized
+  // Security Route Guard: Silent redirect away from admin or volunteer ONLY AFTER auth is fully initialized
   useEffect(() => {
     if (authInitialized && currentPage === 'admin' && currentUser?.role !== 'ADMIN') {
+      setCurrentPage('home');
+    }
+    const isVolunteerUser = Boolean(
+      currentUser?.is_volunteer || 
+      currentUser?.role === 'VOLUNTEER' || 
+      currentUser?.volunteer_code ||
+      currentUser?.role === 'ADMIN'
+    );
+    if (authInitialized && currentPage === 'volunteer' && !isVolunteerUser) {
       setCurrentPage('home');
     }
   }, [currentPage, currentUser, authInitialized]);
