@@ -16,8 +16,10 @@ import {
   Loader2,
   ArrowRight,
   ShieldCheck,
-  Send
+  Send,
+  FileText
 } from 'lucide-react';
+import VolunteerOnboardingModal from './VolunteerOnboardingModal';
 import { Book, UserProfile, Page } from '../../types';
 import { calculateVolunteerPeriod } from '../../utils/dateUtils';
 import { api } from '../../services/api';
@@ -39,14 +41,25 @@ export default function VolunteerPortal({
   const [copied, setCopied] = useState(false);
   const [myCertificates, setMyCertificates] = useState<any[]>([]);
   const [isLoadingCerts, setIsLoadingCerts] = useState(false);
-
-  const periodCalc = calculateVolunteerPeriod(currentUser?.created_at || '2025-09-01');
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
   const isVolunteer = Boolean(
     currentUser?.is_volunteer || 
     currentUser?.role === 'VOLUNTEER' || 
     currentUser?.volunteer_code ||
     currentUser?.role === 'ADMIN'
   );
+  const periodCalc = calculateVolunteerPeriod(currentUser?.created_at || '2025-09-01');
+
+  // Auto-open onboarding charter for new volunteers who haven't accepted yet
+  useEffect(() => {
+    if (currentUser?.id && isVolunteer) {
+      const acceptedKey = `bookify_volunteer_onboarded_${currentUser.id}`;
+      const hasAccepted = localStorage.getItem(acceptedKey);
+      if (!hasAccepted) {
+        setIsOnboardingOpen(true);
+      }
+    }
+  }, [currentUser?.id, isVolunteer]);
 
   const volunteerCode = currentUser?.volunteer_code || 'VOL-FAOL';
   const volunteerTitle = currentUser?.volunteer_title || 'Bosh Ovozli Diktor & Madaniy Meros Volontyori';
@@ -124,17 +137,27 @@ export default function VolunteerPortal({
     <div className="space-y-8 pb-20 animate-in fade-in duration-200 max-w-6xl mx-auto">
       
       {/* ── 1. CLEAN HUMAN-MADE PAGE HEADER ── */}
-      <div className="space-y-1">
-        <div className="flex items-center gap-2 text-xs font-medium text-[#E05638]">
-          <HeartHandshake size={15} />
-          <span>Volontyorlar Maydoni</span>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-xs font-medium text-[#E05638]">
+            <HeartHandshake size={15} />
+            <span>Volontyorlar Maydoni</span>
+          </div>
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-stone-950 dark:text-white tracking-tight">
+            Ovozli Adabiyot Studiyasi
+          </h1>
+          <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 max-w-2xl">
+            Kitoblarni ovozlashtirish, audioboblarni Telegram botimiz orqali yuklash va rasmiy xizmat ko'rsatkichlaringizni kuzatib borish bo'limi.
+          </p>
         </div>
-        <h1 className="font-serif text-2xl sm:text-3xl font-bold text-stone-950 dark:text-white tracking-tight">
-          Ovozli Adabiyot Studiyasi
-        </h1>
-        <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 max-w-2xl">
-          Kitoblarni ovozlashtirish, audioboblarni Telegram botimiz orqali yuklash va rasmiy xizmat ko'rsatkichlaringizni kuzatib borish bo'limi.
-        </p>
+
+        <button
+          onClick={() => setIsOnboardingOpen(true)}
+          className="px-4 py-2.5 rounded-2xl bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/25 text-amber-700 dark:text-amber-400 text-xs font-medium transition-all flex items-center gap-2 shrink-0 cursor-pointer shadow-2xs"
+        >
+          <FileText size={15} />
+          <span>Volontyorlik Nizomi & Vazifalar</span>
+        </button>
       </div>
 
       {/* ── 2. REFINED MEMBER CARD (HUMAN-MADE, LIGHT & DARK BALANCED) ── */}
@@ -444,6 +467,22 @@ export default function VolunteerPortal({
           </div>
         )}
       </div>
+
+      {/* ── 6. VOLUNTEER CHARTER & ONBOARDING MODAL ── */}
+      {currentUser && (
+        <VolunteerOnboardingModal
+          user={currentUser}
+          isOpen={isOnboardingOpen}
+          onClose={() => setIsOnboardingOpen(false)}
+          onAccept={() => {
+            if (currentUser?.id) {
+              localStorage.setItem(`bookify_volunteer_onboarded_${currentUser.id}`, 'true');
+            }
+            setIsOnboardingOpen(false);
+            toast.success(`Xush kelibsiz, ${currentUser.name}! Volontyorlik studiyangiz faollashdi! 🎉`);
+          }}
+        />
+      )}
 
     </div>
   );
