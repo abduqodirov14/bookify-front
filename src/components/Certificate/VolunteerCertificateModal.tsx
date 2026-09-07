@@ -128,23 +128,23 @@ export default function VolunteerCertificateModal({ certificate, onClose }: Prop
           <div className="absolute inset-3.5 sm:inset-4.5 border-[2px] sm:border-[2.5px] border-[#1C2833] pointer-events-none"></div>
           <div className="absolute inset-4.5 sm:inset-5.5 border border-[#D4AF37]/50 pointer-events-none"></div>
 
-          {/* SVG Ornate Gold Corner Filigrees */}
-          <svg className="absolute top-5 left-5 w-12 h-12 text-[#B38728] pointer-events-none opacity-80" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5">
+          {/* SVG Ornate Gold Corner Filigrees - Subtly framed in corners */}
+          <svg className="absolute top-2 left-2 w-8 h-8 text-[#B38728] pointer-events-none opacity-35" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M5 5 L95 5 M5 5 L5 95 M15 15 L85 15 M15 15 L15 85 M25 25 L75 25 M25 25 L25 75"/>
             <circle cx="50" cy="50" r="18" strokeDasharray="2 2"/>
             <path d="M5 5 Q50 5 50 50 Q5 50 5 5 Z" fill="#D4AF37" fillOpacity="0.15"/>
           </svg>
-          <svg className="absolute top-5 right-5 w-12 h-12 text-[#B38728] pointer-events-none opacity-80 rotate-90" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <svg className="absolute top-2 right-2 w-8 h-8 text-[#B38728] pointer-events-none opacity-35 rotate-90" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M5 5 L95 5 M5 5 L5 95 M15 15 L85 15 M15 15 L15 85 M25 25 L75 25 M25 25 L25 75"/>
             <circle cx="50" cy="50" r="18" strokeDasharray="2 2"/>
             <path d="M5 5 Q50 5 50 50 Q5 50 5 5 Z" fill="#D4AF37" fillOpacity="0.15"/>
           </svg>
-          <svg className="absolute bottom-5 left-5 w-12 h-12 text-[#B38728] pointer-events-none opacity-80 -rotate-90" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <svg className="absolute bottom-2 left-2 w-8 h-8 text-[#B38728] pointer-events-none opacity-35 -rotate-90" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M5 5 L95 5 M5 5 L5 95 M15 15 L85 15 M15 15 L15 85 M25 25 L75 25 M25 25 L25 75"/>
             <circle cx="50" cy="50" r="18" strokeDasharray="2 2"/>
             <path d="M5 5 Q50 5 50 50 Q5 50 5 5 Z" fill="#D4AF37" fillOpacity="0.15"/>
           </svg>
-          <svg className="absolute bottom-5 right-5 w-12 h-12 text-[#B38728] pointer-events-none opacity-80 rotate-180" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <svg className="absolute bottom-2 right-2 w-8 h-8 text-[#B38728] pointer-events-none opacity-35 rotate-180" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M5 5 L95 5 M5 5 L5 95 M15 15 L85 15 M15 15 L15 85 M25 25 L75 25 M25 25 L25 75"/>
             <circle cx="50" cy="50" r="18" strokeDasharray="2 2"/>
             <path d="M5 5 Q50 5 50 50 Q5 50 5 5 Z" fill="#D4AF37" fillOpacity="0.15"/>
@@ -206,36 +206,36 @@ export default function VolunteerCertificateModal({ certificate, onClose }: Prop
             </p>
 
             {/* Single-Row Balanced Institutional Transcript Bar */}
-            <div className="grid grid-cols-5 divide-x divide-[#D4AF37]/35 bg-[#F4F1EA]/85 border border-[#D4AF37]/45 rounded-lg max-w-3xl sm:max-w-4xl mx-auto mt-2 sm:mt-2.5 shadow-xs overflow-hidden">
-              <div className="p-1 sm:p-1.5 text-center">
+            <div className="grid grid-cols-12 divide-x divide-[#D4AF37]/35 bg-[#F4F1EA]/85 border border-[#D4AF37]/45 rounded-lg max-w-3xl sm:max-w-4xl mx-auto mt-2 sm:mt-2.5 shadow-xs overflow-hidden">
+              <div className="col-span-2 p-1 sm:p-1.5 text-center">
                 <div className="text-[6.5px] sm:text-[7.5px] uppercase tracking-wider text-[#7F8C8D] font-bold font-mono">Xizmat Davri</div>
                 <div className="text-[8.5px] sm:text-[10px] font-bold text-[#1C2833] font-serif truncate" title={servicePeriod}>
                   {servicePeriod.includes('(') ? servicePeriod.split('(')[1].replace(')', '') : '1 yil'}
                 </div>
               </div>
 
-              <div className="p-1 sm:p-1.5 text-center">
+              <div className="col-span-2 p-1 sm:p-1.5 text-center">
                 <div className="text-[6.5px] sm:text-[7.5px] uppercase tracking-wider text-[#7F8C8D] font-bold font-mono">Akkreditatsiya</div>
                 <div className="text-[8.5px] sm:text-[10px] font-bold text-[#1C2833] font-serif truncate" title={hours}>
                   {hours}
                 </div>
               </div>
 
-              <div className="p-1 sm:p-1.5 text-center">
+              <div className="col-span-4 p-1 sm:p-1.5 text-center px-1.5">
                 <div className="text-[6.5px] sm:text-[7.5px] uppercase tracking-wider text-[#7F8C8D] font-bold font-mono">Bajarilgan Ish</div>
-                <div className="text-[8.5px] sm:text-[10px] font-bold text-[#1C2833] font-serif truncate" title={impact}>
+                <div className="text-[8px] sm:text-[9.5px] font-bold text-[#1C2833] font-serif truncate" title={impact}>
                   {impact}
                 </div>
               </div>
 
-              <div className="p-1 sm:p-1.5 text-center">
+              <div className="col-span-2 p-1 sm:p-1.5 text-center">
                 <div className="text-[6.5px] sm:text-[7.5px] uppercase tracking-wider text-[#7F8C8D] font-bold font-mono">Tinglovchilar</div>
                 <div className="text-[8.5px] sm:text-[10px] font-bold text-[#1C2833] font-serif truncate">
                   {certificate.audience_reach || "12,500+"}
                 </div>
               </div>
 
-              <div className="p-1 sm:p-1.5 text-center bg-[#EBF5FB]/60">
+              <div className="col-span-2 p-1 sm:p-1.5 text-center bg-[#EBF5FB]/60">
                 <div className="text-[6.5px] sm:text-[7.5px] uppercase tracking-wider text-[#2980B9] font-bold font-mono">Akademik Baho</div>
                 <div className="text-[8.5px] sm:text-[10px] font-bold text-[#27AE60] font-serif truncate">
                   {certificate.quality_grade || "Grade A+"}
@@ -245,10 +245,10 @@ export default function VolunteerCertificateModal({ certificate, onClose }: Prop
           </div>
 
           {/* 3. FOOTER: Signatures, 3D Rosette Seal, and QR Verification */}
-          <div className="relative z-10 grid grid-cols-3 items-end pt-2 sm:pt-2.5 pb-1 border-t border-[#D4AF37]/35 mt-1">
+          <div className="relative z-10 grid grid-cols-3 items-end px-6 sm:px-10 pb-2 sm:pb-3 pt-2 border-t border-[#D4AF37]/35 mt-1">
             
             {/* Left: Founder Signature */}
-            <div className="text-left pl-2">
+            <div className="text-left">
               <div className="font-serif italic text-lg sm:text-xl text-[#1C2833] leading-none mb-0.5 rotate-[-2deg]">
                 Dilshodbek A.
               </div>
@@ -285,7 +285,7 @@ export default function VolunteerCertificateModal({ certificate, onClose }: Prop
             </div>
 
             {/* Right: Lead Editor Signature & Real Verification QR */}
-            <div className="flex flex-col items-end text-right pr-2">
+            <div className="flex flex-col items-end text-right">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <div className="text-right">
                   <div className="text-[6.5px] sm:text-[7px] uppercase font-bold text-[#7F8C8D]">Tekshiruv QR:</div>
