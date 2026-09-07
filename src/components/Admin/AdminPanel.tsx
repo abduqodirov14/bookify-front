@@ -46,9 +46,11 @@ import {
   UserX,
   Mail,
   Calendar,
-  EyeOff
+  EyeOff,
+  Award
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import VolunteerCertificateModal, { CertificateData } from '../Certificate/VolunteerCertificateModal';
 
 interface Props {
   books: Book[];
@@ -344,6 +346,49 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
       toast.error(err.message || "Statusni o'zgartirishda xatolik");
     } finally {
       setTogglingUserId(null);
+    }
+  };
+
+  // ── Volunteer Certificate Generation State & Handlers ──
+  const [certModalUser, setCertModalUser] = useState<any | null>(null);
+  const [certRole, setCertRole] = useState('Bosh Ovozli Diktor & Madaniy Meros Volontyori');
+  const [certHours, setCertHours] = useState('64 Akredited Hours (4 oy)');
+  const [certImpact, setCertImpact] = useState("4 ta To'liq Kitob (48 ta audiobob)");
+  const [certReach, setCertReach] = useState('12,500+ Kitobxonlar');
+  const [certGrade, setCertGrade] = useState('Grade A+ (Distinguished)');
+  const [isIssuingCert, setIsIssuingCert] = useState(false);
+  const [previewCertData, setPreviewCertData] = useState<CertificateData | null>(null);
+
+  const handleIssueCertificateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!certModalUser) return;
+
+    setIsIssuingCert(true);
+    try {
+      const res = await api.issueCertificate({
+        user_id: certModalUser.id,
+        recipient_name: certModalUser.name,
+        role_title: certRole,
+        accredited_hours: certHours,
+        impact_summary: certImpact,
+        audience_reach: certReach,
+        quality_grade: certGrade
+      });
+
+      toast.success(`${certModalUser.name} uchun rasmiy sertifikat berildi! 🎓✨`);
+      const createdCert = res?.certificate;
+      setCertModalUser(null);
+      if (createdCert) {
+        setPreviewCertData({
+          ...createdCert,
+          issued_by_name: "Dilshodbek Abduqodirov",
+          editor_name: "Prof. Azamat Qosimov"
+        });
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Sertifikat berishda xatolik yuz berdi");
+    } finally {
+      setIsIssuingCert(false);
     }
   };
 
@@ -2417,6 +2462,23 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                           {/* Actions */}
                           <td className="py-4 px-6 text-right">
                             <div className="flex items-center justify-end gap-2">
+                              {/* Issue Certificate Button */}
+                              <button
+                                onClick={() => {
+                                  setCertModalUser(u);
+                                  setCertRole('Bosh Ovozli Diktor & Madaniy Meros Volontyori');
+                                  setCertHours('64 Akredited Hours (4 oy)');
+                                  setCertImpact("4 ta To'liq Kitob (48 ta audiobob)");
+                                  setCertReach('12,500+ Kitobxonlar');
+                                  setCertGrade('Grade A+ (Distinguished)');
+                                }}
+                                className="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                                title="Volontyorlik sertifikati berish"
+                              >
+                                <Award size={13} />
+                                <span className="hidden sm:inline">Sertifikat</span>
+                              </button>
+
                               {/* Reset Password Button */}
                               <button
                                 onClick={() => {
@@ -2584,6 +2646,154 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
 
           </div>
         </div>
+      )}
+
+      {/* ── VOLUNTEER CERTIFICATE ISSUE MODAL ── */}
+      {certModalUser && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-lg bg-white dark:bg-[#121620] border border-amber-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+            
+            {/* Modal Header */}
+            <div className="flex items-start justify-between gap-3 border-b border-stone-100 dark:border-white/5 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+                  <Award size={22} />
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-lg text-stone-950 dark:text-white">
+                    Rasmiy Volontyorlik Sertifikati Berish
+                  </h3>
+                  <p className="text-xs text-stone-500 font-mono">
+                    {certModalUser.name} ({certModalUser.email})
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setCertModalUser(null)}
+                className="p-1 rounded-xl text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleIssueCertificateSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-mono font-bold text-stone-700 dark:text-stone-300 block">
+                  Faoliyat Roli (Yo'nalishi):
+                </label>
+                <select
+                  value={certRole}
+                  onChange={(e) => setCertRole(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-stone-50 dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-amber-500"
+                >
+                  <option value="Bosh Ovozli Diktor & Madaniy Meros Volontyori">Bosh Ovozli Diktor & Madaniy Meros Volontyori</option>
+                  <option value="Adabiyot Muharriri & Matn Korrektori">Adabiyot Muharriri & Matn Korrektori</option>
+                  <option value="Bosh Audio Spektakl Ijrochisi">Bosh Audio Spektakl Ijrochisi</option>
+                  <option value="Raqamli Kutubxona Arxivi Koordinatori">Raqamli Kutubxona Arxivi Koordinatori</option>
+                  <option value="Sara Asarlar Tarjimoni & Volontyor">Sara Asarlar Tarjimoni & Volontyor</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-mono font-bold text-stone-700 dark:text-stone-300 block">
+                    Akkreditatsiya Soati:
+                  </label>
+                  <input
+                    type="text"
+                    value={certHours}
+                    onChange={(e) => setCertHours(e.target.value)}
+                    placeholder="Masalan: 64 Akredited Hours (4 oy)"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-stone-50 dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-amber-500"
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-mono font-bold text-stone-700 dark:text-stone-300 block">
+                    Sifat Bahosi (Darajasi):
+                  </label>
+                  <select
+                    value={certGrade}
+                    onChange={(e) => setCertGrade(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-stone-50 dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-amber-500"
+                  >
+                    <option value="Grade A+ (Distinguished)">Grade A+ (Distinguished)</option>
+                    <option value="Grade A (Excellent)">Grade A (Excellent)</option>
+                    <option value="Grade B+ (Merit)">Grade B+ (Merit)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-mono font-bold text-stone-700 dark:text-stone-300 block">
+                  Ovozlashtirilgan Asarlar / Hissa:
+                </label>
+                <input
+                  type="text"
+                  value={certImpact}
+                  onChange={(e) => setCertImpact(e.target.value)}
+                  placeholder="Masalan: 4 ta To'liq Kitob (48 ta audiobob)"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-stone-50 dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-amber-500"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-mono font-bold text-stone-700 dark:text-stone-300 block">
+                  Tinglovchilar Qamrovi:
+                </label>
+                <input
+                  type="text"
+                  value={certReach}
+                  onChange={(e) => setCertReach(e.target.value)}
+                  placeholder="Masalan: 12,500+ Kitobxonlar"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-stone-50 dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-300">
+                🎓 Ushbu sertifikat berilgach, Bookify rasmiy reyestrida noyob seriya raqami va QR-kod bilan saqlanadi hamda universitetlar tomonidan onlayn tekshirilishi mumkin bo'ladi.
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-stone-100 dark:border-white/5">
+                <button
+                  type="button"
+                  onClick={() => setCertModalUser(null)}
+                  className="px-4 py-2.5 rounded-xl text-xs font-mono text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                >
+                  Bekor Qilish
+                </button>
+                <button
+                  type="submit"
+                  disabled={isIssuingCert}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:opacity-50 text-stone-950 text-xs font-mono font-bold transition-all shadow-md cursor-pointer flex items-center gap-2"
+                >
+                  {isIssuingCert ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      <span>Generatsiya qilinmoqda...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Award size={14} />
+                      <span>Generatsiya Qilish & Berish</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      )}
+
+      {/* ── FULL LUXURY VOLUNTEER CERTIFICATE PREVIEW MODAL ── */}
+      {previewCertData && (
+        <VolunteerCertificateModal
+          certificate={previewCertData}
+          onClose={() => setPreviewCertData(null)}
+        />
       )}
 
     </div>

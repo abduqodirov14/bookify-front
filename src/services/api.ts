@@ -919,6 +919,62 @@ export const api = {
     });
     if (!res.ok) throw new Error("Fikrni o'chirishda xatolik");
     return res.json();
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // 🎓 RASMIY VOLONTYORLIK VA SERTIFIKAT API METODLARI
+  // ═══════════════════════════════════════════════════════════
+  async issueCertificate(data: {
+    user_id: string;
+    recipient_name?: string;
+    role_title: string;
+    accredited_hours: string;
+    impact_summary?: string;
+    audience_reach?: string;
+    quality_grade?: string;
+    custom_citation?: string;
+  }) {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetchWithRetry(`${API_BASE_URL}/certificates/issue`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Sertifikat berishda xatolik yuz berdi");
+    }
+    return res.json();
+  },
+
+  async verifyCertificate(serialNumber: string) {
+    const cleanSerial = encodeURIComponent(serialNumber.trim().toUpperCase());
+    const res = await fetchWithRetry(`${API_BASE_URL}/certificates/verify/${cleanSerial}`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Sertifikat topilmadi");
+    }
+    return res.json();
+  },
+
+  async getUserCertificates(userId: string) {
+    const res = await fetchWithRetry(`${API_BASE_URL}/certificates/user/${userId}`);
+    if (!res.ok) return [];
+    return res.json();
+  },
+
+  async getAllCertificates() {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetchWithRetry(`${API_BASE_URL}/certificates/all`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) return [];
+    return res.json();
   }
 };
 

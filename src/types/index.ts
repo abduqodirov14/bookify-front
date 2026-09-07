@@ -10,7 +10,8 @@ export type Page =
   | 'profile'
   | 'admin'
   | 'auth'
-  | 'vision';
+  | 'vision'
+  | 'verify';
 
 export type ReaderTheme = 'white' | 'sepia' | 'parchment' | 'dark';
 export type ReaderFont = 'literata' | 'georgia' | 'merriweather' | 'sans';

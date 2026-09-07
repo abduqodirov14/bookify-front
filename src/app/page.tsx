@@ -19,6 +19,7 @@ import LibraryView from '../components/Library/LibraryView';
 import AuthModal from '../components/Auth/AuthModal';
 import BookReviewsSection from '../components/Comments/BookReviewsSection';
 import ComingSoonSection from '../components/Future/ComingSoonSection';
+import VerifyCertificatePage from '../components/Certificate/VerifyCertificatePage';
 
 import { BookOpen, Headphones, ArrowRight, Quote, Search, X, Trophy, UploadCloud } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -36,6 +37,7 @@ export default function HomeApp() {
   const [isLoadingBooks, setIsLoadingBooks] = useState(true);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [pendingBookToOpen, setPendingBookToOpen] = useState<string | null>(null);
+  const [verifyCertSerial, setVerifyCertSerial] = useState<string>('');
   const [authInitialized, setAuthInitialized] = useState(false);
 
   // Check existing session on mount (Hydration safe)
@@ -181,6 +183,13 @@ export default function HomeApp() {
       const view = params.get('view') as Page;
       const authorId = params.get('author');
       const bookId = params.get('book');
+      const certParam = params.get('cert') || (window.location.pathname.startsWith('/verify/') ? window.location.pathname.replace('/verify/', '') : '');
+
+      if (view === 'verify' || window.location.pathname.startsWith('/verify')) {
+        if (certParam) setVerifyCertSerial(certParam);
+        setCurrentPage('verify');
+        return;
+      }
 
       if (view) {
         if (view === 'auth' && getAuthToken()) {
@@ -245,6 +254,9 @@ export default function HomeApp() {
     if ((page === 'reader' || page === 'book') && param) {
       setSelectedBookId(param);
     }
+    if (page === 'verify' && param) {
+      setVerifyCertSerial(param);
+    }
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -255,6 +267,7 @@ export default function HomeApp() {
         p.set('view', page);
         if (page === 'author' && (param || selectedAuthorId)) p.set('author', param || selectedAuthorId);
         if ((page === 'reader' || page === 'book') && (param || selectedBookId)) p.set('book', param || selectedBookId);
+        if (page === 'verify' && (param || verifyCertSerial)) p.set('cert', param || verifyCertSerial);
         url = `/?${p.toString()}`;
       }
       window.history.pushState({ page, param }, '', url);
@@ -711,6 +724,14 @@ export default function HomeApp() {
               onNavigate={navigate}
               books={booksList}
               onRefreshBooks={loadBooksFromBackend}
+            />
+          )}
+
+          {/* 9. AKADEMIK SERTIFIKAT TEKSHIRUVI (UNIVERSITIES & VERIFICATION) */}
+          {currentPage === 'verify' && (
+            <VerifyCertificatePage
+              initialSerial={verifyCertSerial}
+              onNavigateHome={() => navigate('home')}
             />
           )}
 
