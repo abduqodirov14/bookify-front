@@ -337,6 +337,13 @@ export default function VolunteerPortal({
                     {cert.role_title}
                   </h4>
 
+                  {cert.impact_summary && (
+                    <div className="text-xs text-stone-700 dark:text-stone-300 flex items-center gap-1.5 font-medium">
+                      <BookOpen size={13} className="text-amber-500 shrink-0" />
+                      <span className="truncate">{cert.impact_summary}</span>
+                    </div>
+                  )}
+
                   <p className="text-xs text-stone-500">
                     Akkreditatsiya: {cert.accredited_hours} • {cert.quality_grade || 'Grade A+'}
                   </p>

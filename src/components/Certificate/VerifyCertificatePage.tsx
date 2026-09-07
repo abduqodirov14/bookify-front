@@ -16,7 +16,8 @@ import {
   Calendar,
   Building2,
   Check,
-  FileCheck2
+  FileCheck2,
+  Sparkles
 } from 'lucide-react';
 import { api } from '@/services/api';
 import VolunteerCertificateModal, { CertificateData } from './VolunteerCertificateModal';
@@ -233,6 +234,19 @@ export default function VerifyCertificatePage({ initialSerial = '', onNavigateHo
                   Tinglovchilar qamrovi: {cert.audience_reach}
                 </div>
               </div>
+
+              {/* Rasmiy Tavsifnoma / Citation */}
+              {cert.custom_citation && (
+                <div className="p-4 rounded-2xl bg-amber-50/40 dark:bg-amber-500/5 border border-amber-200/80 dark:border-amber-500/20 space-y-1.5 md:col-span-2">
+                  <span className="text-amber-800 dark:text-amber-300 text-[11px] font-semibold flex items-center gap-1.5">
+                    <Sparkles size={13} />
+                    <span>Akademik va Ijodiy Tavsifnoma (Rasmiy Izoh):</span>
+                  </span>
+                  <blockquote className="font-serif italic text-xs text-stone-800 dark:text-stone-200 leading-relaxed pl-3 border-l-2 border-amber-500/60">
+                    "{cert.custom_citation}"
+                  </blockquote>
+                </div>
+              )}
 
               {/* Berilgan Sana & Mas'ullar */}
               <div className="p-4 rounded-2xl bg-stone-50 dark:bg-[#0B0F17] border border-stone-200/80 dark:border-white/5 space-y-1 md:col-span-2">

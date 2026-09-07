@@ -53,6 +53,7 @@ import {
 import { toast } from 'react-hot-toast';
 import VolunteerCertificateModal, { CertificateData } from '../Certificate/VolunteerCertificateModal';
 import AssignVolunteerModal from './AssignVolunteerModal';
+import { calculateVolunteerPeriod } from '../../utils/dateUtils';
 
 interface Props {
   books: Book[];
@@ -365,6 +366,8 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
   const [certReach, setCertReach] = useState('12,500+ Kitobxonlar');
   const [certGrade, setCertGrade] = useState('Grade A+ (Distinguished)');
   const [certServicePeriod, setCertServicePeriod] = useState('2025-yil sentyabr — 2026-yil sentyabr (1 yil to\'liq faoliyat)');
+  const [certCitation, setCertCitation] = useState('O\'zbek mumtoz va jahon adabiyoti durdonalaridan "O\'tkan kunlar" va "Qiyomat" asarlarini professional darajada ovozlashtirish, 22 ta audiobobni sifatli tayyorlash va Bookify milliy audio fondiga qo\'shishdagi namunali xizmatlari uchun.');
+  const [certSelectedBooks, setCertSelectedBooks] = useState<string[]>(["O'tkan kunlar", "Qiyomat"]);
   const [isIssuingCert, setIsIssuingCert] = useState(false);
   const [previewCertData, setPreviewCertData] = useState<CertificateData | null>(null);
 
@@ -382,7 +385,8 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
         impact_summary: certImpact,
         audience_reach: certReach,
         quality_grade: certGrade,
-        service_period: certServicePeriod
+        service_period: certServicePeriod,
+        custom_citation: certCitation || undefined
       });
 
       toast.success(`${certModalUser.name} uchun rasmiy sertifikat berildi! 🎓✨`);
@@ -2498,9 +2502,14 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                               <button
                                 onClick={() => {
                                   setCertModalUser(u);
-                                  setCertRole('Bosh Ovozli Diktor & Madaniy Meros Volontyori');
-                                  setCertHours('64 Akredited Hours (4 oy)');
-                                  setCertImpact("4 ta To'liq Kitob (48 ta audiobob)");
+                                  const defaultPeriod = calculateVolunteerPeriod(u.volunteer_since || u.created_at, new Date()).fullPeriodText;
+                                  setCertServicePeriod(defaultPeriod);
+                                  setCertRole(u.volunteer_title || 'Bosh Ovozli Diktor & Madaniy Meros Volontyori');
+                                  setCertHours(u.volunteer_hours ? `${u.volunteer_hours} Akredited Hours` : '64 Akredited Hours (4 oy)');
+                                  const initialBooks = ["O'tkan kunlar", "Qiyomat"];
+                                  setCertSelectedBooks(initialBooks);
+                                  setCertImpact("O'tkan kunlar (12 ta bob), Qiyomat (10 ta bob) — Jami 22 ta audiobob");
+                                  setCertCitation(`O'zbek mumtoz va jahon adabiyoti durdonalaridan "O'tkan kunlar" va "Qiyomat" asarlarini professional darajada ovozlashtirish, 22 ta audiobobni sifatli tayyorlash va Bookify milliy audio fondiga qo'shishdagi namunali xizmatlari uchun.`);
                                   setCertReach('12,500+ Kitobxonlar');
                                   setCertGrade('Grade A+ (Distinguished)');
                                 }}
@@ -2771,17 +2780,77 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                 />
               </div>
 
+              {/* Real Book Selection Chips */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-mono font-bold text-stone-700 dark:text-stone-300 block">
+                    Volontyor Qatnashgan / Ovoz Bergan Asarlar (Katalogdan tanlang):
+                  </label>
+                  <span className="text-[11px] text-amber-600 dark:text-amber-400 font-mono">
+                    {certSelectedBooks.length} ta asar tanlandi
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-1.5 p-2 rounded-xl bg-stone-50 dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 max-h-32 overflow-y-auto">
+                  {books.map(b => {
+                    const isSel = certSelectedBooks.includes(b.title);
+                    return (
+                      <button
+                        key={b.id}
+                        type="button"
+                        onClick={() => {
+                          let nextBooks: string[];
+                          if (isSel) {
+                            nextBooks = certSelectedBooks.filter(t => t !== b.title);
+                          } else {
+                            nextBooks = [...certSelectedBooks, b.title];
+                          }
+                          setCertSelectedBooks(nextBooks);
+                          if (nextBooks.length > 0) {
+                            const estBobs = nextBooks.length * 10 + 2;
+                            const estHours = nextBooks.length * 24 + 16;
+                            setCertImpact(`${nextBooks.join(', ')} — Jami ${estBobs} ta audiobob`);
+                            setCertHours(`${estHours} Akredited Hours (${Math.min(12, Math.ceil(nextBooks.length * 2))} oy)`);
+                            setCertCitation(`O'zbek va jahon adabiyotining nodir asarlari: ${nextBooks.map(t => `"${t}"`).join(', ')} kitoblarini professional darajada ovozlashtirish, ${estBobs} ta audiobobni sifatli tayyorlash va milliy kutubxona fondini boyitishdagi namunali xizmati uchun.`);
+                          }
+                        }}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-all cursor-pointer flex items-center gap-1 ${
+                          isSel 
+                            ? 'bg-amber-500 text-stone-950 font-bold shadow-xs' 
+                            : 'bg-stone-200/70 dark:bg-white/5 text-stone-700 dark:text-stone-300 hover:bg-stone-300 dark:hover:bg-white/10'
+                        }`}
+                      >
+                        <span>{isSel ? '✓' : '+'}</span>
+                        <span>{b.title}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div className="space-y-1.5">
                 <label className="text-xs font-mono font-bold text-stone-700 dark:text-stone-300 block">
-                  Ovozlashtirilgan Asarlar / Hissa:
+                  Ovozlashtirilgan Asarlar / Hissa Xulosasi:
                 </label>
                 <input
                   type="text"
                   value={certImpact}
                   onChange={(e) => setCertImpact(e.target.value)}
-                  placeholder="Masalan: 4 ta To'liq Kitob (48 ta audiobob)"
+                  placeholder="Masalan: O'tkan kunlar (12 ta bob), Qiyomat (10 ta bob) — Jami 22 ta audiobob"
                   className="w-full px-3.5 py-2.5 rounded-xl bg-stone-50 dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-amber-500"
                   required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-mono font-bold text-stone-700 dark:text-stone-300 block">
+                  Rasmiy Akademik Tavsifnoma (Sertifikat Iqtibosi):
+                </label>
+                <textarea
+                  rows={2}
+                  value={certCitation}
+                  onChange={(e) => setCertCitation(e.target.value)}
+                  placeholder="Volontyor bajargan aniq vazifalar bo'yicha rasmiy tavsif..."
+                  className="w-full px-3.5 py-2 rounded-xl bg-stone-50 dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-amber-500 resize-none"
                 />
               </div>
 
