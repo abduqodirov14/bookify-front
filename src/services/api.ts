@@ -1097,16 +1097,16 @@ export const api = {
     }
   },
 
-  async checkBookAccess(bookId: number): Promise<{ has_access: boolean; is_premium: boolean; price: number }> {
+  async checkBookAccess(bookId: number): Promise<{ has_access: boolean; is_premium: boolean; price: number; reason?: string }> {
     const token = getAuthToken();
     try {
       const res = await fetchWithRetry(`${API_BASE_URL}/payments/my-access/${bookId}`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
-      if (!res.ok) return { has_access: true, is_premium: false, price: 0 };
+      if (!res.ok) return { has_access: true, is_premium: false, price: 0, reason: 'DEFAULT_FREE' };
       return await res.json();
     } catch {
-      return { has_access: true, is_premium: false, price: 0 };
+      return { has_access: true, is_premium: false, price: 0, reason: 'NETWORK_ERROR' };
     }
   },
 

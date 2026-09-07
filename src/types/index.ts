@@ -55,6 +55,8 @@ export interface Book {
   chapters: Chapter[];
   featuredQuote: string;
   audioTracks?: BookAudioTrack[];
+  is_premium?: boolean;
+  price?: number;
 }
 
 export interface BookAudioTrack {

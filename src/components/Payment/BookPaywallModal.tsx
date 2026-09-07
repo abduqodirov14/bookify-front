@@ -15,6 +15,7 @@ interface PaywallModalProps {
   book: Book;
   onClose: () => void;
   onAccessGranted?: () => void;
+  isAdmin?: boolean;
 }
 
 interface Plan {
@@ -31,7 +32,7 @@ const formatPrice = (uzs: number) =>
   new Intl.NumberFormat('uz-UZ').format(uzs) + " so'm";
 
 // ─── Component ───────────────────────────────────────────────────────────────
-export default function BookPaywallModal({ book, onClose, onAccessGranted }: PaywallModalProps) {
+export default function BookPaywallModal({ book, onClose, onAccessGranted, isAdmin }: PaywallModalProps) {
   const [tab, setTab] = useState<'book' | 'vip'>('book');
   const [loading, setLoading] = useState(false);
   const [plans, setPlans] = useState<any>(null);
@@ -170,6 +171,27 @@ export default function BookPaywallModal({ book, onClose, onAccessGranted }: Pay
               💎 Premium Kontent
             </div>
           </div>
+
+          {/* Admin bypass banner if user is admin */}
+          {isAdmin && (
+            <div className="mx-6 mb-3 p-3 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-center space-y-2">
+              <div className="text-xs text-amber-300 font-bold flex items-center justify-center gap-1.5">
+                <span>👑 Administrator Rejimi</span>
+              </div>
+              <p className="text-[11px] text-white/70">
+                Siz sayt adminsiz — InPay to'lovini sinashingiz yoki bepul ochishingiz mumkin.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  if (onAccessGranted) onAccessGranted();
+                }}
+                className="w-full py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-all border border-white/20 cursor-pointer"
+              >
+                Kitobni Admin sifatida ochish ➔
+              </button>
+            </div>
+          )}
 
           {/* Tabs */}
           <div className="px-6 pb-2">
