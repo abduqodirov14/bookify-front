@@ -112,4 +112,6 @@ export interface UserProfile {
   volunteer_title?: string;
   volunteer_hours?: number;
   is_volunteer?: boolean;
+  volunteer_since?: string;
+  created_at?: string;
 }

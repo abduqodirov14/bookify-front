@@ -364,6 +364,7 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
   const [certImpact, setCertImpact] = useState("4 ta To'liq Kitob (48 ta audiobob)");
   const [certReach, setCertReach] = useState('12,500+ Kitobxonlar');
   const [certGrade, setCertGrade] = useState('Grade A+ (Distinguished)');
+  const [certServicePeriod, setCertServicePeriod] = useState('2025-yil sentyabr — 2026-yil sentyabr (1 yil to\'liq faoliyat)');
   const [isIssuingCert, setIsIssuingCert] = useState(false);
   const [previewCertData, setPreviewCertData] = useState<CertificateData | null>(null);
 
@@ -380,7 +381,8 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
         accredited_hours: certHours,
         impact_summary: certImpact,
         audience_reach: certReach,
-        quality_grade: certGrade
+        quality_grade: certGrade,
+        service_period: certServicePeriod
       });
 
       toast.success(`${certModalUser.name} uchun rasmiy sertifikat berildi! 🎓✨`);
@@ -2753,6 +2755,20 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                     <option value="Grade B+ (Merit)">Grade B+ (Merit)</option>
                   </select>
                 </div>
+              </div>
+
+                            <div className="space-y-1.5">
+                <label className="text-xs font-mono font-bold text-stone-700 dark:text-stone-300 block">
+                  Xizmat Davri & Muddati (Universitet va Grantlar uchun):
+                </label>
+                <input
+                  type="text"
+                  value={certServicePeriod}
+                  onChange={(e) => setCertServicePeriod(e.target.value)}
+                  placeholder="Masalan: 2025-yil sentyabr — 2026-yil sentyabr (1 yil to'liq faoliyat)"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-stone-50 dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-mono text-stone-900 dark:text-white focus:outline-none focus:border-amber-500"
+                  required
+                />
               </div>
 
               <div className="space-y-1.5">

@@ -933,6 +933,7 @@ export const api = {
     audience_reach?: string;
     quality_grade?: string;
     custom_citation?: string;
+    service_period?: string;
   }) {
     const token = getAuthToken();
     if (!token) throw new Error("Avtorizatsiya talab qilinadi");

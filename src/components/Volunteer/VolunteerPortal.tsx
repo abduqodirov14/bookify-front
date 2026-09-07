@@ -19,6 +19,7 @@ import {
   Send
 } from 'lucide-react';
 import { Book, UserProfile, Page } from '../../types';
+import { calculateVolunteerPeriod } from '../../utils/dateUtils';
 import { api } from '../../services/api';
 import { toast } from 'react-hot-toast';
 
@@ -39,6 +40,7 @@ export default function VolunteerPortal({
   const [myCertificates, setMyCertificates] = useState<any[]>([]);
   const [isLoadingCerts, setIsLoadingCerts] = useState(false);
 
+  const periodCalc = calculateVolunteerPeriod(currentUser?.created_at || '2025-09-01');
   const isVolunteer = Boolean(
     currentUser?.is_volunteer || 
     currentUser?.role === 'VOLUNTEER' || 
@@ -201,12 +203,12 @@ export default function VolunteerPortal({
 
         </div>
 
-        {/* Bottom row: Clean 4 Metrics */}
+        {/* Bottom row: Clean 4 Metrics with calculated service period */}
         <div className="pt-5 border-t border-stone-100 dark:border-white/5 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
           <div className="space-y-0.5">
-            <span className="text-stone-400 text-[11px] block">Xizmat vaqti:</span>
+            <span className="text-stone-400 text-[11px] block">Xizmat davri (Muddati):</span>
             <span className="font-semibold text-sm text-stone-900 dark:text-white">
-              {volunteerHours} soat
+              {periodCalc.durationText} ({periodCalc.academicYearText.split(' ')[0]})
             </span>
           </div>
           <div className="space-y-0.5">

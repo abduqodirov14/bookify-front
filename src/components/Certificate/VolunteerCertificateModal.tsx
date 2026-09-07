@@ -12,6 +12,7 @@ export interface CertificateData {
   impact_summary?: string;
   audience_reach?: string;
   quality_grade?: string;
+  service_period?: string;
   issue_date?: string;
   verification_url?: string;
   issued_by_name?: string;
@@ -29,6 +30,7 @@ export default function VolunteerCertificateModal({ certificate, onClose }: Prop
   const [recipientName, setRecipientName] = useState(certificate.recipient_name || "DILSHODBEK ABDUQODIROV");
   const [roleTitle, setRoleTitle] = useState(certificate.role_title || "Bosh Ovozli Diktor & Madaniy Meros Volontyori");
   const [hours, setHours] = useState(certificate.accredited_hours || "64 Akredited Hours (4 oy)");
+  const [servicePeriod, setServicePeriod] = useState(certificate.service_period || "2025-yil sentyabr — 2026-yil sentyabr (1 yil to'liq faoliyat)");
   const [impact, setImpact] = useState(certificate.impact_summary || "4 ta To'liq Kitob (48 ta audiobob)");
   const [serialNumber, setSerialNumber] = useState(certificate.serial_number || "BKFY-VOL-2026-8491X");
   const [issueDate, setIssueDate] = useState(certificate.issue_date || new Date().toISOString().split('T')[0]);
@@ -200,6 +202,10 @@ export default function VolunteerCertificateModal({ certificate, onClose }: Prop
 
             {/* Accreditation Badges for University Admissions */}
             <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 mt-3">
+                              <div className="px-2.5 py-1 rounded bg-[#F4F1EA] border border-[#D4AF37]/40 text-center">
+                <div className="text-[8px] uppercase tracking-wider text-[#7F8C8D] font-bold">Xizmat Davri</div>
+                <div className="text-[11px] font-bold text-[#1C2833] font-serif">{servicePeriod}</div>
+              </div>
               <div className="px-2.5 py-1 rounded bg-[#F4F1EA] border border-[#D4AF37]/40 text-center">
                 <div className="text-[8px] uppercase tracking-wider text-[#7F8C8D] font-bold">Akkreditatsiya Soati</div>
                 <div className="text-[11px] font-bold text-[#1C2833] font-serif">{hours}</div>
