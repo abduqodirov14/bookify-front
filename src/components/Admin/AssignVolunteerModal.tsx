@@ -23,13 +23,7 @@ interface Props {
   onSuccess: () => void;
 }
 
-const PRESET_ROLES = [
-  "Bosh Ovozli Diktor & Madaniy Meros Volontyori",
-  "Audiobook Muharriri & Sifat Nazoratchisi",
-  "Nodir Qo'lyozmalar & Matn Korrektori",
-  "Kutubxona & Jamiyat Koordinatori",
-  "Raqamli Madaniyat va Yoshlar Elchisi"
-];
+const DEFAULT_VOLUNTEER_TITLE = "Bosh Ovozli Diktor & Madaniy Meros Volontyori";
 
 export default function AssignVolunteerModal({ user, onClose, onSuccess }: Props) {
   const isAlreadyVolunteer = Boolean(user.is_volunteer || user.role === 'VOLUNTEER' || user.volunteer_code);
@@ -40,7 +34,7 @@ export default function AssignVolunteerModal({ user, onClose, onSuccess }: Props
   };
 
   const [volunteerCode, setVolunteerCode] = useState(user.volunteer_code || generateRandomCode());
-  const [volunteerTitle, setVolunteerTitle] = useState(user.volunteer_title || PRESET_ROLES[0]);
+  const [volunteerTitle, setVolunteerTitle] = useState(user.volunteer_title || DEFAULT_VOLUNTEER_TITLE);
   const [volunteerHours, setVolunteerHours] = useState<number>(user.volunteer_hours || 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRevoking, setIsRevoking] = useState(false);
@@ -181,34 +175,41 @@ export default function AssignVolunteerModal({ user, onClose, onSuccess }: Props
 
           {/* Volunteer Title / Specialization */}
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block">
-              Volontyorlik Yo'nalishi / Unvoni:
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block">
+                Volontyorlik Yo'nalishi / Unvoni:
+              </label>
+              <button
+                type="button"
+                onClick={() => setVolunteerTitle(DEFAULT_VOLUNTEER_TITLE)}
+                className="text-[11px] text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer transition-colors"
+                title="Barcha yo'nalishlarni o'z ichiga oluvchi standart unvon"
+              >
+                <Sparkles size={12} />
+                <span>Standart (Universal) qilish</span>
+              </button>
+            </div>
+
             <input
               type="text"
               value={volunteerTitle}
               onChange={(e) => setVolunteerTitle(e.target.value)}
               placeholder="Masalan: Bosh Ovozli Diktor & Madaniy Meros Volontyori"
               required
-              className="w-full px-4 py-2.5 rounded-xl bg-stone-50 dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638]"
+              className="w-full px-4 py-2.5 rounded-xl bg-stone-50 dark:bg-[#080B0F] border border-stone-200 dark:border-white/10 text-xs font-medium text-stone-900 dark:text-white focus:outline-none focus:border-[#E05638]"
             />
 
-            {/* Quick title presets */}
-            <div className="flex flex-wrap gap-1.5 pt-0.5">
-              {PRESET_ROLES.map((pt) => (
-                <button
-                  type="button"
-                  key={pt}
-                  onClick={() => setVolunteerTitle(pt)}
-                  className={`px-2.5 py-1 rounded-lg text-[10px] transition-colors cursor-pointer border ${
-                    volunteerTitle === pt
-                      ? 'bg-amber-500/15 border-amber-500/40 text-amber-700 dark:text-amber-300 font-semibold'
-                      : 'bg-stone-100 dark:bg-white/5 border-stone-200/60 dark:border-white/5 text-stone-500 hover:text-stone-900 dark:hover:text-white'
-                  }`}
-                >
-                  {pt.split('&')[0]}
-                </button>
-              ))}
+            {/* Universal all-in-one notice card */}
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs flex items-start gap-2.5">
+              <Sparkles size={16} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <p className="font-semibold text-amber-900 dark:text-amber-200 text-xs">
+                  Barcha yo'nalishlar bitta maqomda (Universal):
+                </p>
+                <p className="text-[11px] text-stone-600 dark:text-stone-400 leading-relaxed">
+                  Volontyorni mayda qismlarga bo'lish shart emas — u bir vaqtning o'zida <b>ovoz yozish</b>, <b>matn tahriri</b> va <b>madaniy merosni saqlash</b> imkoniyatlariga to'liq ega bo'ladi.
+                </p>
+              </div>
             </div>
           </div>
 
