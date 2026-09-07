@@ -109,8 +109,14 @@ export default function VolunteerPortal({
     );
   }
 
-  // Published books available for narration
-  const narratableBooks = books.filter(b => b.status === 'PUBLISHED' || !b.status);
+  // Faqat audiosi YO'Q bo'lgan asarlar volontyorlarga ovoz yozish uchun taklif qilinadi
+  const isBookWithoutAudio = (b: Book) => {
+    const hasTracks = Boolean(b.audioTracks && b.audioTracks.length > 0);
+    const hasDuration = Boolean(b.audioDuration && b.audioDuration.trim() !== '' && b.audioDuration !== '0' && b.audioDuration !== '0:00');
+    return !hasTracks && !hasDuration;
+  };
+
+  const booksNeedingVoice = books.filter(b => (b.status === 'PUBLISHED' || !b.status) && isBookWithoutAudio(b));
 
   return (
     <div className="space-y-8 pb-20 animate-in fade-in duration-200 max-w-6xl mx-auto">
@@ -361,71 +367,73 @@ export default function VolunteerPortal({
             </p>
           </div>
           <span className="text-xs text-stone-400 font-mono hidden sm:block">
-            {narratableBooks.length} ta asar
+            {booksNeedingVoice.length} ta asar
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {narratableBooks.map(book => {
-            const hasAudio = Boolean(book.audioTracks && book.audioTracks.length > 0) || Boolean(book.audioDuration);
-            const tracksCount = book.audioTracks?.length || 0;
+        {booksNeedingVoice.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {booksNeedingVoice.map(book => {
+              return (
+                <div
+                  key={book.id}
+                  className="p-4 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 hover:border-stone-300 dark:hover:border-white/20 transition-all shadow-xs flex flex-col justify-between gap-4"
+                >
+                  <div className="flex gap-3.5">
+                    <div className="w-16 h-22 rounded-xl overflow-hidden shadow-xs shrink-0 bg-stone-100 dark:bg-stone-800">
+                      <img 
+                        src={book.coverImage} 
+                        alt={book.title} 
+                        className="w-full h-full object-cover" 
+                      />
+                    </div>
 
-            return (
-              <div
-                key={book.id}
-                className="p-4 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 hover:border-stone-300 dark:hover:border-white/20 transition-all shadow-xs flex flex-col justify-between gap-4"
-              >
-                <div className="flex gap-3.5">
-                  <div className="w-16 h-22 rounded-xl overflow-hidden shadow-xs shrink-0 bg-stone-100 dark:bg-stone-800">
-                    <img 
-                      src={book.coverImage} 
-                      alt={book.title} 
-                      className="w-full h-full object-cover" 
-                    />
-                  </div>
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <span className="text-[10px] font-mono text-stone-400 uppercase tracking-wider block truncate">
+                        {book.category}
+                      </span>
+                      <h4 className="font-serif font-bold text-sm text-stone-900 dark:text-white truncate">
+                        {book.title}
+                      </h4>
+                      <p className="text-xs text-stone-500 truncate">
+                        {book.authorName}
+                      </p>
 
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <span className="text-[10px] font-mono text-stone-400 uppercase tracking-wider block truncate">
-                      {book.category}
-                    </span>
-                    <h4 className="font-serif font-bold text-sm text-stone-900 dark:text-white truncate">
-                      {book.title}
-                    </h4>
-                    <p className="text-xs text-stone-500 truncate">
-                      {book.authorName}
-                    </p>
-
-                    <div className="pt-1.5 flex items-center gap-2 text-[10px]">
-                      {hasAudio ? (
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
-                          <Headphones size={11} />
-                          <span>{tracksCount > 0 ? `${tracksCount} ta bob` : 'Audiosi bor'}</span>
-                        </span>
-                      ) : (
+                      <div className="pt-1.5 flex items-center gap-2 text-[10px]">
                         <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
                           <Mic size={11} />
                           <span>Ovoz kutilmoqda</span>
                         </span>
-                      )}
+                      </div>
                     </div>
                   </div>
+
+                  <a
+                    href={`https://t.me/book1fy_bot?start=rec_${book.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-2 rounded-xl bg-stone-100 dark:bg-white/5 hover:bg-[#E05638] hover:text-white text-stone-700 dark:text-stone-300 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Mic size={13} />
+                    <span>Telegramda Ovoz Yozish</span>
+                    <ExternalLink size={12} />
+                  </a>
+
                 </div>
-
-                <a
-                  href={`https://t.me/book1fy_bot?start=rec_${book.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-2 rounded-xl bg-stone-100 dark:bg-white/5 hover:bg-[#E05638] hover:text-white text-stone-700 dark:text-stone-300 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <Mic size={13} />
-                  <span>Telegramda Ovoz Yozish</span>
-                  <ExternalLink size={12} />
-                </a>
-
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="p-8 text-center rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 space-y-2 shadow-xs">
+            <CheckCircle2 size={32} className="text-emerald-500 mx-auto" />
+            <h4 className="font-serif font-bold text-base text-stone-900 dark:text-white">
+              Barcha asarlarga ovoz yozilgan!
+            </h4>
+            <p className="text-xs text-stone-500 max-w-sm mx-auto">
+              Hozirda kutubxonadagi barcha kitoblarning audio talqini mavjud. Yangi asarlar qo'shilgach, ular bu yerda aks etadi.
+            </p>
+          </div>
+        )}
       </div>
 
     </div>
