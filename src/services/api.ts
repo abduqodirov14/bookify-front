@@ -1050,6 +1050,39 @@ export const api = {
       throw new Error(err.detail || "Volontyor profilini yuklashda xatolik");
     }
     return res.json();
+  },
+
+  async uploadVolunteerBook(formData: FormData): Promise<any> {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetch(`${API_BASE_URL}/users/me/volunteer-upload-book`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Kitobni yuklashda xatolik yuz berdi");
+    }
+    return res.json();
+  },
+
+  async getMyVolunteerBooks(): Promise<any[]> {
+    const token = getAuthToken();
+    if (!token) return [];
+    try {
+      const res = await fetchWithRetry(`${API_BASE_URL}/users/me/volunteer-books`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!res.ok) return [];
+      return await res.json();
+    } catch {
+      return [];
+    }
   }
 };
 

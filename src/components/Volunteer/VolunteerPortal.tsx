@@ -21,6 +21,7 @@ import {
   Upload
 } from 'lucide-react';
 import VolunteerOnboardingModal from './VolunteerOnboardingModal';
+import VolunteerUploadModal from './VolunteerUploadModal';
 import { Book, UserProfile, Page } from '../../types';
 import { calculateVolunteerPeriod } from '../../utils/dateUtils';
 import { api } from '../../services/api';
@@ -43,6 +44,8 @@ export default function VolunteerPortal({
   const [myCertificates, setMyCertificates] = useState<any[]>([]);
   const [isLoadingCerts, setIsLoadingCerts] = useState(false);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [myUploadedBooks, setMyUploadedBooks] = useState<any[]>([]);
   const isVolunteer = Boolean(
     currentUser?.is_volunteer || 
     currentUser?.role === 'VOLUNTEER' || 
@@ -65,6 +68,19 @@ export default function VolunteerPortal({
   const volunteerCode = currentUser?.volunteer_code || 'VOL-FAOL';
   const volunteerTitle = currentUser?.volunteer_title || 'Bosh Ovozli Diktor & Madaniy Meros Volontyori';
   const volunteerHours = currentUser?.volunteer_hours || 0;
+
+  // Load books uploaded by this volunteer
+  const loadMyBooks = () => {
+    api.getMyVolunteerBooks()
+      .then(data => setMyUploadedBooks(Array.isArray(data) ? data : []))
+      .catch(() => setMyUploadedBooks([]));
+  };
+
+  useEffect(() => {
+    if (currentUser?.id) {
+      loadMyBooks();
+    }
+  }, [currentUser?.id]);
 
   // Fetch certificates for current volunteer
   useEffect(() => {
@@ -152,13 +168,23 @@ export default function VolunteerPortal({
           </p>
         </div>
 
-        <button
-          onClick={() => setIsOnboardingOpen(true)}
-          className="px-4 py-2.5 rounded-2xl bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/25 text-amber-700 dark:text-amber-400 text-xs font-medium transition-all flex items-center gap-2 shrink-0 cursor-pointer shadow-2xs"
-        >
-          <FileText size={15} />
-          <span>Volontyorlik Nizomi & Vazifalar</span>
-        </button>
+        <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+          <button
+            onClick={() => setIsUploadModalOpen(true)}
+            className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-[#E05638] to-amber-500 hover:from-[#d04b30] hover:to-amber-600 text-white text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-md shadow-[#E05638]/20 hover:scale-[1.02]"
+          >
+            <Upload size={15} />
+            <span>Kitob Yuklash (PDF/EPUB)</span>
+          </button>
+
+          <button
+            onClick={() => setIsOnboardingOpen(true)}
+            className="px-4 py-2.5 rounded-2xl bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/25 text-amber-700 dark:text-amber-400 text-xs font-medium transition-all flex items-center gap-2 cursor-pointer shadow-2xs"
+          >
+            <FileText size={15} />
+            <span>Volontyorlik Nizomi</span>
+          </button>
+        </div>
       </div>
 
       {/* ── 2. REFINED MEMBER CARD (HUMAN-MADE, LIGHT & DARK BALANCED) ── */}
@@ -336,22 +362,31 @@ export default function VolunteerPortal({
             <div>
               <h5 className="font-semibold text-stone-900 dark:text-white flex items-center gap-2">
                 <span>Yangi Kitob Yuklash (PDF / EPUB / FB2)</span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold">Botda Mavjud</span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold">Cheklovsiz</span>
               </h5>
               <p className="text-stone-500 dark:text-stone-400 text-[11px] mt-0.5">
-                Telegram botimizda «📖 Kitob Yuklash (Volontyor)» tugmasini bosib, yangi elektron kitob faylini yuborishingiz mumkin. Kitob konveyerdan o'tib, moderator (admin) tasdiqlab chop etishi bilan saytda e'lon qilinadi!
+                Katta hajmdagi kitoblarni (80-150 MB) to'g'ridan-to'g'ri saytimiz orqali yuklang yoki Telegram botimizdan yuboring. Moderator (admin) ko'rib chiqib chop etgach saytda e'lon qilinadi!
               </p>
             </div>
           </div>
-          <a
-            href={`https://t.me/book1fy_bot?start=vol_${volunteerCode}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs shrink-0 inline-flex items-center gap-1.5 transition-colors self-start sm:self-auto shadow-2xs"
-          >
-            <span>Botda Yuklash</span>
-            <ExternalLink size={13} />
-          </a>
+          <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+            <button
+              onClick={() => setIsUploadModalOpen(true)}
+              className="px-3.5 py-2 rounded-xl bg-[#E05638] hover:bg-[#c9452a] text-white font-medium text-xs inline-flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+            >
+              <Upload size={13} />
+              <span>Saytdan Yuklash</span>
+            </button>
+            <a
+              href={`https://t.me/book1fy_bot?start=vol_${volunteerCode}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-2 rounded-xl bg-stone-100 dark:bg-white/10 hover:bg-stone-200 dark:hover:bg-white/15 text-stone-700 dark:text-stone-300 font-medium text-xs inline-flex items-center gap-1.5 transition-colors"
+            >
+              <Bot size={13} />
+              <span>Botda</span>
+            </a>
+          </div>
         </div>
       </div>
 
@@ -496,6 +531,72 @@ export default function VolunteerPortal({
         )}
       </div>
 
+      {/* ── 5.5. MY SUBMITTED / UPLOADED BOOKS (IF ANY) ── */}
+      {myUploadedBooks.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-serif text-lg sm:text-xl font-bold text-stone-950 dark:text-white flex items-center gap-2">
+              <BookOpen size={20} className="text-[#E05638]" />
+              <span>Mening Taqdim Etgan Asarlarim</span>
+            </h3>
+            <span className="text-xs text-stone-400 font-mono">
+              {myUploadedBooks.length} ta asar
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {myUploadedBooks.map(bk => {
+              const isPublished = bk.status === 'PUBLISHED';
+              return (
+                <div
+                  key={bk.id}
+                  className="p-4 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs flex items-center justify-between gap-3"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <img
+                      src={bk.cover_image || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80"}
+                      alt={bk.title}
+                      className="w-12 h-16 rounded-xl object-cover shrink-0 shadow-xs border border-stone-200 dark:border-white/10"
+                    />
+                    <div className="min-w-0">
+                      <h4 className="font-serif font-bold text-xs sm:text-sm text-stone-950 dark:text-white truncate">
+                        {bk.title}
+                      </h4>
+                      <p className="text-[11px] text-stone-500 dark:text-stone-400 truncate">
+                        {bk.author}
+                      </p>
+                      <div className="mt-1.5 flex items-center gap-1.5">
+                        {isPublished ? (
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                            <CheckCircle2 size={10} />
+                            <span>Chop etilgan (Saytda)</span>
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1">
+                            <Clock size={10} />
+                            <span>Moderatsiyada (Tekshiruvda)</span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {isPublished && (
+                    <button
+                      onClick={() => onNavigate('reader', bk.id)}
+                      className="p-2 rounded-xl text-stone-400 hover:text-[#E05638] hover:bg-[#E05638]/10 transition-colors shrink-0 cursor-pointer"
+                      title="Mutolaa qilish"
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* ── 6. VOLUNTEER CHARTER & ONBOARDING MODAL ── */}
       {currentUser && (
         <VolunteerOnboardingModal
@@ -508,6 +609,18 @@ export default function VolunteerPortal({
             }
             setIsOnboardingOpen(false);
             toast.success(`Xush kelibsiz, ${currentUser.name}! Volontyorlik studiyangiz faollashdi! 🎉`);
+          }}
+        />
+      )}
+
+      {/* ── 7. VOLUNTEER UPLOAD BOOK MODAL (WEB) ── */}
+      {isUploadModalOpen && (
+        <VolunteerUploadModal
+          currentUser={currentUser}
+          onClose={() => setIsUploadModalOpen(false)}
+          onSuccess={() => {
+            loadMyBooks();
+            if (onUserUpdate && currentUser) onUserUpdate(currentUser);
           }}
         />
       )}
