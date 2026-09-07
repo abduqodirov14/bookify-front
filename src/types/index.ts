@@ -11,7 +11,8 @@ export type Page =
   | 'admin'
   | 'auth'
   | 'vision'
-  | 'verify';
+  | 'verify'
+  | 'volunteer';
 
 export type ReaderTheme = 'white' | 'sepia' | 'parchment' | 'dark';
 export type ReaderFont = 'literata' | 'georgia' | 'merriweather' | 'sans';
@@ -99,7 +100,7 @@ export interface UserProfile {
   id: string;
   name: string;
   email: string;
-  role: 'USER' | 'ADMIN';
+  role: 'USER' | 'ADMIN' | 'VOLUNTEER';
   avatarUrl?: string;
   dailyGoalMinutes: number;
   todayMinutes: number;
@@ -107,4 +108,8 @@ export interface UserProfile {
   totalHours: number;
   finishedBooksCount: number;
   is2FAEnabled: boolean;
+  volunteer_code?: string;
+  volunteer_title?: string;
+  volunteer_hours?: number;
+  is_volunteer?: boolean;
 }

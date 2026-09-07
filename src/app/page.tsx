@@ -20,6 +20,7 @@ import AuthModal from '../components/Auth/AuthModal';
 import BookReviewsSection from '../components/Comments/BookReviewsSection';
 import ComingSoonSection from '../components/Future/ComingSoonSection';
 import VerifyCertificatePage from '../components/Certificate/VerifyCertificatePage';
+import VolunteerPortal from '../components/Volunteer/VolunteerPortal';
 
 import { BookOpen, Headphones, ArrowRight, Quote, Search, X, Trophy, UploadCloud } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -48,14 +49,18 @@ export default function HomeApp() {
         id: cached.id,
         name: cached.name || cached.email?.split('@')[0] || 'Kitobxon',
         email: cached.email || '',
-        role: cached.role === 'ADMIN' ? 'ADMIN' : 'USER',
+        role: cached.role === 'ADMIN' ? 'ADMIN' : cached.role === 'VOLUNTEER' ? 'VOLUNTEER' : 'USER',
         avatarUrl: cached.avatar_url || cached.avatarUrl || '',
         dailyGoalMinutes: 40,
         todayMinutes: 40,
         readingStreakDays: 1,
         totalHours: cached.total_hours || 0,
         finishedBooksCount: cached.finished_books_count || 0,
-        is2FAEnabled: cached.is_2fa_enabled ?? (cached.role === 'ADMIN')
+        is2FAEnabled: cached.is_2fa_enabled ?? (cached.role === 'ADMIN'),
+        volunteer_code: cached.volunteer_code,
+        volunteer_title: cached.volunteer_title,
+        volunteer_hours: cached.volunteer_hours || 0,
+        is_volunteer: cached.is_volunteer || (cached.role === 'VOLUNTEER') || Boolean(cached.volunteer_code)
       });
     }
 
@@ -69,14 +74,18 @@ export default function HomeApp() {
               id: me.id,
               name: me.name || me.email?.split('@')[0] || 'Kitobxon',
               email: me.email || '',
-              role: me.role === 'ADMIN' ? 'ADMIN' : 'USER',
+              role: me.role === 'ADMIN' ? 'ADMIN' : me.role === 'VOLUNTEER' ? 'VOLUNTEER' : 'USER',
               avatarUrl: me.avatar_url || me.avatarUrl || '',
               dailyGoalMinutes: 40,
               todayMinutes: 40,
               readingStreakDays: 1,
               totalHours: me.total_hours || 0,
               finishedBooksCount: me.finished_books_count || 0,
-              is2FAEnabled: me.is_2fa_enabled ?? (me.role === 'ADMIN')
+              is2FAEnabled: me.is_2fa_enabled ?? (me.role === 'ADMIN'),
+              volunteer_code: me.volunteer_code,
+              volunteer_title: me.volunteer_title,
+              volunteer_hours: me.volunteer_hours || 0,
+              is_volunteer: me.is_volunteer || (me.role === 'VOLUNTEER') || Boolean(me.volunteer_code)
             });
             setCachedUser(me);
           }
@@ -732,6 +741,19 @@ export default function HomeApp() {
             <VerifyCertificatePage
               initialSerial={verifyCertSerial}
               onNavigateHome={() => navigate('home')}
+            />
+          )}
+
+          {/* 10. VOLUNTEER COMMUNITY PORTAL */}
+          {currentPage === 'volunteer' && (
+            <VolunteerPortal
+              books={publishedBooks}
+              currentUser={currentUser}
+              onNavigate={navigate}
+              onUserUpdate={(updatedUser) => {
+                setCurrentUser(updatedUser);
+                setCachedUser(updatedUser);
+              }}
             />
           )}
 

@@ -242,6 +242,16 @@ export default function Header({
         {/* User Pill & Log Out */}
         {currentUser ? (
           <>
+            {(currentUser.is_volunteer || currentUser.role === 'VOLUNTEER' || currentUser.volunteer_code) && (
+              <button
+                onClick={() => onNavigatePage('volunteer')}
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-xs font-mono font-bold transition-all cursor-pointer shadow-xs"
+                title="Volontyorlik Markaziga o'tish"
+              >
+                <span>🤝 VIP Volontyor</span>
+              </button>
+            )}
+
             <div 
               onClick={onNavigateProfile}
               className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-stone-100 dark:bg-white/10 border border-stone-200 dark:border-white/10 cursor-pointer hover:bg-stone-200 dark:hover:bg-white/20 transition-colors"

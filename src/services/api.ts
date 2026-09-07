@@ -975,6 +975,81 @@ export const api = {
     });
     if (!res.ok) return [];
     return res.json();
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // 🤝 VOLONTYORLIK MAQOMI VA KOD BOSHQARUVI
+  // ═══════════════════════════════════════════════════════════
+  async assignVolunteer(userId: string, data: {
+    volunteer_code?: string;
+    volunteer_title?: string;
+    volunteer_hours?: number;
+  }) {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetchWithRetry(`${API_BASE_URL}/admin/users/${userId}/assign-volunteer`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Volontyor maqomini berishda xatolik yuz berdi");
+    }
+    return res.json();
+  },
+
+  async revokeVolunteer(userId: string) {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetchWithRetry(`${API_BASE_URL}/admin/users/${userId}/revoke-volunteer`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Volontyor maqomini bekor qilishda xatolik");
+    }
+    return res.json();
+  },
+
+  async claimVolunteerCode(code: string) {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetchWithRetry(`${API_BASE_URL}/users/me/claim-volunteer`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ volunteer_code: code })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Volontyorlik kodi noto'g'ri yoki mavjud emas");
+    }
+    return res.json();
+  },
+
+  async getMyVolunteerProfile() {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetchWithRetry(`${API_BASE_URL}/users/me/volunteer-profile`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Volontyor profilini yuklashda xatolik");
+    }
+    return res.json();
   }
 };
+
 

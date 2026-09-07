@@ -47,10 +47,12 @@ import {
   Mail,
   Calendar,
   EyeOff,
-  Award
+  Award,
+  HeartHandshake
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import VolunteerCertificateModal, { CertificateData } from '../Certificate/VolunteerCertificateModal';
+import AssignVolunteerModal from './AssignVolunteerModal';
 
 interface Props {
   books: Book[];
@@ -73,9 +75,12 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
   const [adminUsers, setAdminUsers] = useState<any[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [userSearchQuery, setUserSearchQuery] = useState('');
-  const [userRoleFilter, setUserRoleFilter] = useState<'ALL' | 'USER' | 'ADMIN'>('ALL');
+  const [userRoleFilter, setUserRoleFilter] = useState<'ALL' | 'VOLUNTEER' | 'USER' | 'ADMIN'>('ALL');
   const [userStatusFilter, setUserStatusFilter] = useState<'ALL' | 'ACTIVE' | 'BANNED'>('ALL');
   
+  // Volunteer Modal State
+  const [volunteerModalUser, setVolunteerModalUser] = useState<any>(null);
+
   // Password Reset Modal State
   const [resetModalUser, setResetModalUser] = useState<any>(null);
   const [newPasswordInput, setNewPasswordInput] = useState('');
@@ -298,7 +303,10 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
         (u.name && u.name.toLowerCase().includes(q)) || 
         (u.email && u.email.toLowerCase().includes(q));
       
-      const matchRole = userRoleFilter === 'ALL' || u.role === userRoleFilter;
+      const matchRole = userRoleFilter === 'ALL' || 
+        (userRoleFilter === 'VOLUNTEER' 
+          ? (u.role === 'VOLUNTEER' || u.is_volunteer || Boolean(u.volunteer_code)) 
+          : u.role === userRoleFilter);
       const matchStatus = userStatusFilter === 'ALL' || (u.status || 'ACTIVE') === userStatusFilter;
 
       return matchSearch && matchRole && matchStatus;
@@ -2295,7 +2303,7 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
               <div className="flex flex-wrap items-center gap-2">
                 {/* Role Filter */}
                 <div className="flex items-center gap-1 p-1 rounded-2xl bg-stone-100 dark:bg-white/5 border border-stone-200/80 dark:border-white/10">
-                  {(['ALL', 'USER', 'ADMIN'] as const).map(role => (
+                  {(['ALL', 'VOLUNTEER', 'USER', 'ADMIN'] as const).map(role => (
                     <button
                       key={role}
                       onClick={() => setUserRoleFilter(role)}
@@ -2305,7 +2313,7 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                           : 'text-stone-600 dark:text-stone-400 hover:text-stone-950 dark:hover:text-white'
                       }`}
                     >
-                      {role === 'ALL' ? 'Barcha Rollar' : role === 'ADMIN' ? 'Adminlar' : 'Kitobxonlar'}
+                      {role === 'ALL' ? 'Barcha Rollar' : role === 'VOLUNTEER' ? 'Volontyorlar' : role === 'ADMIN' ? 'Adminlar' : 'Kitobxonlar'}
                     </button>
                   ))}
                 </div>
@@ -2420,6 +2428,18 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                                 <ShieldCheck size={13} />
                                 <span>ADMIN</span>
                               </span>
+                            ) : (u.role === 'VOLUNTEER' || u.is_volunteer || u.volunteer_code) ? (
+                              <div className="flex flex-col gap-1 items-start">
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                                  <Award size={13} />
+                                  <span>VOLONTYOR</span>
+                                </span>
+                                {u.volunteer_code && (
+                                  <span className="font-mono text-[10px] font-semibold text-stone-500 dark:text-stone-400 bg-stone-100 dark:bg-white/5 px-2 py-0.5 rounded-md border border-stone-200/60 dark:border-white/10">
+                                    {u.volunteer_code}
+                                  </span>
+                                )}
+                              </div>
                             ) : (
                               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30">
                                 <BookOpen size={13} />
@@ -2462,6 +2482,16 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                           {/* Actions */}
                           <td className="py-4 px-6 text-right">
                             <div className="flex items-center justify-end gap-2">
+                              {/* Assign Volunteer Button */}
+                              <button
+                                onClick={() => setVolunteerModalUser(u)}
+                                className="px-3 py-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-600 dark:text-purple-400 text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                                title="Volontyorlik kodi va maqomini belgilash"
+                              >
+                                <HeartHandshake size={13} />
+                                <span className="hidden sm:inline">Volontyor</span>
+                              </button>
+
                               {/* Issue Certificate Button */}
                               <button
                                 onClick={() => {
@@ -2786,6 +2816,17 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
 
           </div>
         </div>
+      )}
+
+      {/* ── ASSIGN VOLUNTEER & CODE MODAL ── */}
+      {volunteerModalUser && (
+        <AssignVolunteerModal
+          user={volunteerModalUser}
+          onClose={() => setVolunteerModalUser(null)}
+          onSuccess={() => {
+            fetchUsers();
+          }}
+        />
       )}
 
       {/* ── FULL LUXURY VOLUNTEER CERTIFICATE PREVIEW MODAL ── */}

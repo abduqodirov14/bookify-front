@@ -12,7 +12,8 @@ import {
   Sun, 
   Moon,
   Layers,
-  X
+  X,
+  HeartHandshake
 } from 'lucide-react';
 import { Page, UserProfile } from '../../types';
 
@@ -38,12 +39,18 @@ export default function Sidebar({
   onCloseMobile
 }: Props) {
   const isAdmin = currentUser?.role === 'ADMIN';
+  const isVolunteer = Boolean(
+    currentUser?.is_volunteer || 
+    currentUser?.role === 'VOLUNTEER' || 
+    currentUser?.volunteer_code
+  );
 
   const navItems: { id: Page; label: string; icon: any; badge?: string }[] = [
     { id: 'home', label: 'Bosh Sahifa', icon: Home },
     { id: 'discover', label: 'Xazina & Katalog', icon: Compass },
     { id: 'author', label: 'Buyuk Allomalar', icon: Users2 },
     { id: 'library', label: 'Mening Javonim', icon: Library },
+    { id: 'volunteer' as Page, label: 'Volontyorlar', icon: HeartHandshake, badge: isVolunteer ? 'VIP' : undefined },
     { id: 'time', label: 'Sokin Mutolaa', icon: Clock },
     { id: 'challenge', label: 'Adabiy Chempionat', icon: Trophy },
     { id: 'vision' as Page, label: 'Kelajak & Rejalar', icon: Layers },
