@@ -108,7 +108,7 @@ export default function VolunteerCertificateModal({ certificate, onClose }: Prop
         <div
           ref={certRef}
           id="printable-volunteer-cert"
-          className="relative w-full aspect-[1.414/1] bg-[#FDFBF7] text-[#1C2833] rounded-sm p-6 sm:p-10 md:p-12 shadow-2xl flex flex-col justify-between overflow-hidden select-none print:m-0 print:border-none print:shadow-none print:w-[100vw] print:h-[100vh]"
+          className="relative w-full aspect-[1.414/1] bg-[#FDFBF7] text-[#1C2833] rounded-sm p-4 sm:p-7 md:p-9 pb-5 sm:pb-8 md:pb-9 shadow-2xl flex flex-col justify-between overflow-hidden select-none print:m-0 print:border-none print:shadow-none print:w-[100vw] print:h-[100vh]"
         >
           {/* Subtle Background Geometric Watermark */}
           <div className="absolute inset-0 opacity-[0.035] pointer-events-none flex items-center justify-center">
@@ -118,10 +118,10 @@ export default function VolunteerCertificateModal({ certificate, onClose }: Prop
           </div>
 
           {/* Luxury Guilloché Multi-Layered Borders */}
-          <div className="absolute inset-3 md:inset-4 border-2 border-[#D4AF37] pointer-events-none"></div>
-          <div className="absolute inset-4 md:inset-5 border border-[#B38728]/35 pointer-events-none"></div>
-          <div className="absolute inset-5 md:inset-6 border-[3px] md:border-[4px] border-[#1C2833] pointer-events-none"></div>
-          <div className="absolute inset-6 md:inset-7 border border-[#D4AF37]/60 pointer-events-none"></div>
+          <div className="absolute inset-2.5 sm:inset-3 md:inset-4 border-2 border-[#D4AF37] pointer-events-none"></div>
+          <div className="absolute inset-3 sm:inset-4 md:inset-5 border border-[#B38728]/35 pointer-events-none"></div>
+          <div className="absolute inset-4 sm:inset-5 md:inset-6 border-[2.5px] sm:border-[3px] md:border-[4px] border-[#1C2833] pointer-events-none"></div>
+          <div className="absolute inset-5 sm:inset-6 md:inset-7 border border-[#D4AF37]/60 pointer-events-none"></div>
 
           {/* SVG Ornate Gold Corner Filigrees */}
           <svg className="absolute top-7 left-7 w-16 h-16 text-[#B38728] pointer-events-none opacity-80" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -226,38 +226,38 @@ export default function VolunteerCertificateModal({ certificate, onClose }: Prop
           </div>
 
           {/* 3. FOOTER: Signatures, 3D Rosette Seal, and QR Verification */}
-          <div className="relative z-10 grid grid-cols-3 items-end pt-3 md:pt-5 border-t border-[#D4AF37]/35">
+          <div className="relative z-10 grid grid-cols-3 items-end pt-2 sm:pt-3 md:pt-4 pb-0.5 border-t border-[#D4AF37]/35">
             
             {/* Left: Founder Signature */}
             <div className="text-left pl-1">
-              <div className="font-serif italic text-2xl sm:text-3xl text-[#1C2833] leading-none mb-1 rotate-[-2deg]">
+              <div className="font-serif italic text-xl sm:text-2xl text-[#1C2833] leading-none mb-0.5 rotate-[-2deg]">
                 Dilshodbek A.
               </div>
-              <div className="w-32 sm:w-44 h-[1px] bg-[#1C2833]/60 mb-1"></div>
-              <div className="font-serif text-[9.5px] sm:text-[10.5px] font-bold text-[#1C2833] uppercase">
+              <div className="w-32 sm:w-40 h-[1px] bg-[#1C2833]/60 mb-1"></div>
+              <div className="font-serif text-[9px] sm:text-[10px] font-bold text-[#1C2833] uppercase">
                 {certificate.issued_by_name || "Dilshodbek Abduqodirov"}
               </div>
-              <div className="text-[8px] sm:text-[9px] text-[#7F8C8D]">
+              <div className="text-[7.5px] sm:text-[8.5px] text-[#7F8C8D] leading-tight">
                 Bosh Loyiha Rahbari & Asoschi<br />
                 <span className="font-serif italic text-[#996515]">Executive Director, Bookify Foundation</span>
               </div>
             </div>
 
             {/* Center: 3D Official Gold Rosette Seal with Blue Ribbons */}
-            <div className="flex flex-col items-center justify-center -mb-2">
-              <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center">
+            <div className="flex flex-col items-center justify-center -mb-1">
+              <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
                 {/* Ribbons */}
-                <div className="absolute -bottom-3 w-5 h-8 bg-[#1A365D] rotate-[-12deg] shadow-md" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%)' }}></div>
-                <div className="absolute -bottom-3 w-5 h-8 bg-[#2B6CB0] rotate-[12deg] shadow-md" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%)' }}></div>
+                <div className="absolute -bottom-2.5 w-4 sm:w-5 h-6 sm:h-7 bg-[#1A365D] rotate-[-12deg] shadow-md" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%)' }}></div>
+                <div className="absolute -bottom-2.5 w-4 sm:w-5 h-6 sm:h-7 bg-[#2B6CB0] rotate-[12deg] shadow-md" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%)' }}></div>
                 
                 {/* 3D Rosette Seal */}
-                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#996515] via-[#F3E5AB] to-[#AA771C] p-1 shadow-[0_8px_16px_rgba(0,0,0,0.25)] flex items-center justify-center">
-                  <div className="w-full h-full rounded-full border-2 border-dashed border-[#804A00] flex flex-col items-center justify-center text-center p-1 bg-gradient-to-br from-[#E6CA65] via-[#D4AF37] to-[#996515] text-[#3E2723]">
-                    <span className="text-[10px] sm:text-xs">★</span>
-                    <span className="font-serif text-[6.5px] sm:text-[7.5px] font-black uppercase tracking-wider leading-tight">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#996515] via-[#F3E5AB] to-[#AA771C] p-0.5 sm:p-1 shadow-[0_6px_14px_rgba(0,0,0,0.2)] flex items-center justify-center">
+                  <div className="w-full h-full rounded-full border border-dashed sm:border-2 border-[#804A00] flex flex-col items-center justify-center text-center p-0.5 sm:p-1 bg-gradient-to-br from-[#E6CA65] via-[#D4AF37] to-[#996515] text-[#3E2723]">
+                    <span className="text-[9px] sm:text-xs">★</span>
+                    <span className="font-serif text-[6px] sm:text-[7px] font-black uppercase tracking-wider leading-tight">
                       OFFICIAL SEAL<br />OF EXCELLENCE
                     </span>
-                    <span className="text-[5.5px] tracking-widest uppercase font-mono font-bold mt-0.5">
+                    <span className="text-[5px] tracking-widest uppercase font-mono font-bold mt-0.5">
                       ★ 2026 ★
                     </span>
                   </div>
@@ -267,27 +267,26 @@ export default function VolunteerCertificateModal({ certificate, onClose }: Prop
 
             {/* Right: Lead Editor Signature & Real Verification QR */}
             <div className="flex flex-col items-end text-right pr-1">
-              <div className="flex items-center gap-2 mb-1.5">
+              <div className="flex items-center gap-1.5 mb-1">
                 <div className="text-right">
-                  <div className="text-[7.5px] sm:text-[8px] uppercase font-bold text-[#7F8C8D]">Tekshiruv QR:</div>
-                  <div className="font-mono text-[8.5px] sm:text-[9.5px] font-bold text-[#1C2833]">{serialNumber}</div>
-                  <div className="text-[7px] text-[#996515] font-mono">bookify.uz/verify</div>
+                  <div className="text-[7px] sm:text-[7.5px] uppercase font-bold text-[#7F8C8D]">Tekshiruv QR:</div>
+                  <div className="font-mono text-[8px] sm:text-[9px] font-bold text-[#1C2833]">{serialNumber}</div>
+                  <div className="text-[6.5px] text-[#996515] font-mono">bookify.uz/verify</div>
                 </div>
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white p-0.5 border border-[#D4AF37] shadow-sm rounded">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white p-0.5 border border-[#D4AF37] shadow-sm rounded">
                   <img src={qrCodeUrl} alt="QR" className="w-full h-full object-contain" />
                 </div>
               </div>
 
-              <div className="w-32 sm:w-44 h-[1px] bg-[#1C2833]/60 mb-1"></div>
-              <div className="font-serif text-[9.5px] sm:text-[10.5px] font-bold text-[#1C2833] uppercase">
+              <div className="w-32 sm:w-40 h-[1px] bg-[#1C2833]/60 mb-1"></div>
+              <div className="font-serif text-[9px] sm:text-[10px] font-bold text-[#1C2833] uppercase">
                 {certificate.editor_name || "Prof. Azamat Qosimov"}
               </div>
-              <div className="text-[8px] sm:text-[9px] text-[#7F8C8D]">
+              <div className="text-[7.5px] sm:text-[8.5px] text-[#7F8C8D] leading-tight">
                 Bosh Adabiyot Muharriri<br />
                 <span className="font-serif italic text-[#996515]">Chief Editorial Board & Verification Lead</span>
               </div>
             </div>
-
           </div>
 
         </div>
