@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Book } from '../../types';
+import { Book, UserProfile } from '../../types';
 import { api } from '../../services/api';
 import { BOOK_CATEGORIES } from '../../data/categories';
 import { Search, BookOpen, Headphones, BookmarkPlus } from 'lucide-react';
@@ -12,9 +12,11 @@ interface Props {
   books: Book[];
   onOpenReader: (bookId: string) => void;
   onPlayAudio: (book: Book) => void;
+  currentUser?: UserProfile | null;
+  onBuyBook?: (book: Book) => void;
 }
 
-export default function DiscoverCatalog({ books, onOpenReader, onPlayAudio }: Props) {
+export default function DiscoverCatalog({ books, onOpenReader, onPlayAudio, currentUser, onBuyBook }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('Barchasi');
   const [pricingFilter, setPricingFilter] = useState<'all' | 'premium' | 'free'>('all');
@@ -51,7 +53,16 @@ export default function DiscoverCatalog({ books, onOpenReader, onPlayAudio }: Pr
   };
 
   const handleOpenBook = (b: Book) => {
-    onOpenReader(b.id);
+    const isPrem = Boolean((b as any).is_premium);
+    if (isPrem && !currentUser?.is_premium) {
+      if (onBuyBook) {
+        onBuyBook(b);
+      } else {
+        setPaywallBook(b);
+      }
+    } else {
+      onOpenReader(b.id);
+    }
   };
 
   return (
@@ -161,7 +172,11 @@ export default function DiscoverCatalog({ books, onOpenReader, onPlayAudio }: Pr
                 <div className="space-y-3">
                   {/* Cover */}
                   <div className="book-card-3d">
-                    <div className="book-card-inner relative w-full aspect-[2/3] rounded-2xl overflow-hidden shadow-book border border-black/10">
+                    <div 
+                      onClick={() => onOpenReader(b.id)}
+                      className="book-card-inner relative w-full aspect-[2/3] rounded-2xl overflow-hidden shadow-book border border-black/10 cursor-pointer"
+                      title="Mutolaani boshlash"
+                    >
                       <img src={b.coverImage} alt={b.title} className="w-full h-full object-cover" />
                       <div className="book-spine-hinge" />
                       {/* 💎 PREMIUM overlay badge */}
@@ -206,14 +221,14 @@ export default function DiscoverCatalog({ books, onOpenReader, onPlayAudio }: Pr
                     <button
                       onClick={() => handleOpenBook(b)}
                       className={`py-2.5 rounded-xl font-semibold text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5 ${
-                        isPremium
-                          ? 'text-black hover:opacity-90'
+                        isPremium && !currentUser?.is_premium
+                          ? 'text-black hover:opacity-90 font-bold'
                           : 'bg-stone-900 dark:bg-white text-white dark:text-stone-900 hover:bg-[#E05638] dark:hover:bg-[#E05638] dark:hover:text-white'
                       }`}
-                      style={isPremium ? { background: 'linear-gradient(135deg, #f7971e, #ffd200)' } : {}}
+                      style={isPremium && !currentUser?.is_premium ? { background: 'linear-gradient(135deg, #f7971e, #ffd200)' } : {}}
                     >
-                      {isPremium ? <span>💎</span> : <BookOpen size={14} />}
-                      <span>{isPremium ? "Sotib Ol" : "Mutolaa"}</span>
+                      {isPremium && !currentUser?.is_premium ? <span>💎</span> : <BookOpen size={14} />}
+                      <span>{isPremium && !currentUser?.is_premium ? "Sotib Ol" : "Mutolaa"}</span>
                     </button>
 
                     <button
@@ -263,6 +278,7 @@ export default function DiscoverCatalog({ books, onOpenReader, onPlayAudio }: Pr
             is_premium: (paywallBook as any).is_premium,
           }}
           onClose={() => setPaywallBook(null)}
+          isAdmin={currentUser?.role === 'ADMIN'}
           onAccessGranted={() => {
             setPaywallBook(null);
             onOpenReader(paywallBook.id);

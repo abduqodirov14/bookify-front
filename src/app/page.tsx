@@ -404,6 +404,15 @@ export default function HomeApp() {
     setCurrentPage('reader');
   };
 
+  const handleBuyBook = (book: Book) => {
+    if (!currentUser) {
+      toast.error("Kitobni xarid qilish uchun iltimos, avval tizimga kiring!");
+      setCurrentPage('auth');
+      return;
+    }
+    setPaywallBook(book);
+  };
+
   const handlePlayAudio = (book: Book) => {
     if (!currentUser) {
       toast.error("Audio spektaklni tinglash uchun iltimos, avval tizimga kiring!");
@@ -647,16 +656,22 @@ export default function HomeApp() {
 
                             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-2">
                               <button
-                                onClick={() => handleOpenReader(featuredBook.id)}
+                                onClick={() => {
+                                  if (isFeaturedPremium && !currentUser?.is_premium) {
+                                    setPaywallBook(featuredBook);
+                                  } else {
+                                    handleOpenReader(featuredBook.id);
+                                  }
+                                }}
                                 className={`px-8 py-4 rounded-2xl font-bold text-xs font-mono uppercase tracking-wider transition-transform active:scale-95 shadow-xl hover:shadow-2xl cursor-pointer flex items-center gap-2 ${
-                                  isFeaturedPremium
-                                    ? 'text-black hover:opacity-90'
+                                  isFeaturedPremium && !currentUser?.is_premium
+                                    ? 'text-black hover:opacity-90 font-bold'
                                     : 'bg-[#E05638] hover:bg-[#C74326] text-white'
                                 }`}
-                                style={isFeaturedPremium ? { background: 'linear-gradient(135deg, #f7971e, #ffd200)' } : {}}
+                                style={isFeaturedPremium && !currentUser?.is_premium ? { background: 'linear-gradient(135deg, #f7971e, #ffd200)' } : {}}
                               >
-                                {isFeaturedPremium ? <span>💎</span> : <BookOpen size={16} />}
-                                <span>{isFeaturedPremium ? `Sotib Olish (${new Intl.NumberFormat('uz-UZ').format(featPrice)} so'm)` : "Mutolaani Boshlash"}</span>
+                                {isFeaturedPremium && !currentUser?.is_premium ? <span>💎</span> : <BookOpen size={16} />}
+                                <span>{isFeaturedPremium && !currentUser?.is_premium ? `Sotib Olish (${new Intl.NumberFormat('uz-UZ').format(featPrice)} so'm)` : "Mutolaani Boshlash"}</span>
                               </button>
 
                               <button
@@ -766,7 +781,11 @@ export default function HomeApp() {
                         >
                           <div className="flex gap-4">
                             <div className="book-card-3d shrink-0">
-                              <div className="book-card-inner relative w-24 h-34 rounded-xl overflow-hidden shadow-book border border-black/10">
+                              <div 
+                                onClick={() => handleOpenReader(b.id)}
+                                className="book-card-inner relative w-24 h-34 rounded-xl overflow-hidden shadow-book border border-black/10 cursor-pointer"
+                                title="Mutolaani boshlash"
+                              >
                                 <img src={b.coverImage} alt={b.title} className="w-full h-full object-cover" />
                                 <div className="book-spine-hinge" />
                                 {isPremium && (
@@ -816,16 +835,22 @@ export default function HomeApp() {
 
                           <div className="grid grid-cols-2 gap-2 pt-2 border-t border-stone-100 dark:border-white/5">
                             <button
-                              onClick={() => handleOpenReader(b.id)}
+                              onClick={() => {
+                                if (isPremium && !currentUser?.is_premium) {
+                                  setPaywallBook(b);
+                                } else {
+                                  handleOpenReader(b.id);
+                                }
+                              }}
                               className={`py-2.5 rounded-xl font-semibold text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5 ${
-                                isPremium
+                                isPremium && !currentUser?.is_premium
                                   ? 'text-black hover:opacity-90 font-bold'
                                   : 'bg-stone-900 dark:bg-white text-white dark:text-stone-900 hover:bg-[#E05638] dark:hover:bg-[#E05638] dark:hover:text-white'
                               }`}
-                              style={isPremium ? { background: 'linear-gradient(135deg, #f7971e, #ffd200)' } : {}}
+                              style={isPremium && !currentUser?.is_premium ? { background: 'linear-gradient(135deg, #f7971e, #ffd200)' } : {}}
                             >
-                              {isPremium ? <span>💎</span> : <BookOpen size={14} />}
-                              <span>{isPremium ? "Sotib Olish" : "Mutolaa"}</span>
+                              {isPremium && !currentUser?.is_premium ? <span>💎</span> : <BookOpen size={14} />}
+                              <span>{isPremium && !currentUser?.is_premium ? "Sotib Olish" : "Mutolaa"}</span>
                             </button>
 
                             <button
@@ -873,6 +898,8 @@ export default function HomeApp() {
               books={publishedBooks}
               onOpenReader={handleOpenReader}
               onPlayAudio={handlePlayAudio}
+              currentUser={currentUser}
+              onBuyBook={handleBuyBook}
             />
           )}
 
@@ -958,8 +985,8 @@ export default function HomeApp() {
           book={paywallBook ? {
             id: paywallBook.id,
             title: paywallBook.title,
-            author: paywallBook.authorName,
-            cover_url: paywallBook.coverImage,
+            author: paywallBook.authorName || (paywallBook as any).author || 'Muallif',
+            cover_url: paywallBook.coverImage || (paywallBook as any).cover_image,
             price: paywallBook.price || (paywallBook as any).price || 15000,
             is_premium: true,
           } : null}
