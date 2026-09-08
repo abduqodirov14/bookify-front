@@ -160,11 +160,13 @@ export default function Header({
             color: '#000',
             boxShadow: '0 2px 10px rgba(247,151,30,0.35)'
           }}
-          title="Bookify VIP Obuna tariflari va imtiyozlari"
+          title={currentUser?.is_premium ? "VIP A'zolik faol" : "Bookify VIP Obuna tariflari va imtiyozlari"}
         >
-          <span>💎</span>
-          <span className="hidden sm:inline font-bold">VIP Obuna</span>
-          <span className="px-1.5 py-0.2 rounded bg-black/15 text-[10px] hidden md:inline">29k/oy</span>
+          <span>{currentUser?.is_premium ? "👑" : "💎"}</span>
+          <span className="hidden sm:inline font-bold">{currentUser?.is_premium ? "VIP A'zo" : "VIP Obuna"}</span>
+          {!currentUser?.is_premium && (
+            <span className="px-1.5 py-0.5 rounded bg-black/15 text-[10px] hidden md:inline">29k/oy</span>
+          )}
         </button>
         
         {/* Dark/Light Theme Toggle */}

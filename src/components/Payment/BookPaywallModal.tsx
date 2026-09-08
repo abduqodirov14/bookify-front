@@ -1,5 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { api, getAuthToken } from '../../services/api';
+import { 
+  X, 
+  Check, 
+  ShieldCheck, 
+  BookOpen, 
+  Headphones, 
+  Bookmark, 
+  Crown, 
+  ArrowRight, 
+  Lock, 
+  CreditCard,
+  CheckCircle2
+} from 'lucide-react';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 export interface PaywallBook {
@@ -21,12 +34,13 @@ interface PaywallModalProps {
 }
 
 interface Plan {
-  id: string;
+  id: 'vip_monthly' | 'vip_yearly';
   label: string;
   price: number;
-  period?: string;
+  period: string;
   badge?: string;
   highlight?: boolean;
+  perDay?: string;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -43,6 +57,7 @@ export default function BookPaywallModal({
   onRequireAuth 
 }: PaywallModalProps) {
   const [tab, setTab] = useState<'book' | 'vip'>(!book || initialTab === 'vip' ? 'vip' : 'book');
+  const [selectedVipPlan, setSelectedVipPlan] = useState<'vip_monthly' | 'vip_yearly'>('vip_monthly');
   const [loading, setLoading] = useState(false);
   const [plans, setPlans] = useState<any>(null);
   const [error, setError] = useState('');
@@ -58,29 +73,39 @@ export default function BookPaywallModal({
     ? [
         {
           id: 'vip_monthly',
-          label: '1 Oylik VIP',
+          label: '1 Oylik VIP A\'zolik',
           price: plans.vip_monthly?.price ?? 29000,
           period: '/ oy',
-          badge: '🔥 Mashhur',
+          badge: '🔥 Eng Ommabop',
+          perDay: '~960 so\'m / kun'
         },
         {
           id: 'vip_yearly',
-          label: '1 Yillik VIP',
+          label: '1 Yillik VIP (All-Inclusive)',
           price: plans.vip_yearly?.price ?? 249000,
           period: '/ yil',
-          badge: '💎 Tejamkor',
+          badge: '💎 30% Tejamkorlik',
           highlight: true,
+          perDay: '~680 so\'m / kun'
         },
       ]
     : [
-        { id: 'vip_monthly', label: '1 Oylik VIP', price: 29000, period: '/ oy', badge: '🔥 Mashhur' },
+        { 
+          id: 'vip_monthly', 
+          label: '1 Oylik VIP A\'zolik', 
+          price: 29000, 
+          period: '/ oy', 
+          badge: '🔥 Eng Ommabop',
+          perDay: '~960 so\'m / kun'
+        },
         {
           id: 'vip_yearly',
-          label: '1 Yillik VIP',
+          label: '1 Yillik VIP (All-Inclusive)',
           price: 249000,
           period: '/ yil',
-          badge: '💎 Tejamkor',
+          badge: '💎 30% Tejamkorlik',
           highlight: true,
+          perDay: '~680 so\'m / kun'
         },
       ];
 
@@ -112,7 +137,7 @@ export default function BookPaywallModal({
       if (onRequireAuth) {
         onRequireAuth();
       } else {
-        setError("To'lovni amalga oshirish va xaridingizni saqlash uchun avval tizimga kiring.");
+        setError("To'lovni amalga oshirish va xaridingizni hisobingizga biriktirish uchun avval tizimga kiring.");
       }
       return;
     }
@@ -134,7 +159,7 @@ export default function BookPaywallModal({
       if (result.success && result.pay_url) {
         window.location.href = result.pay_url;
       } else {
-        setError(result.message || "To'lov sahifasini ochishda xatolik");
+        setError(result.message || "To'lov sahifasini ochishda xatolik yuz berdi");
       }
     } catch (e: any) {
       setError(e.message || "To'lov yaratishda xatolik yuz berdi");
@@ -143,314 +168,335 @@ export default function BookPaywallModal({
     }
   };
 
+  const activeVip = vipPlans.find(p => p.id === selectedVipPlan) || vipPlans[0];
+
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-[1200] flex items-center justify-center p-4"
-        style={{ backdropFilter: 'blur(12px)', backgroundColor: 'rgba(0,0,0,0.7)' }}
-        onClick={(e) => e.target === e.currentTarget && onClose()}
+    <div
+      className="fixed inset-0 z-[1200] bg-black/75 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div 
+        className="relative w-full max-w-lg bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col animate-in zoom-in-95 duration-200"
+        style={{
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 40px rgba(224, 86, 56, 0.1)'
+        }}
       >
-        {/* Modal */}
-        <div
-          className="relative w-full max-w-md rounded-3xl overflow-hidden shadow-2xl"
-          style={{
-            background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
-            border: '1px solid rgba(255,255,255,0.12)',
-          }}
-        >
-          {/* Top shimmer line */}
-          <div
-            style={{
-              height: 3,
-              background: 'linear-gradient(90deg, #f7971e, #ffd200, #f7971e)',
-              backgroundSize: '200% 100%',
-              animation: 'shimmer 2s linear infinite',
-            }}
-          />
+        {/* Luxury top accent gradient line */}
+        <div className="h-1.5 w-full bg-gradient-to-r from-amber-500 via-[#E05638] to-amber-400" />
 
-          {/* Header */}
-          <div className="px-6 pt-6 pb-4 text-center relative">
-            {/* Close */}
-            <button
-              onClick={onClose}
-              className="absolute right-4 top-4 w-8 h-8 rounded-full flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
-              aria-label="Yopish"
-            >
-              ✕
-            </button>
+        {/* Header bar with close button */}
+        <div className="px-6 pt-5 pb-4 relative border-b border-stone-100 dark:border-white/5">
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-4 p-2 rounded-xl text-stone-400 hover:text-stone-700 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
+            aria-label="Yopish"
+          >
+            <X size={18} />
+          </button>
 
-            {/* Crown + Book cover / VIP Badge */}
-            <div className="relative inline-block mb-3">
-              {book ? (
-                <div
-                  className="w-20 h-20 rounded-2xl overflow-hidden mx-auto shadow-xl"
-                  style={{ boxShadow: '0 0 30px rgba(247,151,30,0.4)' }}
-                >
-                  {book.cover_url ? (
-                    <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
-                  ) : (
-                    <div
-                      className="w-full h-full flex items-center justify-center text-4xl"
-                      style={{ background: 'linear-gradient(135deg, #f7971e, #ffd200)' }}
-                    >
-                      📚
-                    </div>
-                  )}
+          {book ? (
+            /* ── Book Mode Header ── */
+            <div className="flex items-center gap-4 pr-8">
+              <div className="relative shrink-0 w-14 h-20 rounded-xl overflow-hidden shadow-book border border-black/10 dark:border-white/10 bg-stone-100 dark:bg-white/5">
+                {book.cover_url ? (
+                  <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-xl bg-gradient-to-br from-amber-500/20 to-[#E05638]/20">
+                    📖
+                  </div>
+                )}
+                <div className="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-r from-black/30 to-transparent" />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono uppercase tracking-wider bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/20 flex items-center gap-1">
+                    <span>💎</span>
+                    <span>Premium Asar</span>
+                  </span>
                 </div>
-              ) : (
-                <div
-                  className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto shadow-xl text-4xl"
-                  style={{ 
-                    background: 'linear-gradient(135deg, #f7971e, #ffd200)',
-                    boxShadow: '0 0 35px rgba(247,151,30,0.5)'
-                  }}
-                >
-                  👑
-                </div>
-              )}
-              {/* Crown overlay if book exists */}
-              {book && (
-                <div
-                  className="absolute -top-3 left-1/2 -translate-x-1/2 text-2xl"
-                  style={{ filter: 'drop-shadow(0 0 8px #ffd200)' }}
-                >
-                  👑
-                </div>
-              )}
+                <h2 className="font-serif font-bold text-lg sm:text-xl text-stone-950 dark:text-white truncate">
+                  {book.title}
+                </h2>
+                <p className="text-xs text-stone-500 dark:text-stone-400 truncate mt-0.5">
+                  Muallif: <span className="font-medium text-stone-700 dark:text-stone-300">{book.author || "Klassik Muallif"}</span>
+                </p>
+              </div>
             </div>
-
-            <h2 className="text-white font-bold text-xl leading-tight">
-              {book ? book.title : "Bookify VIP Obuna"}
-            </h2>
-            <p className="text-white/60 text-xs sm:text-sm mt-1">
-              {book ? (book.author || "Pullik Sara Asar") : "Barcha nodir kitoblar, audio spektakllar va AI maslahatchi"}
-            </p>
-
-            <div
-              className="inline-flex items-center gap-2 mt-3 px-4 py-1.5 rounded-full text-xs font-semibold"
-              style={{ background: 'linear-gradient(135deg, #f7971e33, #ffd20033)', color: '#ffd200', border: '1px solid #ffd20040' }}
-            >
-              💎 {book ? "Premium Kontent" : "Eksklyuziv Imtiyozlar"}
+          ) : (
+            /* ── VIP Direct Header ── */
+            <div className="text-center pt-2 pb-1 pr-6">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/30 text-amber-500 flex items-center justify-center mx-auto mb-3 shadow-md">
+                <Crown size={24} />
+              </div>
+              <h2 className="font-serif font-bold text-xl sm:text-2xl text-stone-950 dark:text-white tracking-tight">
+                Bookify VIP Obuna
+              </h2>
+              <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 mt-1 max-w-sm mx-auto">
+                Barcha pullik sara asarlar, audio spektakllar va eksklyuziv imtiyozlarga cheksiz kirish
+              </p>
             </div>
-          </div>
+          )}
+        </div>
 
+        {/* Scrollable Body */}
+        <div className="overflow-y-auto px-6 py-4 space-y-4 flex-1">
+          
           {/* Admin bypass banner if user is admin */}
           {isAdmin && (
-            <div className="mx-6 mb-3 p-3 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-center space-y-2">
-              <div className="text-xs text-amber-300 font-bold flex items-center justify-center gap-1.5">
-                <span>👑 Administrator Rejimi</span>
+            <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <span className="text-lg">👑</span>
+                <div>
+                  <div className="text-xs font-bold text-amber-900 dark:text-amber-300">
+                    Administrator Imtiyozi
+                  </div>
+                  <div className="text-[11px] text-amber-800/80 dark:text-amber-400/80 leading-tight">
+                    InPay to'lovini sinashingiz yoki darhol bepul mutolaa qilishingiz mumkin
+                  </div>
+                </div>
               </div>
-              <p className="text-[11px] text-white/70">
-                Siz sayt adminsiz — InPay to'lovini sinashingiz yoki bepul ochishingiz mumkin.
-              </p>
               <button
                 type="button"
                 onClick={() => {
                   if (onAccessGranted) onAccessGranted();
                 }}
-                className="w-full py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-all border border-white/20 cursor-pointer"
+                className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold text-xs shrink-0 transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-1"
               >
-                Kitobni Admin sifatida ochish ➔
+                <span>Bepul O'qish</span>
+                <ArrowRight size={13} />
               </button>
             </div>
           )}
 
-          {/* Tabs (only shown if a specific book is being purchased) */}
+          {/* Tab Switcher (if single book is being purchased) */}
           {book && (
-            <div className="px-6 pb-2">
-              <div
-                className="flex rounded-2xl p-1"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}
+            <div className="flex rounded-2xl p-1 bg-stone-100 dark:bg-white/5 border border-stone-200/80 dark:border-white/5">
+              <button
+                type="button"
+                onClick={() => setTab('book')}
+                className={`flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  tab === 'book'
+                    ? 'bg-white dark:bg-[#1A202E] text-stone-950 dark:text-white shadow-sm font-bold border border-stone-200/60 dark:border-white/10'
+                    : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+                }`}
               >
-                <button
-                  onClick={() => setTab('book')}
-                  className="flex-1 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer"
-                  style={
-                    tab === 'book'
-                      ? { background: 'linear-gradient(135deg, #f7971e, #ffd200)', color: '#000' }
-                      : { color: 'rgba(255,255,255,0.5)' }
-                  }
-                >
-                  📖 Bu Asar Xaridi
-                </button>
-                <button
-                  onClick={() => setTab('vip')}
-                  className="flex-1 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer"
-                  style={
-                    tab === 'vip'
-                      ? { background: 'linear-gradient(135deg, #a855f7, #ec4899)', color: '#fff' }
-                      : { color: 'rgba(255,255,255,0.5)' }
-                  }
-                >
-                  👑 VIP Obuna
-                </button>
-              </div>
+                <BookOpen size={15} className={tab === 'book' ? 'text-[#E05638]' : ''} />
+                <span>Yagona Asar Xaridi</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setTab('vip')}
+                className={`flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  tab === 'vip'
+                    ? 'bg-white dark:bg-[#1A202E] text-amber-600 dark:text-amber-400 shadow-sm font-bold border border-stone-200/60 dark:border-white/10'
+                    : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+                }`}
+              >
+                <Crown size={15} className={tab === 'vip' ? 'text-amber-500' : ''} />
+                <span>VIP Cheksiz Obuna</span>
+              </button>
             </div>
           )}
 
-          {/* Content */}
-          <div className="px-6 py-4">
-            {tab === 'book' && book ? (
-              /* ── Single Book Purchase ── */
-              <div>
-                <p className="text-white/70 text-sm text-center mb-4">
-                  Faqat shu kitobni bir martalik to'lov bilan umrbod oching
-                </p>
-
-                <div
-                  className="rounded-2xl p-5 text-center mb-4"
-                  style={{
-                    background: 'linear-gradient(135deg, rgba(247,151,30,0.15), rgba(255,210,0,0.08))',
-                    border: '1px solid rgba(247,151,30,0.3)',
-                  }}
-                >
-                  <div className="text-3xl font-black text-white mb-1">
-                    {formatPrice(book.price || 15000)}
-                  </div>
-                  <div className="text-white/50 text-xs">bir martalik to'lov • abadiy kirish</div>
-
-                  {/* Perks */}
-                  <div className="mt-4 space-y-2 text-left">
-                    {['📖 Butun kitobni 3D readerda o\'qish', '🔖 Sahifa belgisi qo\'yish', '🎧 Audio spektakllar (mavjud bo\'lsa)', '🔁 Istalgan vaqt cheksiz qayta kirish'].map(perk => (
-                      <div key={perk} className="flex items-center gap-2 text-sm text-white/80">
-                        <span className="text-green-400">✓</span>
-                        <span>{perk}</span>
-                      </div>
-                    ))}
-                  </div>
+          {/* ── Tab 1: Single Book Purchase ── */}
+          {tab === 'book' && book ? (
+            <div className="space-y-4">
+              {/* Pricing Plaque */}
+              <div className="p-5 rounded-2xl bg-stone-50 dark:bg-white/[0.02] border border-stone-200/80 dark:border-white/10 text-center space-y-3">
+                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#E05638] dark:text-amber-400">
+                  Bir martalik to'lov • Umrbod cheksiz kirish
+                </span>
+                
+                <div className="text-3xl sm:text-4xl font-serif font-black text-stone-950 dark:text-white">
+                  {formatPrice(book.price || 15000)}
                 </div>
 
-                <button
-                  onClick={() => handlePay('book')}
-                  disabled={loading}
-                  className="w-full py-4 rounded-2xl font-bold text-base text-black transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
-                  style={{ background: loading ? '#999' : 'linear-gradient(135deg, #f7971e, #ffd200)', boxShadow: loading ? 'none' : '0 8px 24px rgba(247,151,30,0.4)' }}
-                >
-                  {loading ? (
-                    '⏳ To\'lov sahifasi ochilmoqda...'
-                  ) : !isLoggedIn ? (
-                    '🔑 Ro\'yxatdan O\'tish / Kirish (To\'lov Uchun)'
-                  ) : (
-                    `💳 ${formatPrice(book.price || 15000)} • InPay orqali to'lash`
-                  )}
-                </button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-left pt-3 border-t border-stone-200/60 dark:border-white/5">
+                  {[
+                    { icon: BookOpen, text: "3D Readerda to'liq mutolaa" },
+                    { icon: Bookmark, text: "Xatcho'p va xotira belgilari" },
+                    { icon: Headphones, text: "Audio spektakl (mavjud bo'lsa)" },
+                    { icon: ShieldCheck, text: "Umrbod shaxsiy javonda" },
+                  ].map((perk, i) => (
+                    <div key={i} className="flex items-center gap-2 text-xs text-stone-700 dark:text-stone-300">
+                      <perk.icon size={14} className="text-[#E05638] dark:text-amber-400 shrink-0" />
+                      <span>{perk.text}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ) : (
-              /* ── VIP Plans ── */
-              <div>
-                <p className="text-white/70 text-sm text-center mb-4">
-                  Barcha pullik kitoblar va audio spektakllarga cheksiz kirish 👑
-                </p>
 
-                <div className="space-y-3 mb-4">
-                  {vipPlans.map(plan => (
-                    <button
+              {/* Pay Button */}
+              <button
+                type="button"
+                onClick={() => handlePay('book')}
+                disabled={loading}
+                className="w-full py-4 rounded-2xl font-bold text-sm sm:text-base text-white transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2.5 shadow-lg bg-gradient-to-r from-[#E05638] to-[#C74326] hover:brightness-105 shadow-[#E05638]/20"
+              >
+                {loading ? (
+                  <div className="flex items-center gap-2">
+                    <span className="inline-block animate-spin">⏳</span>
+                    <span>InPay to'lov sahifasi ochilmoqda...</span>
+                  </div>
+                ) : !isLoggedIn ? (
+                  <div className="flex items-center gap-2">
+                    <Lock size={16} />
+                    <span>Kirish / Ro'yxatdan O'tish (To'lov Uchun)</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <CreditCard size={18} />
+                    <span>{formatPrice(book.price || 15000)} • InPay orqali to'lash</span>
+                  </div>
+                )}
+              </button>
+            </div>
+          ) : (
+            /* ── Tab 2: VIP Subscription Plans ── */
+            <div className="space-y-4">
+              <div className="space-y-3">
+                {vipPlans.map(plan => {
+                  const isSelected = selectedVipPlan === plan.id;
+                  return (
+                    <div
                       key={plan.id}
-                      onClick={() => handlePay(plan.id as any)}
-                      disabled={loading}
-                      className="w-full rounded-2xl p-4 text-left transition-all active:scale-95 disabled:opacity-60 cursor-pointer"
-                      style={
-                        plan.highlight
-                          ? {
-                              background: 'linear-gradient(135deg, rgba(168,85,247,0.25), rgba(236,72,153,0.15))',
-                              border: '1.5px solid rgba(168,85,247,0.5)',
-                            }
-                          : {
-                              background: 'rgba(255,255,255,0.06)',
-                              border: '1px solid rgba(255,255,255,0.12)',
-                            }
-                      }
+                      onClick={() => setSelectedVipPlan(plan.id)}
+                      className={`p-4 rounded-2xl transition-all cursor-pointer border flex items-center justify-between gap-4 ${
+                        isSelected
+                          ? 'bg-amber-500/10 dark:bg-amber-500/15 border-amber-500/50 shadow-md ring-1 ring-amber-500/30'
+                          : 'bg-stone-50 dark:bg-white/[0.02] border-stone-200/80 dark:border-white/10 hover:border-amber-500/30'
+                      }`}
                     >
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 ${
+                          isSelected 
+                            ? 'border-amber-500 bg-amber-500 text-stone-950' 
+                            : 'border-stone-300 dark:border-white/20'
+                        }`}>
+                          {isSelected && <Check size={12} strokeWidth={3} />}
+                        </div>
                         <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-white font-bold text-sm">{plan.label}</span>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-serif font-bold text-sm sm:text-base text-stone-950 dark:text-white">
+                              {plan.label}
+                            </span>
                             {plan.badge && (
-                              <span
-                                className="text-xs px-2 py-0.5 rounded-full font-semibold"
-                                style={
-                                  plan.highlight
-                                    ? { background: 'linear-gradient(135deg, #a855f7, #ec4899)', color: '#fff' }
-                                    : { background: 'rgba(247,151,30,0.2)', color: '#f7971e' }
-                                }
-                              >
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                                plan.highlight
+                                  ? 'bg-gradient-to-r from-amber-500 to-[#E05638] text-white shadow-xs'
+                                  : 'bg-amber-500/20 text-amber-800 dark:text-amber-300'
+                              }`}>
                                 {plan.badge}
                               </span>
                             )}
                           </div>
-                          <div className="text-white/50 text-xs">
-                            {plan.id === 'vip_monthly' ? '30 kun, barcha kitoblar' : '365 kun, 30% tejamkorlik'}
+                          <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
+                            {plan.perDay} • Barcha kitoblar va audio spektakllar
                           </div>
-                        </div>
-                        <div className="text-right">
-                          <div
-                            className="font-black text-lg"
-                            style={{ color: plan.highlight ? '#c084fc' : '#ffd200' }}
-                          >
-                            {formatPrice(plan.price)}
-                          </div>
-                          <div className="text-white/40 text-xs">{plan.period}</div>
                         </div>
                       </div>
-                    </button>
+
+                      <div className="text-right shrink-0">
+                        <div className="font-serif font-black text-base sm:text-lg text-amber-600 dark:text-amber-400">
+                          {formatPrice(plan.price)}
+                        </div>
+                        <div className="text-[10px] font-mono text-stone-400">
+                          {plan.period}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* VIP Perks */}
+              <div className="p-4 rounded-2xl bg-stone-50 dark:bg-white/[0.02] border border-stone-200/80 dark:border-white/5 space-y-2">
+                <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-2">
+                  VIP A'zolik Imtiyozlari:
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-stone-600 dark:text-stone-300">
+                  {[
+                    "👑 Barcha pullik asarlarga cheksiz kirish",
+                    "🎧 Barcha audio spektakllar (HQ sifat)",
+                    "📜 Rasmiy kitobxonlik sertifikatlari",
+                    "🚀 Tezkor server va oflayn yuklash",
+                    "🔖 Cheksiz xatcho'plar va qaydlar",
+                    "💫 Har hafta yangi chiqadigan sara asarlar"
+                  ].map((f, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
+                      <span>{f}</span>
+                    </div>
                   ))}
                 </div>
-
-                {/* VIP Perks */}
-                <div
-                  className="rounded-xl p-3 mb-4"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
-                >
-                  <div className="grid grid-cols-2 gap-2 text-xs text-white/70">
-                    {["👑 Barcha premium kitoblar", "🎧 Barcha audio spektakllar", "🚀 Tezkor yuklanish", "🔖 Cheksiz xatchoʻp", "📜 Sertifikatlar", "💫 Yangi kitoblar birinchi"].map(f => (
-                      <div key={f} className="flex items-center gap-1.5">
-                        <span className="text-green-400 text-base">✓</span>
-                        <span>{f}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </div>
-            )}
 
-            {/* Error & Auth CTA */}
-            {error && (
-              <div
-                className="mt-3 p-3 rounded-2xl text-xs text-center space-y-2"
-                style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)' }}
+              {/* VIP Pay Button */}
+              <button
+                type="button"
+                onClick={() => handlePay(selectedVipPlan)}
+                disabled={loading}
+                className="w-full py-4 rounded-2xl font-bold text-sm sm:text-base text-stone-950 transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2.5 shadow-lg bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 shadow-amber-500/20"
               >
-                <div className="text-red-300">⚠️ {error}</div>
-                {onRequireAuth && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onClose();
-                      onRequireAuth();
-                    }}
-                    className="w-full py-2 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs transition-all cursor-pointer border border-white/20"
-                  >
-                    Tizimga Kirish / Ro'yxatdan O'tish ➔
-                  </button>
+                {loading ? (
+                  <div className="flex items-center gap-2 text-stone-900">
+                    <span className="inline-block animate-spin">⏳</span>
+                    <span>InPay to'lov sahifasi ochilmoqda...</span>
+                  </div>
+                ) : !isLoggedIn ? (
+                  <div className="flex items-center gap-2">
+                    <Lock size={16} />
+                    <span>Kirish / Ro'yxatdan O'tish (To'lov Uchun)</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 font-extrabold">
+                    <Crown size={18} />
+                    <span>{formatPrice(activeVip.price)} • InPay orqali faollashtirish</span>
+                  </div>
                 )}
-              </div>
-            )}
+              </button>
+            </div>
+          )}
 
-            {/* Footer note */}
-            <p className="text-center text-white/40 text-xs mt-4">
-              🔒 To'lov InPay orqali xavfsiz amalga oshiriladi (Click, Payme, Humo, Uzcard)
+          {/* Error Message if any */}
+          {error && (
+            <div className="p-3.5 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-xs text-center space-y-2">
+              <div className="text-red-600 dark:text-red-400 font-semibold">
+                ⚠️ {error}
+              </div>
+              {onRequireAuth && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onRequireAuth();
+                  }}
+                  className="w-full py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs transition-colors cursor-pointer"
+                >
+                  Tizimga Kirish / Ro'yxatdan O'tish ➔
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Payment providers badge */}
+          <div className="pt-2 text-center space-y-2">
+            <div className="flex items-center justify-center gap-2 flex-wrap">
+              <span className="text-[11px] text-stone-400 font-medium">Qo'llab-quvvatlanadi:</span>
+              <span className="px-2 py-0.5 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold text-[10px] border border-blue-500/20">Click</span>
+              <span className="px-2 py-0.5 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 font-bold text-[10px] border border-teal-500/20">Payme</span>
+              <span className="px-2 py-0.5 rounded-lg bg-green-500/10 text-green-600 dark:text-green-400 font-bold text-[10px] border border-green-500/20">Paynet</span>
+              <span className="px-2 py-0.5 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 font-bold text-[10px] border border-purple-500/20">Humo / Uzcard</span>
+            </div>
+            <p className="text-[11px] text-stone-400 dark:text-stone-500 flex items-center justify-center gap-1">
+              <ShieldCheck size={13} className="text-emerald-500 inline" />
+              <span>InPay davlat litsenziyali to'lov shlyuzi orqali 100% himoyalangan</span>
             </p>
           </div>
 
-          {/* Shimmer animation */}
-          <style>{`
-            @keyframes shimmer {
-              0% { background-position: 200% 0; }
-              100% { background-position: -200% 0; }
-            }
-          `}</style>
         </div>
       </div>
-    </>
+    </div>
   );
 }
