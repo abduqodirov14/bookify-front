@@ -1296,14 +1296,7 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                             </span>
                           )}
                           {(b as any).is_premium && (
-                            <span
-                              className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold shrink-0"
-                              style={{
-                                background: 'linear-gradient(135deg, rgba(247,151,30,0.15), rgba(255,210,0,0.08))',
-                                color: '#f7971e',
-                                border: '1px solid rgba(247,151,30,0.4)'
-                              }}
-                            >
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold shrink-0 bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30">
                               💎 PREMIUM {(b as any).price ? `• ${new Intl.NumberFormat('uz-UZ').format((b as any).price)} so'm` : ''}
                             </span>
                           )}
@@ -1955,7 +1948,7 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                     className="relative w-12 h-6 rounded-full transition-all duration-300 shrink-0 cursor-pointer"
                     style={{
                       background: editIsPremium
-                        ? 'linear-gradient(135deg, #f7971e, #ffd200)'
+                        ? 'linear-gradient(135deg, #C5A059, #E05638)'
                         : 'rgba(0,0,0,0.15)',
                       border: editIsPremium ? 'none' : '1px solid rgba(0,0,0,0.2)',
                     }}

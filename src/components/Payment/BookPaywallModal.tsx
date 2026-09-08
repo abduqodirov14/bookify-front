@@ -176,13 +176,13 @@ export default function BookPaywallModal({
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div 
-        className="relative w-full max-w-lg bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col animate-in zoom-in-95 duration-200"
+        className="relative w-full max-w-lg sm:max-w-xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-200"
         style={{
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 40px rgba(224, 86, 56, 0.1)'
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 40px rgba(197, 160, 89, 0.1)'
         }}
       >
         {/* Luxury top accent gradient line */}
-        <div className="h-1.5 w-full bg-gradient-to-r from-amber-500 via-[#E05638] to-amber-400" />
+        <div className="h-1.5 w-full bg-gradient-to-r from-[#E05638] via-[#C5A059] to-[#E05638]" />
 
         {/* Header bar with close button */}
         <div className="px-6 pt-5 pb-4 relative border-b border-stone-100 dark:border-white/5">
@@ -205,12 +205,12 @@ export default function BookPaywallModal({
                     📖
                   </div>
                 )}
-                <div className="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-r from-black/30 to-transparent" />
+                <div className="book-spine-hinge" />
               </div>
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono uppercase tracking-wider bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/20 flex items-center gap-1">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono uppercase tracking-wider bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 flex items-center gap-1">
                     <span>💎</span>
                     <span>Premium Asar</span>
                   </span>
@@ -226,14 +226,14 @@ export default function BookPaywallModal({
           ) : (
             /* ── VIP Direct Header ── */
             <div className="text-center pt-2 pb-1 pr-6">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/30 text-amber-500 flex items-center justify-center mx-auto mb-3 shadow-md">
-                <Crown size={24} />
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#C5A059]/20 via-amber-500/15 to-[#C5A059]/10 border border-[#C5A059]/35 text-[#A6823F] dark:text-[#C5A059] flex items-center justify-center mx-auto mb-3 shadow-sm">
+                <Crown size={26} />
               </div>
               <h2 className="font-serif font-bold text-xl sm:text-2xl text-stone-950 dark:text-white tracking-tight">
                 Bookify VIP Obuna
               </h2>
               <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 mt-1 max-w-sm mx-auto">
-                Barcha pullik sara asarlar, audio spektakllar va eksklyuziv imtiyozlarga cheksiz kirish
+                Barcha sara asarlar, audio spektakllar va eksklyuziv imtiyozlarga cheksiz kirish
               </p>
             </div>
           )}
@@ -242,8 +242,8 @@ export default function BookPaywallModal({
         {/* Scrollable Body */}
         <div className="overflow-y-auto px-6 py-4 space-y-4 flex-1">
           
-          {/* Admin bypass banner if user is admin */}
-          {isAdmin && (
+          {/* Admin bypass banner if user is admin AND a book is selected */}
+          {isAdmin && book && (
             <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
                 <span className="text-lg">👑</span>
@@ -252,7 +252,7 @@ export default function BookPaywallModal({
                     Administrator Imtiyozi
                   </div>
                   <div className="text-[11px] text-amber-800/80 dark:text-amber-400/80 leading-tight">
-                    InPay to'lovini sinashingiz yoki darhol bepul mutolaa qilishingiz mumkin
+                    InPay to'lovini sinashingiz yoki darhol kitobni bepul mutolaa qilishingiz mumkin
                   </div>
                 </div>
               </div>
@@ -277,7 +277,7 @@ export default function BookPaywallModal({
                 onClick={() => setTab('book')}
                 className={`flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                   tab === 'book'
-                    ? 'bg-white dark:bg-[#1A202E] text-stone-950 dark:text-white shadow-sm font-bold border border-stone-200/60 dark:border-white/10'
+                    ? 'bg-white dark:bg-[#1A202E] text-stone-950 dark:text-white shadow-xs font-bold border border-stone-200/80 dark:border-white/10'
                     : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                 }`}
               >
@@ -289,11 +289,11 @@ export default function BookPaywallModal({
                 onClick={() => setTab('vip')}
                 className={`flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                   tab === 'vip'
-                    ? 'bg-white dark:bg-[#1A202E] text-amber-600 dark:text-amber-400 shadow-sm font-bold border border-stone-200/60 dark:border-white/10'
+                    ? 'bg-white dark:bg-[#1A202E] text-amber-800 dark:text-amber-300 shadow-xs font-bold border border-stone-200/80 dark:border-white/10'
                     : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                 }`}
               >
-                <Crown size={15} className={tab === 'vip' ? 'text-amber-500' : ''} />
+                <Crown size={15} className={tab === 'vip' ? 'text-[#C5A059]' : ''} />
                 <span>VIP Cheksiz Obuna</span>
               </button>
             </div>
@@ -303,8 +303,8 @@ export default function BookPaywallModal({
           {tab === 'book' && book ? (
             <div className="space-y-4">
               {/* Pricing Plaque */}
-              <div className="p-5 rounded-2xl bg-stone-50 dark:bg-white/[0.02] border border-stone-200/80 dark:border-white/10 text-center space-y-3">
-                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#E05638] dark:text-amber-400">
+              <div className="p-5 rounded-2xl bg-stone-50/80 dark:bg-white/[0.03] border border-stone-200/80 dark:border-white/10 text-center space-y-3">
+                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#E05638] dark:text-[#C5A059]">
                   Bir martalik to'lov • Umrbod cheksiz kirish
                 </span>
                 
@@ -320,7 +320,7 @@ export default function BookPaywallModal({
                     { icon: ShieldCheck, text: "Umrbod shaxsiy javonda" },
                   ].map((perk, i) => (
                     <div key={i} className="flex items-center gap-2 text-xs text-stone-700 dark:text-stone-300">
-                      <perk.icon size={14} className="text-[#E05638] dark:text-amber-400 shrink-0" />
+                      <perk.icon size={14} className="text-[#E05638] dark:text-[#C5A059] shrink-0" />
                       <span>{perk.text}</span>
                     </div>
                   ))}
@@ -332,7 +332,7 @@ export default function BookPaywallModal({
                 type="button"
                 onClick={() => handlePay('book')}
                 disabled={loading}
-                className="w-full py-4 rounded-2xl font-bold text-sm sm:text-base text-white transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2.5 shadow-lg bg-gradient-to-r from-[#E05638] to-[#C74326] hover:brightness-105 shadow-[#E05638]/20"
+                className="w-full py-4 rounded-2xl font-bold text-sm sm:text-base text-white transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2.5 shadow-lg bg-gradient-to-r from-[#E05638] via-[#C74326] to-[#E05638] hover:brightness-105 shadow-[#E05638]/25"
               >
                 {loading ? (
                   <div className="flex items-center gap-2">
@@ -364,14 +364,14 @@ export default function BookPaywallModal({
                       onClick={() => setSelectedVipPlan(plan.id)}
                       className={`p-4 rounded-2xl transition-all cursor-pointer border flex items-center justify-between gap-4 ${
                         isSelected
-                          ? 'bg-amber-500/10 dark:bg-amber-500/15 border-amber-500/50 shadow-md ring-1 ring-amber-500/30'
-                          : 'bg-stone-50 dark:bg-white/[0.02] border-stone-200/80 dark:border-white/10 hover:border-amber-500/30'
+                          ? 'bg-[#C5A059]/10 dark:bg-[#C5A059]/15 border-[#C5A059] dark:border-[#C5A059]/80 shadow-md ring-1 ring-[#C5A059]/30'
+                          : 'bg-stone-50/70 dark:bg-white/[0.02] border-stone-200/80 dark:border-white/10 hover:border-[#C5A059]/40'
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 ${
                           isSelected 
-                            ? 'border-amber-500 bg-amber-500 text-stone-950' 
+                            ? 'border-[#C5A059] bg-[#C5A059] text-stone-950' 
                             : 'border-stone-300 dark:border-white/20'
                         }`}>
                           {isSelected && <Check size={12} strokeWidth={3} />}
@@ -384,8 +384,8 @@ export default function BookPaywallModal({
                             {plan.badge && (
                               <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
                                 plan.highlight
-                                  ? 'bg-gradient-to-r from-amber-500 to-[#E05638] text-white shadow-xs'
-                                  : 'bg-amber-500/20 text-amber-800 dark:text-amber-300'
+                                  ? 'bg-gradient-to-r from-[#C5A059] to-[#E05638] text-white shadow-xs'
+                                  : 'bg-[#C5A059]/20 text-[#7F602B] dark:text-amber-300 border border-[#C5A059]/30'
                               }`}>
                                 {plan.badge}
                               </span>
@@ -398,7 +398,7 @@ export default function BookPaywallModal({
                       </div>
 
                       <div className="text-right shrink-0">
-                        <div className="font-serif font-black text-base sm:text-lg text-amber-600 dark:text-amber-400">
+                        <div className="font-serif font-black text-base sm:text-lg text-amber-800 dark:text-amber-300">
                           {formatPrice(plan.price)}
                         </div>
                         <div className="text-[10px] font-mono text-stone-400">
@@ -411,21 +411,21 @@ export default function BookPaywallModal({
               </div>
 
               {/* VIP Perks */}
-              <div className="p-4 rounded-2xl bg-stone-50 dark:bg-white/[0.02] border border-stone-200/80 dark:border-white/5 space-y-2">
-                <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-2">
+              <div className="p-4 rounded-2xl bg-stone-50/70 dark:bg-white/[0.02] border border-stone-200/80 dark:border-white/5 space-y-2">
+                <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#A6823F] dark:text-[#C5A059] mb-2">
                   VIP A'zolik Imtiyozlari:
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-stone-600 dark:text-stone-300">
                   {[
                     "👑 Barcha pullik asarlarga cheksiz kirish",
-                    "🎧 Barcha audio spektakllar (HQ sifat)",
+                    "🎧 Barcha audio spektakllar (HQ format)",
                     "📜 Rasmiy kitobxonlik sertifikatlari",
-                    "🚀 Tezkor server va oflayn yuklash",
+                    "🚀 Tezkor server va oflayn saqlash",
                     "🔖 Cheksiz xatcho'plar va qaydlar",
                     "💫 Har hafta yangi chiqadigan sara asarlar"
                   ].map((f, i) => (
                     <div key={i} className="flex items-center gap-2">
-                      <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
+                      <CheckCircle2 size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
                       <span>{f}</span>
                     </div>
                   ))}
@@ -437,7 +437,7 @@ export default function BookPaywallModal({
                 type="button"
                 onClick={() => handlePay(selectedVipPlan)}
                 disabled={loading}
-                className="w-full py-4 rounded-2xl font-bold text-sm sm:text-base text-stone-950 transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2.5 shadow-lg bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 shadow-amber-500/20"
+                className="w-full py-4 rounded-2xl font-black text-sm sm:text-base text-stone-950 transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2.5 shadow-lg bg-gradient-to-r from-[#C5A059] via-amber-400 to-[#C5A059] hover:brightness-105 shadow-[#C5A059]/25"
               >
                 {loading ? (
                   <div className="flex items-center gap-2 text-stone-900">
@@ -484,13 +484,21 @@ export default function BookPaywallModal({
           <div className="pt-2 text-center space-y-2">
             <div className="flex items-center justify-center gap-2 flex-wrap">
               <span className="text-[11px] text-stone-400 font-medium">Qo'llab-quvvatlanadi:</span>
-              <span className="px-2 py-0.5 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold text-[10px] border border-blue-500/20">Click</span>
-              <span className="px-2 py-0.5 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 font-bold text-[10px] border border-teal-500/20">Payme</span>
-              <span className="px-2 py-0.5 rounded-lg bg-green-500/10 text-green-600 dark:text-green-400 font-bold text-[10px] border border-green-500/20">Paynet</span>
-              <span className="px-2 py-0.5 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 font-bold text-[10px] border border-purple-500/20">Humo / Uzcard</span>
+              <span className="px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono font-bold text-[10px] border border-blue-500/20 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Click
+              </span>
+              <span className="px-2.5 py-1 rounded-lg bg-teal-500/10 text-teal-700 dark:text-teal-300 font-mono font-bold text-[10px] border border-teal-500/20 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-400" /> Payme
+              </span>
+              <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-mono font-bold text-[10px] border border-emerald-500/20 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Paynet
+              </span>
+              <span className="px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-700 dark:text-purple-300 font-mono font-bold text-[10px] border border-purple-500/20 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-400" /> Humo / Uzcard
+              </span>
             </div>
             <p className="text-[11px] text-stone-400 dark:text-stone-500 flex items-center justify-center gap-1">
-              <ShieldCheck size={13} className="text-emerald-500 inline" />
+              <ShieldCheck size={13} className="text-emerald-600 dark:text-emerald-400 inline" />
               <span>InPay davlat litsenziyali to'lov shlyuzi orqali 100% himoyalangan</span>
             </p>
           </div>

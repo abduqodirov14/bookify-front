@@ -625,10 +625,7 @@ export default function HomeApp() {
                           <>
                             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
                               {isFeaturedPremium ? (
-                                <span 
-                                  className="px-3.5 py-1 rounded-full text-xs font-mono font-bold flex items-center gap-1.5 shadow-md"
-                                  style={{ background: 'linear-gradient(135deg, #f7971e, #ffd200)', color: '#000' }}
-                                >
+                                <span className="px-3.5 py-1 rounded-full text-xs font-mono font-bold flex items-center gap-1.5 shadow-xs bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30">
                                   <span>💎</span>
                                   <span>VIP ASAR • {new Intl.NumberFormat('uz-UZ').format(featPrice)} SO'M</span>
                                 </span>
@@ -663,12 +660,7 @@ export default function HomeApp() {
                                     handleOpenReader(featuredBook.id);
                                   }
                                 }}
-                                className={`px-8 py-4 rounded-2xl font-bold text-xs font-mono uppercase tracking-wider transition-transform active:scale-95 shadow-xl hover:shadow-2xl cursor-pointer flex items-center gap-2 ${
-                                  isFeaturedPremium && !currentUser?.is_premium
-                                    ? 'text-black hover:opacity-90 font-bold'
-                                    : 'bg-[#E05638] hover:bg-[#C74326] text-white'
-                                }`}
-                                style={isFeaturedPremium && !currentUser?.is_premium ? { background: 'linear-gradient(135deg, #f7971e, #ffd200)' } : {}}
+                                className="px-8 py-4 rounded-2xl font-bold text-xs font-mono uppercase tracking-wider transition-all active:scale-95 shadow-xl hover:shadow-2xl cursor-pointer flex items-center gap-2 bg-[#E05638] hover:bg-[#C74326] text-white shadow-[#E05638]/20"
                               >
                                 {isFeaturedPremium && !currentUser?.is_premium ? <span>💎</span> : <BookOpen size={16} />}
                                 <span>{isFeaturedPremium && !currentUser?.is_premium ? `Sotib Olish (${new Intl.NumberFormat('uz-UZ').format(featPrice)} so'm)` : "Mutolaani Boshlash"}</span>
@@ -697,11 +689,9 @@ export default function HomeApp() {
                           />
                           <div className="book-spine-hinge" />
                           {Boolean(featuredBook.is_premium || (featuredBook as any).is_premium) && (
-                            <div
-                              className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-xs font-bold font-mono shadow-xl z-20"
-                              style={{ background: 'linear-gradient(135deg, #f7971e, #ffd200)', color: '#000' }}
-                            >
-                              💎 VIP ASAR
+                            <div className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-xs font-bold font-mono tracking-wider shadow-xl z-20 bg-stone-950/85 dark:bg-black/85 backdrop-blur-md text-amber-300 border border-amber-500/40 flex items-center gap-1">
+                              <span>💎</span>
+                              <span>VIP ASAR</span>
                             </div>
                           )}
                         </div>
@@ -777,7 +767,7 @@ export default function HomeApp() {
                         <div
                           key={b.id}
                           className="p-5 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between space-y-4 group"
-                          style={isPremium ? { borderColor: 'rgba(247,151,30,0.35)' } : {}}
+                          style={isPremium ? { borderColor: 'rgba(197, 160, 89, 0.35)' } : {}}
                         >
                           <div className="flex gap-4">
                             <div className="book-card-3d shrink-0">
@@ -789,11 +779,9 @@ export default function HomeApp() {
                                 <img src={b.coverImage} alt={b.title} className="w-full h-full object-cover" />
                                 <div className="book-spine-hinge" />
                                 {isPremium && (
-                                  <div
-                                    className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded text-[9px] font-bold shadow-md z-10"
-                                    style={{ background: 'linear-gradient(135deg, #f7971e, #ffd200)', color: '#000' }}
-                                  >
-                                    💎 VIP
+                                  <div className="absolute top-1.5 right-1.5 px-2 py-0.5 rounded-lg text-[9px] font-bold font-mono tracking-wider shadow-md z-10 bg-stone-950/85 dark:bg-black/85 backdrop-blur-md text-amber-300 border border-amber-500/35 flex items-center gap-1">
+                                    <span>💎</span>
+                                    <span>VIP</span>
                                   </div>
                                 )}
                               </div>
@@ -806,10 +794,7 @@ export default function HomeApp() {
                                     {b.category}
                                   </span>
                                   {isPremium && bookPrice > 0 && (
-                                    <span
-                                      className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded"
-                                      style={{ background: 'rgba(247,151,30,0.12)', color: '#f7971e' }}
-                                    >
+                                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/25">
                                       {new Intl.NumberFormat('uz-UZ').format(bookPrice)} so'm
                                     </span>
                                   )}
@@ -842,12 +827,11 @@ export default function HomeApp() {
                                   handleOpenReader(b.id);
                                 }
                               }}
-                              className={`py-2.5 rounded-xl font-semibold text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5 ${
+                              className={`py-2.5 rounded-xl font-semibold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                                 isPremium && !currentUser?.is_premium
-                                  ? 'text-black hover:opacity-90 font-bold'
+                                  ? 'bg-gradient-to-r from-[#E05638] to-[#C74326] hover:brightness-110 text-white font-bold shadow-sm'
                                   : 'bg-stone-900 dark:bg-white text-white dark:text-stone-900 hover:bg-[#E05638] dark:hover:bg-[#E05638] dark:hover:text-white'
                               }`}
-                              style={isPremium && !currentUser?.is_premium ? { background: 'linear-gradient(135deg, #f7971e, #ffd200)' } : {}}
                             >
                               {isPremium && !currentUser?.is_premium ? <span>💎</span> : <BookOpen size={14} />}
                               <span>{isPremium && !currentUser?.is_premium ? "Sotib Olish" : "Mutolaa"}</span>

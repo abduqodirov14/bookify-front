@@ -154,18 +154,13 @@ export default function Header({
         {/* 👑 VIP Obuna Button */}
         <button
           onClick={onOpenVipModal}
-          className="px-3 sm:px-3.5 py-1.5 rounded-full text-xs font-bold font-mono transition-all duration-300 flex items-center gap-1.5 cursor-pointer shadow-md hover:scale-105 active:scale-95 border border-amber-400/40"
-          style={{
-            background: 'linear-gradient(135deg, #f7971e, #ffd200)',
-            color: '#000',
-            boxShadow: '0 2px 10px rgba(247,151,30,0.35)'
-          }}
+          className="px-3 sm:px-3.5 py-1.5 rounded-full text-xs font-bold font-mono transition-all duration-300 flex items-center gap-1.5 cursor-pointer shadow-md hover:scale-105 active:scale-95 bg-gradient-to-r from-[#C5A059] via-amber-400 to-[#C5A059] text-stone-950 border border-amber-400/50 shadow-amber-500/20"
           title={currentUser?.is_premium ? "VIP A'zolik faol" : "Bookify VIP Obuna tariflari va imtiyozlari"}
         >
           <span>{currentUser?.is_premium ? "👑" : "💎"}</span>
           <span className="hidden sm:inline font-bold">{currentUser?.is_premium ? "VIP A'zo" : "VIP Obuna"}</span>
           {!currentUser?.is_premium && (
-            <span className="px-1.5 py-0.5 rounded bg-black/15 text-[10px] hidden md:inline">29k/oy</span>
+            <span className="px-1.5 py-0.5 rounded bg-black/15 text-[10px] hidden md:inline font-bold">29k/oy</span>
           )}
         </button>
         

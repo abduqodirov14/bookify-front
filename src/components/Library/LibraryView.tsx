@@ -76,7 +76,7 @@ export default function LibraryView({ allBooks, onOpenReader, onPlayAudio, onGoT
               <div
                 key={b.id}
                 className="p-5 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between space-y-4 group"
-                style={isPremium ? { borderColor: 'rgba(247,151,30,0.35)' } : {}}
+                style={isPremium ? { borderColor: 'rgba(197, 160, 89, 0.35)' } : {}}
               >
                 <div className="flex gap-4">
                   <div className="book-card-3d shrink-0">
@@ -84,11 +84,9 @@ export default function LibraryView({ allBooks, onOpenReader, onPlayAudio, onGoT
                       <img src={b.coverImage} alt={b.title} className="w-full h-full object-cover" />
                       <div className="book-spine-hinge" />
                       {isPremium && (
-                        <div
-                          className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded text-[9px] font-bold shadow-md z-10"
-                          style={{ background: 'linear-gradient(135deg, #f7971e, #ffd200)', color: '#000' }}
-                        >
-                          💎 VIP
+                        <div className="absolute top-1.5 right-1.5 px-2 py-0.5 rounded-lg text-[9px] font-bold font-mono tracking-wider shadow-md z-10 bg-stone-950/85 dark:bg-black/85 backdrop-blur-md text-amber-300 border border-amber-500/35 flex items-center gap-1">
+                          <span>💎</span>
+                          <span>VIP</span>
                         </div>
                       )}
                     </div>
@@ -101,10 +99,7 @@ export default function LibraryView({ allBooks, onOpenReader, onPlayAudio, onGoT
                           {b.category}
                         </span>
                         {isPremium && bookPrice > 0 && (
-                          <span
-                            className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded"
-                            style={{ background: 'rgba(247,151,30,0.12)', color: '#f7971e' }}
-                          >
+                          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/25">
                             {new Intl.NumberFormat('uz-UZ').format(bookPrice)} so'm
                           </span>
                         )}
@@ -131,15 +126,14 @@ export default function LibraryView({ allBooks, onOpenReader, onPlayAudio, onGoT
                 <div className="flex items-center gap-2 pt-2 border-t border-stone-100 dark:border-white/5">
                   <button
                     onClick={() => onOpenReader(b.id)}
-                    className={`flex-1 py-2.5 rounded-xl font-semibold text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-md ${
+                    className={`flex-1 py-2.5 rounded-xl font-semibold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-md ${
                       isPremium
-                        ? 'text-black hover:opacity-90 font-bold'
+                        ? 'bg-gradient-to-r from-[#E05638] to-[#C74326] hover:brightness-110 text-white font-bold shadow-sm'
                         : 'bg-[#E05638] hover:bg-[#C74326] text-white'
                     }`}
-                    style={isPremium ? { background: 'linear-gradient(135deg, #f7971e, #ffd200)' } : {}}
                   >
                     {isPremium ? <span>💎</span> : <BookOpen size={14} />}
-                    <span>{isPremium ? "Xarid Qilish / Mutolaa" : "Mutolaani Davom Ettirish"}</span>
+                    <span>{isPremium ? "Sotib Olish / Mutolaa" : "Mutolaani Davom Ettirish"}</span>
                   </button>
 
                 <button

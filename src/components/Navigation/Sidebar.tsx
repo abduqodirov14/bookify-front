@@ -116,10 +116,7 @@ export default function Sidebar({
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div 
-                className="w-8 h-8 rounded-xl flex items-center justify-center text-sm shadow-sm"
-                style={{ background: 'linear-gradient(135deg, #f7971e, #ffd200)' }}
-              >
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm shadow-sm bg-gradient-to-tr from-[#C5A059] to-amber-500 text-stone-950">
                 👑
               </div>
               <div>
@@ -131,10 +128,7 @@ export default function Sidebar({
                 </div>
               </div>
             </div>
-            <span 
-              className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded shadow-xs"
-              style={{ background: 'linear-gradient(135deg, #f7971e, #ffd200)', color: '#000' }}
-            >
+            <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded shadow-xs bg-gradient-to-r from-[#C5A059] to-amber-400 text-stone-950">
               29k/oy
             </span>
           </div>

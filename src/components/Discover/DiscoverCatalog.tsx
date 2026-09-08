@@ -98,10 +98,9 @@ export default function DiscoverCatalog({ books, onOpenReader, onPlayAudio, curr
               onClick={() => setPricingFilter('premium')}
               className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1 cursor-pointer ${
                 pricingFilter === 'premium'
-                  ? 'text-black font-bold shadow-md'
-                  : 'text-amber-500 hover:text-amber-400'
+                  ? 'bg-gradient-to-r from-[#C5A059] to-amber-500 text-stone-950 font-bold shadow-sm border border-amber-400/40'
+                  : 'text-amber-600 dark:text-amber-400 hover:text-amber-700'
               }`}
-              style={pricingFilter === 'premium' ? { background: 'linear-gradient(135deg, #f7971e, #ffd200)' } : {}}
             >
               <span>💎</span>
               <span>VIP Asarlar ({books.filter(b => (b as any).is_premium).length})</span>
@@ -181,14 +180,7 @@ export default function DiscoverCatalog({ books, onOpenReader, onPlayAudio, curr
                       <div className="book-spine-hinge" />
                       {/* 💎 PREMIUM overlay badge */}
                       {isPremium && (
-                        <div
-                          className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold"
-                          style={{
-                            background: 'linear-gradient(135deg, #f7971e, #ffd200)',
-                            color: '#000',
-                            boxShadow: '0 2px 8px rgba(247,151,30,0.5)'
-                          }}
-                        >
+                        <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-lg text-[9px] font-bold font-mono tracking-wider shadow-md bg-stone-950/85 dark:bg-black/85 backdrop-blur-md text-amber-300 border border-amber-500/35">
                           💎 PREMIUM
                         </div>
                       )}
@@ -201,10 +193,7 @@ export default function DiscoverCatalog({ books, onOpenReader, onPlayAudio, curr
                         {b.category}
                       </span>
                       {isPremium && bookPrice > 0 && (
-                        <span
-                          className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md"
-                          style={{ background: 'rgba(247,151,30,0.12)', color: '#f7971e' }}
-                        >
+                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/25">
                           {new Intl.NumberFormat('uz-UZ').format(bookPrice)} so'm
                         </span>
                       )}
@@ -220,15 +209,14 @@ export default function DiscoverCatalog({ books, onOpenReader, onPlayAudio, curr
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       onClick={() => handleOpenBook(b)}
-                      className={`py-2.5 rounded-xl font-semibold text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5 ${
+                      className={`py-2.5 rounded-xl font-semibold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                         isPremium && !currentUser?.is_premium
-                          ? 'text-black hover:opacity-90 font-bold'
+                          ? 'bg-gradient-to-r from-[#E05638] to-[#C74326] hover:brightness-110 text-white font-bold shadow-sm'
                           : 'bg-stone-900 dark:bg-white text-white dark:text-stone-900 hover:bg-[#E05638] dark:hover:bg-[#E05638] dark:hover:text-white'
                       }`}
-                      style={isPremium && !currentUser?.is_premium ? { background: 'linear-gradient(135deg, #f7971e, #ffd200)' } : {}}
                     >
                       {isPremium && !currentUser?.is_premium ? <span>💎</span> : <BookOpen size={14} />}
-                      <span>{isPremium && !currentUser?.is_premium ? "Sotib Ol" : "Mutolaa"}</span>
+                      <span>{isPremium && !currentUser?.is_premium ? "Sotib Olish" : "Mutolaa"}</span>
                     </button>
 
                     <button
