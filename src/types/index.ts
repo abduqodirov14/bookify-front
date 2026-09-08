@@ -115,5 +115,7 @@ export interface UserProfile {
   volunteer_hours?: number;
   is_volunteer?: boolean;
   volunteer_since?: string;
+  is_premium?: boolean;
+  premium_until?: string;
   created_at?: string;
 }

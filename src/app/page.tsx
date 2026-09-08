@@ -44,8 +44,13 @@ export default function HomeApp() {
   const [paywallBook, setPaywallBook] = useState<Book | null>(null);
   const [isVipModalOpen, setIsVipModalOpen] = useState(false);
 
-  // Check existing session on mount (Hydration safe)
+  // Check existing session on mount (Hydration safe) & pre-warm backend
   useEffect(() => {
+    // Pre-warm backend immediately so Render doesn't lag on cold-start
+    try {
+      fetch('https://bookify-vz6r.onrender.com/health', { mode: 'no-cors' }).catch(() => {});
+    } catch {}
+
     const cached = getCachedUser();
     if (cached) {
       setCurrentUser({
@@ -63,7 +68,9 @@ export default function HomeApp() {
         volunteer_code: cached.volunteer_code,
         volunteer_title: cached.volunteer_title,
         volunteer_hours: cached.volunteer_hours || 0,
-        is_volunteer: cached.is_volunteer || (cached.role === 'VOLUNTEER') || Boolean(cached.volunteer_code)
+        is_volunteer: cached.is_volunteer || (cached.role === 'VOLUNTEER') || Boolean(cached.volunteer_code),
+        is_premium: Boolean(cached.is_premium),
+        premium_until: cached.premium_until
       });
     }
 
@@ -88,7 +95,9 @@ export default function HomeApp() {
               volunteer_code: me.volunteer_code,
               volunteer_title: me.volunteer_title,
               volunteer_hours: me.volunteer_hours || 0,
-              is_volunteer: me.is_volunteer || (me.role === 'VOLUNTEER') || Boolean(me.volunteer_code)
+              is_volunteer: me.is_volunteer || (me.role === 'VOLUNTEER') || Boolean(me.volunteer_code),
+              is_premium: Boolean(me.is_premium),
+              premium_until: me.premium_until
             });
             setCachedUser(me);
           }
@@ -215,6 +224,40 @@ export default function HomeApp() {
       const bookId = params.get('book');
       const certParam = params.get('cert') || (window.location.pathname.startsWith('/verify/') ? window.location.pathname.replace('/verify/', '') : '');
 
+      // Handle payment return callback
+      const paymentStatus = params.get('payment');
+      const orderId = params.get('order_id');
+      const targetBookId = params.get('bookId');
+      if (paymentStatus === 'success') {
+        const cleanUrl = window.location.pathname + (view ? `?view=${view}` : '');
+        window.history.replaceState({}, '', cleanUrl || '/');
+
+        toast.success("To'lovingiz muvaffaqiyatli qabul qilindi! VIP obuna faollashtirildi! 🎉", {
+          duration: 6000,
+          icon: '👑'
+        });
+
+        // Sync fresh profile from backend to verify VIP status
+        if (orderId) {
+          api.verifyPaymentStatus(orderId).catch(() => {});
+        }
+        api.getMe().then(me => {
+          if (me) {
+            setCurrentUser(prev => prev ? ({
+              ...prev,
+              is_premium: Boolean(me.is_premium),
+              premium_until: me.premium_until
+            }) : null);
+            setCachedUser(me);
+          }
+        }).catch(() => {});
+
+        if (targetBookId) {
+          handleOpenReader(targetBookId);
+          return;
+        }
+      }
+
       if (view === 'verify' || window.location.pathname.startsWith('/verify')) {
         if (certParam) setVerifyCertSerial(certParam);
         setCurrentPage('verify');
@@ -326,17 +369,31 @@ export default function HomeApp() {
     const isPremium = Boolean(targetBook && (targetBook.is_premium || (targetBook as any).is_premium));
 
     if (isPremium) {
+      // 1. VIP subscribers have unrestricted access to all books
+      if (currentUser.is_premium) {
+        setSelectedBookId(bookId);
+        setCurrentPage('reader');
+        return;
+      }
+
+      // 2. Administrators have direct access
+      if (currentUser.role === 'ADMIN') {
+        setSelectedBookId(bookId);
+        setCurrentPage('reader');
+        return;
+      }
+
+      // 3. Check individual book purchase or active subscription from server
       try {
         const access = await api.checkBookAccess(bookId);
-        // If user already bought the book or has VIP subscription (not just raw admin bypass), let them read!
-        if (access.has_access && access.reason !== 'ADMIN_ACCESS') {
+        if (access && access.has_access) {
           setSelectedBookId(bookId);
           setCurrentPage('reader');
           return;
         }
       } catch {}
 
-      // If locked or Admin testing payment flow, trigger Paywall Modal!
+      // 4. Otherwise, book is locked — open luxury paywall modal
       if (targetBook) {
         setPaywallBook(targetBook);
         return;
@@ -443,14 +500,43 @@ export default function HomeApp() {
             volunteer_code: user.volunteer_code,
             volunteer_title: user.volunteer_title,
             volunteer_hours: user.volunteer_hours || 0,
-            is_volunteer: user.is_volunteer || (user.role === 'VOLUNTEER') || Boolean(user.volunteer_code)
+            is_volunteer: user.is_volunteer || (user.role === 'VOLUNTEER') || Boolean(user.volunteer_code),
+            is_premium: Boolean(user.is_premium),
+            premium_until: user.premium_until
           });
+
           if (pendingBookToOpen) {
             const bId = pendingBookToOpen;
             setPendingBookToOpen(null);
-            navigate('reader', bId);
+            handleOpenReader(bId);
           } else {
-            navigate(user.role === 'ADMIN' ? 'admin' : 'home');
+            // Restore any pending payment action saved before login
+            let hasPendingPay = false;
+            if (typeof window !== 'undefined') {
+              try {
+                const rawPending = localStorage.getItem('bookify_pending_pay');
+                if (rawPending) {
+                  localStorage.removeItem('bookify_pending_pay');
+                  const parsed = JSON.parse(rawPending);
+                  if (parsed.bookId) {
+                    const found = booksList.find(b => String(b.id) === String(parsed.bookId));
+                    if (found) {
+                      setPaywallBook(found);
+                      hasPendingPay = true;
+                    }
+                  } else if (parsed.planType) {
+                    setIsVipModalOpen(true);
+                    hasPendingPay = true;
+                  }
+                }
+              } catch {}
+            }
+
+            if (!hasPendingPay) {
+              navigate(user.role === 'ADMIN' ? 'admin' : 'home');
+            } else {
+              setCurrentPage('home');
+            }
           }
         }}
         onCancel={() => setCurrentPage('home')}

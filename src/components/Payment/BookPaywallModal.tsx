@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../../services/api';
+import { api, getAuthToken } from '../../services/api';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 export interface PaywallBook {
@@ -84,22 +84,47 @@ export default function BookPaywallModal({
         },
       ];
 
+  const isLoggedIn = Boolean(
+    getAuthToken() ||
+    (typeof window !== 'undefined' && (
+      localStorage.getItem('fianny_token') ||
+      localStorage.getItem('token') ||
+      localStorage.getItem('access_token') ||
+      localStorage.getItem('bookify_token')
+    ))
+  );
+
   const handlePay = async (planType: 'book' | 'vip_monthly' | 'vip_yearly') => {
     setError('');
-    const token = typeof window !== 'undefined' 
-      ? localStorage.getItem('token') || localStorage.getItem('access_token') || localStorage.getItem('bookify_token')
-      : null;
+    const token = getAuthToken() || (typeof window !== 'undefined' 
+      ? localStorage.getItem('fianny_token') || localStorage.getItem('token') || localStorage.getItem('access_token') || localStorage.getItem('bookify_token')
+      : null);
 
     if (!token) {
-      setError("To'lovni amalga oshirish va xaridingizni saqlash uchun avval tizimga kiring.");
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('bookify_pending_pay', JSON.stringify({
+            planType,
+            bookId: book ? String(book.id) : null
+          }));
+        } catch {}
+      }
+      if (onRequireAuth) {
+        onRequireAuth();
+      } else {
+        setError("To'lovni amalga oshirish va xaridingizni saqlash uchun avval tizimga kiring.");
+      }
       return;
     }
 
     setLoading(true);
     try {
+      const origin = typeof window !== 'undefined' ? window.location.origin : 'https://bookify-six-alpha.vercel.app';
+      const returnUrl = `${origin}/?payment=success` + (planType === 'book' && book ? `&bookId=${book.id}` : `&plan=${planType}`);
+      
       const payload: any = {
         plan_type: planType,
-        return_url: typeof window !== 'undefined' ? `${window.location.origin}/?payment=success` : undefined,
+        return_url: returnUrl,
       };
       if (planType === 'book' && book) {
         payload.book_id = String(book.id);
@@ -299,10 +324,16 @@ export default function BookPaywallModal({
                 <button
                   onClick={() => handlePay('book')}
                   disabled={loading}
-                  className="w-full py-4 rounded-2xl font-bold text-base text-black transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+                  className="w-full py-4 rounded-2xl font-bold text-base text-black transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
                   style={{ background: loading ? '#999' : 'linear-gradient(135deg, #f7971e, #ffd200)', boxShadow: loading ? 'none' : '0 8px 24px rgba(247,151,30,0.4)' }}
                 >
-                  {loading ? '⏳ To\'lov sahifasi ochilmoqda...' : `💳 ${formatPrice(book.price || 15000)} • InPay orqali to'lash`}
+                  {loading ? (
+                    '⏳ To\'lov sahifasi ochilmoqda...'
+                  ) : !isLoggedIn ? (
+                    '🔑 Ro\'yxatdan O\'tish / Kirish (To\'lov Uchun)'
+                  ) : (
+                    `💳 ${formatPrice(book.price || 15000)} • InPay orqali to'lash`
+                  )}
                 </button>
               </div>
             ) : (
