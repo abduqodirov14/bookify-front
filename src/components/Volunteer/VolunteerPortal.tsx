@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import VolunteerOnboardingModal from './VolunteerOnboardingModal';
 import VolunteerUploadModal from './VolunteerUploadModal';
+import VolunteerAudioStudioModal from './VolunteerAudioStudioModal';
 import { Book, UserProfile, Page } from '../../types';
 import { calculateVolunteerPeriod } from '../../utils/dateUtils';
 import { api } from '../../services/api';
@@ -46,6 +47,7 @@ export default function VolunteerPortal({
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [myUploadedBooks, setMyUploadedBooks] = useState<any[]>([]);
+  const [recordingStudioBook, setRecordingStudioBook] = useState<Book | null>(null);
   const isVolunteer = Boolean(
     currentUser?.is_volunteer || 
     currentUser?.role === 'VOLUNTEER' || 
@@ -503,16 +505,26 @@ export default function VolunteerPortal({
                     </div>
                   </div>
 
-                  <a
-                    href={`https://t.me/book1fy_bot?start=rec_${book.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-2 rounded-xl bg-stone-100 dark:bg-white/5 hover:bg-[#E05638] hover:text-white text-stone-700 dark:text-stone-300 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <Mic size={13} />
-                    <span>Telegramda Ovoz Yozish</span>
-                    <ExternalLink size={12} />
-                  </a>
+                  <div className="space-y-1.5 w-full">
+                    <button
+                      type="button"
+                      onClick={() => setRecordingStudioBook(book)}
+                      className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#E05638] via-[#C74326] to-[#E05638] hover:brightness-105 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <Mic size={14} className="text-white animate-pulse" />
+                      <span>Studiyada Ovoz Yozish 🎙</span>
+                    </button>
+
+                    <a
+                      href={`https://t.me/book1fy_bot?start=rec_${book.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-1.5 rounded-lg text-center text-[11px] text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                      <span>yoki Telegram botda</span>
+                      <ExternalLink size={10} />
+                    </a>
+                  </div>
 
                 </div>
               );
@@ -621,6 +633,23 @@ export default function VolunteerPortal({
           onSuccess={() => {
             loadMyBooks();
             if (onUserUpdate && currentUser) onUserUpdate(currentUser);
+          }}
+        />
+      )}
+
+      {/* ── 8. VOLUNTEER IN-BROWSER AUDIO STUDIO MODAL ── */}
+      {recordingStudioBook && (
+        <VolunteerAudioStudioModal
+          book={recordingStudioBook}
+          currentUser={currentUser}
+          onClose={() => setRecordingStudioBook(null)}
+          onSuccessUpload={() => {
+            if (onUserUpdate && currentUser) {
+              onUserUpdate({
+                ...currentUser,
+                volunteer_hours: Number((currentUser.volunteer_hours || 0) + 0.25).toFixed(2) as any
+              });
+            }
           }}
         />
       )}

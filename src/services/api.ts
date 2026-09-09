@@ -1085,6 +1085,48 @@ export const api = {
     }
   },
 
+  async uploadVolunteerAudio(
+    bookId: string | number,
+    audioBlob: Blob,
+    metadata: {
+      chapterId?: string;
+      trackTitle?: string;
+      durationSeconds?: number;
+    } = {}
+  ): Promise<any> {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+
+    const formData = new FormData();
+    const ext = audioBlob.type.includes('wav') ? 'wav' : 'webm';
+    const filename = `recording_${Date.now()}.${ext}`;
+    formData.append('file', audioBlob, filename);
+
+    if (metadata.chapterId) {
+      formData.append('chapter_id', metadata.chapterId);
+    }
+    if (metadata.trackTitle) {
+      formData.append('track_title', metadata.trackTitle);
+    }
+    if (metadata.durationSeconds) {
+      formData.append('duration_seconds', String(metadata.durationSeconds));
+    }
+
+    const res = await fetch(`${API_BASE_URL}/users/me/volunteer-record-audio/${bookId}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Audio yozuvni saqlashda xatolik yuz berdi");
+    }
+    return res.json();
+  },
+
   // ─── Payment / InPay ───────────────────────────────────────────────────────
 
   async getPaymentPlans(): Promise<any> {
