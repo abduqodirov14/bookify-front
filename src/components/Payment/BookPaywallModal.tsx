@@ -269,6 +269,30 @@ export default function BookPaywallModal({
             </div>
           )}
 
+          {/* ── Coming Soon / Tez Kunda Announcement Banner ── */}
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/15 via-[#E05638]/10 to-amber-500/10 border border-amber-500/30 flex items-start gap-3.5 shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-800 dark:text-amber-300 flex items-center justify-center shrink-0 text-xl shadow-inner">
+              🚀
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <h4 className="font-serif font-bold text-sm sm:text-base text-stone-900 dark:text-white">
+                  To'lov Tizimi Tez Kunda Qo'shiladi!
+                </h4>
+                <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider bg-amber-500 text-stone-950 shadow-xs">
+                  Tez Kunda
+                </span>
+              </div>
+              <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
+                Hozirda platformamizga <strong>Payme, Click va InPay</strong> to'lov shlyuzlari integratsiya qilinmoqda. Tez kunda barcha kitobxonlar uchun to'lovlar to'liq ishga tushadi.
+              </p>
+              <div className="mt-2.5 pt-2 border-t border-amber-500/20 flex items-center gap-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                <span>🎁</span>
+                <span>Sinov davrida siz ushbu sara asarni mutlaqo bepul mutolaa qilishingiz mumkin!</span>
+              </div>
+            </div>
+          </div>
+
           {/* Tab Switcher (if single book is being purchased) */}
           {book && (
             <div className="flex rounded-2xl p-1 bg-stone-100 dark:bg-white/5 border border-stone-200/80 dark:border-white/5">
@@ -305,7 +329,7 @@ export default function BookPaywallModal({
               {/* Pricing Plaque */}
               <div className="p-5 rounded-2xl bg-stone-50/80 dark:bg-white/[0.03] border border-stone-200/80 dark:border-white/10 text-center space-y-3">
                 <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#E05638] dark:text-[#C5A059]">
-                  Bir martalik to'lov • Umrbod cheksiz kirish
+                  Bir martalik to'lov • Tez kunda faollashadi
                 </span>
                 
                 <div className="text-3xl sm:text-4xl font-serif font-black text-stone-950 dark:text-white">
@@ -327,29 +351,28 @@ export default function BookPaywallModal({
                 </div>
               </div>
 
-              {/* Pay Button */}
+              {/* Free Access & Reading Button */}
               <button
                 type="button"
-                onClick={() => handlePay('book')}
-                disabled={loading}
-                className="w-full py-4 rounded-2xl font-bold text-sm sm:text-base text-white transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2.5 shadow-lg bg-gradient-to-r from-[#E05638] via-[#C74326] to-[#E05638] hover:brightness-105 shadow-[#E05638]/25"
+                onClick={() => {
+                  if (onAccessGranted) onAccessGranted();
+                }}
+                className="w-full py-4 rounded-2xl font-bold text-sm sm:text-base text-white transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2.5 shadow-lg bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:brightness-105 shadow-emerald-600/25"
               >
-                {loading ? (
-                  <div className="flex items-center gap-2">
-                    <span className="inline-block animate-spin">⏳</span>
-                    <span>InPay to'lov sahifasi ochilmoqda...</span>
-                  </div>
-                ) : !isLoggedIn ? (
-                  <div className="flex items-center gap-2">
-                    <Lock size={16} />
-                    <span>Kirish / Ro'yxatdan O'tish (To'lov Uchun)</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <CreditCard size={18} />
-                    <span>{formatPrice(book.price || 15000)} • InPay orqali to'lash</span>
-                  </div>
-                )}
+                <BookOpen size={18} />
+                <span>Hozircha Bepul Mutolaa Qilish (Sinov Rejimi) ➔</span>
+              </button>
+
+              {/* Notice Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setError("Onlayn to'lov tizimi (Click, Payme, InPay) tez kunda to'liq ishga tushadi! Hozircha yuqoridagi bepul mutolaa tugmasi orqali asarni bemalol o'qishingiz mumkin.");
+                }}
+                className="w-full py-3 rounded-xl font-medium text-xs text-stone-600 dark:text-stone-300 border border-dashed border-stone-300 dark:border-white/10 hover:border-amber-500/50 hover:bg-stone-50 dark:hover:bg-white/5 transition-colors cursor-pointer flex items-center justify-center gap-2"
+              >
+                <CreditCard size={15} className="text-[#E05638]" />
+                <span>{formatPrice(book.price || 15000)} • Xarid qilish (Tez kunda qo'shiladi)</span>
               </button>
             </div>
           ) : (
@@ -435,26 +458,13 @@ export default function BookPaywallModal({
               {/* VIP Pay Button */}
               <button
                 type="button"
-                onClick={() => handlePay(selectedVipPlan)}
-                disabled={loading}
-                className="w-full py-4 rounded-2xl font-black text-sm sm:text-base text-stone-950 transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2.5 shadow-lg bg-gradient-to-r from-[#C5A059] via-amber-400 to-[#C5A059] hover:brightness-105 shadow-[#C5A059]/25"
+                onClick={() => {
+                  setError("VIP obuna tizimi (Click, Payme, InPay orqali) tez kunda rasman ochiladi! Ungacha barcha asarlarni saytda erkin o'qishingiz mumkin.");
+                }}
+                className="w-full py-4 rounded-2xl font-black text-sm sm:text-base text-stone-950 transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2.5 shadow-lg bg-gradient-to-r from-[#C5A059] via-amber-400 to-[#C5A059] hover:brightness-105 shadow-[#C5A059]/25"
               >
-                {loading ? (
-                  <div className="flex items-center gap-2 text-stone-900">
-                    <span className="inline-block animate-spin">⏳</span>
-                    <span>InPay to'lov sahifasi ochilmoqda...</span>
-                  </div>
-                ) : !isLoggedIn ? (
-                  <div className="flex items-center gap-2">
-                    <Lock size={16} />
-                    <span>Kirish / Ro'yxatdan O'tish (To'lov Uchun)</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2 font-extrabold">
-                    <Crown size={18} />
-                    <span>{formatPrice(activeVip.price)} • InPay orqali faollashtirish</span>
-                  </div>
-                )}
+                <Crown size={18} />
+                <span>VIP Obuna • Tez Kunda Qo'shiladi</span>
               </button>
             </div>
           )}

@@ -216,7 +216,7 @@ export default function DiscoverCatalog({ books, onOpenReader, onPlayAudio, curr
                       }`}
                     >
                       {isPremium && !currentUser?.is_premium ? <span>💎</span> : <BookOpen size={14} />}
-                      <span>{isPremium && !currentUser?.is_premium ? "Sotib Olish" : "Mutolaa"}</span>
+                      <span>{isPremium && !currentUser?.is_premium ? "Sotib Olish (Tez kunda)" : "Mutolaa"}</span>
                     </button>
 
                     <button

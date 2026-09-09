@@ -663,7 +663,7 @@ export default function HomeApp() {
                                 className="px-8 py-4 rounded-2xl font-bold text-xs font-mono uppercase tracking-wider transition-all active:scale-95 shadow-xl hover:shadow-2xl cursor-pointer flex items-center gap-2 bg-[#E05638] hover:bg-[#C74326] text-white shadow-[#E05638]/20"
                               >
                                 {isFeaturedPremium && !currentUser?.is_premium ? <span>💎</span> : <BookOpen size={16} />}
-                                <span>{isFeaturedPremium && !currentUser?.is_premium ? `Sotib Olish (${new Intl.NumberFormat('uz-UZ').format(featPrice)} so'm)` : "Mutolaani Boshlash"}</span>
+                                <span>{isFeaturedPremium && !currentUser?.is_premium ? `Sotib Olish (Tez Kunda)` : "Mutolaani Boshlash"}</span>
                               </button>
 
                               <button
@@ -834,7 +834,7 @@ export default function HomeApp() {
                               }`}
                             >
                               {isPremium && !currentUser?.is_premium ? <span>💎</span> : <BookOpen size={14} />}
-                              <span>{isPremium && !currentUser?.is_premium ? "Sotib Olish" : "Mutolaa"}</span>
+                              <span>{isPremium && !currentUser?.is_premium ? "Sotib Olish (Tez kunda)" : "Mutolaa"}</span>
                             </button>
 
                             <button
