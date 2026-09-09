@@ -667,11 +667,16 @@ export default function VolunteerAudioStudioModal({
                         onChange={(e) => setCurrentChapterIndex(Number(e.target.value))}
                         className="bg-transparent text-xs font-serif font-medium text-stone-800 dark:text-stone-200 outline-none cursor-pointer max-w-[170px] sm:max-w-[210px] truncate"
                       >
-                        {chapters.map((ch, idx) => (
-                          <option key={ch.id} value={idx} className="bg-white dark:bg-stone-900 text-stone-900 dark:text-white">
-                            {ch.number}-bob: {ch.title}
-                          </option>
-                        ))}
+                        {chapters.map((ch, idx) => {
+                          const optionLabel = /^[0-9]+[\.\-\s]*bob/i.test(ch.title)
+                            ? ch.title
+                            : `${ch.number}-bob: ${ch.title}`;
+                          return (
+                            <option key={ch.id} value={idx} className="bg-white dark:bg-stone-900 text-stone-900 dark:text-white">
+                              {optionLabel}
+                            </option>
+                          );
+                        })}
                       </select>
 
                       <button
