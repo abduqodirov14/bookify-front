@@ -8,17 +8,17 @@ import {
   RotateCcw, 
   UploadCloud, 
   BookOpen, 
-  Sliders, 
   CheckCircle2, 
   Volume2, 
   Radio, 
+  ChevronRight, 
+  ChevronLeft, 
+  Sliders, 
   Sparkles,
-  ChevronRight,
-  ChevronLeft,
-  Type,
-  Maximize2,
-  Minimize2,
-  AlertCircle
+  Layers,
+  ArrowDown,
+  Loader2,
+  Check
 } from 'lucide-react';
 import { Book, UserProfile } from '../../types';
 import { api } from '../../services/api';
@@ -31,6 +31,13 @@ interface Props {
   onSuccessUpload?: () => void;
 }
 
+interface ProcessedChapter {
+  id: string;
+  number: number;
+  title: string;
+  content: string;
+}
+
 export default function VolunteerAudioStudioModal({
   book,
   currentUser,
@@ -38,9 +45,14 @@ export default function VolunteerAudioStudioModal({
   onSuccessUpload
 }: Props) {
   // ── State ──────────────────────────────────────────────────────────────────
+  const [chapters, setChapters] = useState<ProcessedChapter[]>([]);
+  const [isLoadingChapters, setIsLoadingChapters] = useState(true);
+  const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
+
+  // Recording State
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0); // in seconds
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -48,14 +60,16 @@ export default function VolunteerAudioStudioModal({
   const [isSuccess, setIsSuccess] = useState(false);
   const [uploadedTrackInfo, setUploadedTrackInfo] = useState<any>(null);
 
-  // Audio settings
+  // Sound Engine & Hardware Settings
   const [noiseSuppression, setNoiseSuppression] = useState(true);
   const [echoCancellation, setEchoCancellation] = useState(true);
-  const [micLevel, setMicLevel] = useState(0);
+  const [micDbLevel, setMicDbLevel] = useState(-60); // in dB
+  const [micVolumePercent, setMicVolumePercent] = useState(0);
 
-  // Teleprompter
-  const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
-  const [fontSize, setFontSize] = useState<number>(18); // px
+  // Teleprompter Reading Experience
+  const [fontSize, setFontSize] = useState<number>(18);
+  const [isAutoScroll, setIsAutoScroll] = useState(false);
+  const [autoScrollSpeed, setAutoScrollSpeed] = useState<number>(1); // 1 = slow, 2 = medium, 3 = fast
   const [trackTitle, setTrackTitle] = useState('');
 
   // ── Refs ───────────────────────────────────────────────────────────────────
@@ -65,28 +79,89 @@ export default function VolunteerAudioStudioModal({
   const streamRef = useRef<MediaStream | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const timerIntervalRef = useRef<any>(null);
+  const autoScrollIntervalRef = useRef<any>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
-  const teleprompterRef = useRef<HTMLDivElement | null>(null);
+  const teleprompterBoxRef = useRef<HTMLDivElement | null>(null);
 
-  const chapters = book.chapters && book.chapters.length > 0 
-    ? book.chapters 
-    : [
-        {
-          id: 'ch-1',
-          number: 1,
-          title: book.title,
-          content: book.description || "Ushbu asar uchun matn kiritilmagan. O'zingizdagi kitob nusxasidan o'qib, ovoz yozishingiz mumkin."
+  // ── 1. Fetch Real Chapters and Content from Backend ───────────────────────
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoadingChapters(true);
+
+    async function loadBookData() {
+      try {
+        const readerData = await api.getBookReader(book.id);
+        if (!isMounted) return;
+
+        if (readerData && readerData.chapters && readerData.chapters.length > 0) {
+          const mapped: ProcessedChapter[] = readerData.chapters.map((ch: any, idx: number) => {
+            let fullText = '';
+            if (ch.sentences && Array.isArray(ch.sentences) && ch.sentences.length > 0) {
+              fullText = ch.sentences.map((s: any) => s.text).join(' ');
+            } else if (ch.content) {
+              fullText = ch.content;
+            }
+
+            const cleanTitle = (ch.title || '').trim() || `${idx + 1}-bob`;
+
+            return {
+              id: ch.id || `ch-${idx}`,
+              number: ch.number || ch.index || idx + 1,
+              title: cleanTitle,
+              content: fullText
+            };
+          });
+          setChapters(mapped);
+        } else if (book.chapters && book.chapters.length > 0) {
+          setChapters(book.chapters.map((c, i) => ({
+            id: c.id || `ch-${i}`,
+            number: c.number || i + 1,
+            title: c.title || `${i + 1}-bob`,
+            content: c.content || ''
+          })));
+        } else {
+          // Fallback if book has no OCR pages yet
+          setChapters([
+            {
+              id: 'ch-default',
+              number: 1,
+              title: `${book.title} (Muqaddima)`,
+              content: book.description || "Ushbu asar uchun matn kiritilmagan. O'zingizdagi kitob nusxasidan o'qib, ovoz yozishingiz mumkin."
+            }
+          ]);
         }
-      ];
+      } catch (err) {
+        console.error("[Audio Studio] Failed to load chapters:", err);
+      } finally {
+        if (isMounted) setIsLoadingChapters(false);
+      }
+    }
 
-  const currentChapter = chapters[currentChapterIndex] || chapters[0];
+    loadBookData();
 
-  // Set default track title
+    return () => {
+      isMounted = false;
+    };
+  }, [book.id, book.title, book.description, book.chapters]);
+
+  // Current chapter
+  const currentChapter = chapters[currentChapterIndex] || chapters[0] || {
+    id: 'ch-fallback',
+    number: 1,
+    title: book.title,
+    content: book.description || ''
+  };
+
+  // Sync track title with clean chapter name (avoid duplicate '1-bob: 1-Bob:')
   useEffect(() => {
     if (currentChapter) {
-      setTrackTitle(`${currentChapter.number || currentChapterIndex + 1}-bob: ${currentChapter.title || 'Asar qismi'}`);
+      let title = currentChapter.title.trim();
+      // If title doesn't contain 'bob', prepend it cleanly
+      if (!title.toLowerCase().includes('bob') && !title.toLowerCase().includes('muqaddima')) {
+        title = `${currentChapter.number}-bob: ${title}`;
+      }
+      setTrackTitle(title);
     }
   }, [currentChapter, currentChapterIndex]);
 
@@ -95,11 +170,29 @@ export default function VolunteerAudioStudioModal({
     return () => {
       cleanupAudioStream();
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      if (autoScrollIntervalRef.current) clearInterval(autoScrollIntervalRef.current);
       if (audioUrl) URL.revokeObjectURL(audioUrl);
     };
   }, [audioUrl]);
 
-  // ── Canvas Waveform Visualizer (60 FPS Native Web Audio Engine) ───────────
+  // ── 2. Auto-scroll logic for Teleprompter ──────────────────────────────────
+  useEffect(() => {
+    if (isAutoScroll && isRecording && !isPaused) {
+      const step = autoScrollSpeed === 1 ? 1 : autoScrollSpeed === 2 ? 2 : 3;
+      autoScrollIntervalRef.current = setInterval(() => {
+        if (teleprompterBoxRef.current) {
+          teleprompterBoxRef.current.scrollTop += step;
+        }
+      }, 50);
+    } else {
+      if (autoScrollIntervalRef.current) clearInterval(autoScrollIntervalRef.current);
+    }
+    return () => {
+      if (autoScrollIntervalRef.current) clearInterval(autoScrollIntervalRef.current);
+    };
+  }, [isAutoScroll, isRecording, isPaused, autoScrollSpeed]);
+
+  // ── 3. High-Fidelity 60 FPS Canvas Oscilloscope & VU Spectrum ──────────────
   const drawWaveform = useCallback(() => {
     const canvas = canvasRef.current;
     const analyser = analyserRef.current;
@@ -112,36 +205,58 @@ export default function VolunteerAudioStudioModal({
     const dataArray = new Uint8Array(bufferLength);
     analyser.getByteFrequencyData(dataArray);
 
-    // Calculate current RMS mic level
+    // Calculate RMS for decibel meter
     let sum = 0;
     for (let i = 0; i < bufferLength; i++) {
       sum += dataArray[i];
     }
     const avg = sum / bufferLength;
-    setMicLevel(Math.min(100, Math.round((avg / 255) * 100)));
+    const percent = Math.min(100, Math.round((avg / 255) * 100));
+    setMicVolumePercent(percent);
+
+    // Approximate dB (-60dB to 0dB)
+    const db = percent > 0 ? Math.round(20 * Math.log10(percent / 100)) : -60;
+    setMicDbLevel(Math.max(-60, db));
 
     const width = canvas.width;
     const height = canvas.height;
 
     ctx.clearRect(0, 0, width, height);
 
-    // Dynamic studio frequency bars
-    const barWidth = (width / bufferLength) * 2.2;
+    // Draw Studio Frequency Grid
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.lineWidth = 1;
+    for (let y = height / 4; y < height; y += height / 4) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+
+    // Dynamic studio golden/copper spectrum bars
+    const barWidth = (width / bufferLength) * 2.1;
     let x = 0;
 
     for (let i = 0; i < bufferLength; i++) {
-      const barHeight = (dataArray[i] / 255) * height * 0.85;
+      const value = dataArray[i] / 255;
+      const barHeight = value * height * 0.9;
 
-      // Studio gold-to-terracotta gradient
       const gradient = ctx.createLinearGradient(0, height, 0, 0);
       gradient.addColorStop(0, 'rgba(224, 86, 56, 0.2)');
       gradient.addColorStop(0.5, '#C5A059');
-      gradient.addColorStop(1, '#E05638');
+      gradient.addColorStop(0.9, '#E05638');
+      gradient.addColorStop(1, '#FF7A59');
 
       ctx.fillStyle = gradient;
       ctx.beginPath();
-      ctx.roundRect(x, height - barHeight, barWidth - 1.5, barHeight, [3, 3, 0, 0]);
+      ctx.roundRect(x, height - barHeight, barWidth - 2, barHeight, [3, 3, 0, 0]);
       ctx.fill();
+
+      // Peak highlight dot
+      if (barHeight > 6) {
+        ctx.fillStyle = '#FFE5A3';
+        ctx.fillRect(x, height - barHeight - 2, barWidth - 2, 2);
+      }
 
       x += barWidth;
     }
@@ -151,19 +266,19 @@ export default function VolunteerAudioStudioModal({
     }
   }, [isRecording, isPaused]);
 
-  // ── Start Audio Engine ────────────────────────────────────────────────────
+  // ── 4. Recording Controls ──────────────────────────────────────────────────
   const startRecording = async () => {
     try {
       cleanupAudioStream();
       audioChunksRef.current = [];
       setAudioBlob(null);
       setAudioUrl(null);
-      setRecordingTime(0);
+      setRecordingSeconds(0);
 
       const constraints: MediaStreamConstraints = {
         audio: {
-          echoCancellation: echoCancellation,
-          noiseSuppression: noiseSuppression,
+          echoCancellation,
+          noiseSuppression,
           autoGainControl: true,
           sampleRate: 48000,
           channelCount: 1
@@ -173,20 +288,18 @@ export default function VolunteerAudioStudioModal({
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
 
-      // Initialize Web Audio Context (C++ WebAudio Engine)
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       const audioContext = new AudioCtx({ sampleRate: 48000 });
       audioContextRef.current = audioContext;
 
       const analyser = audioContext.createAnalyser();
       analyser.fftSize = 128;
-      analyser.smoothingTimeConstant = 0.8;
+      analyser.smoothingTimeConstant = 0.78;
       analyserRef.current = analyser;
 
       const source = audioContext.createMediaStreamSource(stream);
       source.connect(analyser);
 
-      // Preferred MIME types with native C++ Opus encoder
       let mimeType = 'audio/webm;codecs=opus';
       if (!MediaRecorder.isTypeSupported(mimeType)) {
         if (MediaRecorder.isTypeSupported('audio/webm')) mimeType = 'audio/webm';
@@ -216,23 +329,20 @@ export default function VolunteerAudioStudioModal({
         setAudioUrl(url);
       };
 
-      // Start recording with 500ms time slice for memory safety
       recorder.start(500);
       setIsRecording(true);
       setIsPaused(false);
 
-      // Start live timer
       timerIntervalRef.current = setInterval(() => {
-        setRecordingTime(prev => prev + 1);
+        setRecordingSeconds(prev => prev + 1);
       }, 1000);
 
-      // Start Visualizer
       drawWaveform();
-      toast.success("Ovoz yozish boshlandi! O'qishni boshlashingiz mumkin.", { icon: '🎙' });
+      toast.success("Ovoz yozish boshlandi. Matnni maromida o'qishingiz mumkin.", { icon: '🎙' });
 
     } catch (err: any) {
-      console.error("[Audio Studio Error]", err);
-      toast.error("Mikrofonga ruxsat berilmadi yoki mikrofon topilmadi!");
+      console.error("[Studio Error]", err);
+      toast.error("Mikrofonga ulanib bo'lmadi. Iltimos, brauzerda mikrofon ruxsatini yoqing!");
     }
   };
 
@@ -242,7 +352,7 @@ export default function VolunteerAudioStudioModal({
         mediaRecorderRef.current.resume();
         setIsPaused(false);
         timerIntervalRef.current = setInterval(() => {
-          setRecordingTime(prev => prev + 1);
+          setRecordingSeconds(prev => prev + 1);
         }, 1000);
         drawWaveform();
       } else {
@@ -259,10 +369,11 @@ export default function VolunteerAudioStudioModal({
       mediaRecorderRef.current.stop();
       setIsRecording(false);
       setIsPaused(false);
+      setIsAutoScroll(false);
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
       cleanupAudioStream();
-      toast.success("Ovoz muvaffaqiyatli yozildi! Eshitib ko'rishingiz mumkin.", { icon: '✨' });
+      toast.success("Audio muvaffaqiyatli yozib olindi!", { icon: '✨' });
     }
   };
 
@@ -286,12 +397,14 @@ export default function VolunteerAudioStudioModal({
     if (audioUrl) URL.revokeObjectURL(audioUrl);
     setAudioBlob(null);
     setAudioUrl(null);
-    setRecordingTime(0);
+    setRecordingSeconds(0);
     setIsRecording(false);
     setIsPaused(false);
+    setMicVolumePercent(0);
+    setMicDbLevel(-60);
   };
 
-  // ── Upload to AWS EC2 Backend ─────────────────────────────────────────────
+  // ── 5. Save to AWS EC2 Backend ────────────────────────────────────────────
   const handleUploadToAws = async () => {
     if (!audioBlob) {
       toast.error("Avval audio yozib oling!");
@@ -299,17 +412,17 @@ export default function VolunteerAudioStudioModal({
     }
 
     setIsUploading(true);
-    setUploadProgress(20);
+    setUploadProgress(25);
 
     try {
       const progressTimer = setInterval(() => {
-        setUploadProgress(prev => (prev < 85 ? prev + 15 : prev));
-      }, 300);
+        setUploadProgress(prev => (prev < 90 ? prev + 12 : prev));
+      }, 250);
 
       const result = await api.uploadVolunteerAudio(book.id, audioBlob, {
         chapterId: currentChapter.id,
         trackTitle: trackTitle,
-        durationSeconds: recordingTime
+        durationSeconds: recordingSeconds
       });
 
       clearInterval(progressTimer);
@@ -317,7 +430,7 @@ export default function VolunteerAudioStudioModal({
 
       setIsSuccess(true);
       setUploadedTrackInfo(result);
-      toast.success("Asar audiosi AWS serveringizga muvaffaqiyatli saqlandi! 🎉");
+      toast.success("Audio yozuv AWS serveringizga to'liq saqlandi! 🎉");
       
       if (onSuccessUpload) onSuccessUpload();
 
@@ -328,47 +441,52 @@ export default function VolunteerAudioStudioModal({
     }
   };
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+  const formatTime = (totalSeconds: number) => {
+    const hrs = Math.floor(totalSeconds / 3600);
+    const mins = Math.floor((totalSeconds % 3600) / 60);
+    const secs = totalSeconds % 60;
+    if (hrs > 0) {
+      return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   return (
-    <div className="fixed inset-0 z-[1300] bg-black/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[1300] bg-black/85 backdrop-blur-lg flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-200">
       <div 
-        className="relative w-full max-w-5xl bg-stone-950 border border-stone-800 rounded-3xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col animate-in zoom-in-95 duration-200 text-stone-200"
+        className="relative w-full max-w-6xl bg-[#0F1117] border border-stone-800 rounded-3xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col animate-in zoom-in-95 duration-200 text-stone-200"
         style={{
-          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 50px rgba(197, 160, 89, 0.12)'
+          boxShadow: '0 30px 80px -15px rgba(0, 0, 0, 0.8), 0 0 60px rgba(197, 160, 89, 0.1)'
         }}
       >
-        {/* Luxury top accent gradient line */}
-        <div className="h-1.5 w-full bg-gradient-to-r from-[#E05638] via-[#C5A059] to-[#E05638]" />
+        {/* Top copper-gold hairline */}
+        <div className="h-1 w-full bg-gradient-to-r from-[#E05638] via-[#C5A059] to-[#E05638]" />
 
         {/* ── Studio Header ── */}
-        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between gap-4 bg-stone-900/60">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#E05638]/20 to-[#C5A059]/20 border border-white/10 flex items-center justify-center text-xl shrink-0">
+        <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between gap-4 bg-[#141822]">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#E05638]/20 via-[#C5A059]/15 to-transparent border border-[#C5A059]/30 flex items-center justify-center text-xl shrink-0 shadow-sm text-[#C5A059]">
               🎙
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h3 className="font-serif font-bold text-base sm:text-lg text-white truncate">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <h3 className="font-serif font-bold text-base sm:text-lg text-white tracking-tight">
                   Bookify Ovoz Yozish Studiyasi
                 </h3>
-                <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                  C++ Web Audio 48kHz
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  Studiya Rejimi
                 </span>
               </div>
-              <p className="text-xs text-stone-400 truncate">
-                Asar: <span className="text-white font-medium">«{book.title}»</span> • Diktor: <span className="text-[#C5A059]">{currentUser?.name || 'Volontyor'}</span>
+              <p className="text-xs text-stone-400 truncate mt-0.5">
+                Asar: <span className="text-white font-medium">«{book.title}»</span> • Diktor: <span className="text-[#C5A059] font-medium">{currentUser?.name || 'Volontyor'}</span>
               </p>
             </div>
           </div>
 
-          {/* On Air Indicator & Close */}
+          {/* On Air Status & Close */}
           <div className="flex items-center gap-3 shrink-0">
-            {isRecording && (
+            {isRecording ? (
               <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-bold border transition-all ${
                 isPaused 
                   ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' 
@@ -376,6 +494,11 @@ export default function VolunteerAudioStudioModal({
               }`}>
                 <span className={`w-2 h-2 rounded-full ${isPaused ? 'bg-amber-400' : 'bg-red-500'}`} />
                 <span>{isPaused ? 'PAUZA' : '● ON AIR'}</span>
+              </div>
+            ) : (
+              <div className="hidden sm:flex items-center gap-1.5 text-xs font-mono text-stone-400 px-3 py-1 rounded-full bg-white/5 border border-white/5">
+                <span className="w-2 h-2 rounded-full bg-stone-500" />
+                <span>Kutish Rejimi</span>
               </div>
             )}
 
@@ -389,33 +512,34 @@ export default function VolunteerAudioStudioModal({
           </div>
         </div>
 
-        {/* ── Success Modal View ── */}
+        {/* ── Main View (Studio vs Success) ── */}
         {isSuccess ? (
+          /* ── SUCCESS STATE ── */
           <div className="p-8 sm:p-12 text-center space-y-5 flex-1 flex flex-col items-center justify-center">
-            <div className="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-4xl border border-emerald-500/30 shadow-xl shadow-emerald-500/10 animate-bounce">
-              🎉
+            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 text-emerald-400 flex items-center justify-center text-4xl border border-emerald-500/30 shadow-xl shadow-emerald-500/10">
+              <CheckCircle2 size={42} className="text-emerald-400" />
             </div>
             <div className="space-y-2 max-w-md">
               <h2 className="font-serif text-2xl sm:text-3xl font-bold text-white">
-                Audio Yozuv Qabul Qilindi!
+                Audio Muvaffaqiyatli Saqlandi!
               </h2>
               <p className="text-sm text-stone-400 leading-relaxed">
-                «{book.title}» asari uchun yozgan ovozingiz AWS EC2 serverimizga muvaffaqiyatli saqlandi va kitobga qo'shildi.
+                «{book.title}» asarining <strong>{trackTitle}</strong> audio treki AWS serveringizga to'liq joylashtirildi va asar tinglovchilari uchun tayyorlandi.
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 text-left w-full max-w-sm space-y-2 text-xs">
-              <div className="flex justify-between">
-                <span className="text-stone-400">Audio nomi:</span>
-                <span className="font-semibold text-white truncate max-w-[180px]">{uploadedTrackInfo?.title || trackTitle}</span>
+            <div className="p-4 rounded-2xl bg-[#141822] border border-white/10 text-left w-full max-w-sm space-y-2.5 text-xs">
+              <div className="flex justify-between border-b border-white/5 pb-2">
+                <span className="text-stone-400">Yozilgan Bob:</span>
+                <span className="font-semibold text-white truncate max-w-[200px]">{uploadedTrackInfo?.title || trackTitle}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between border-b border-white/5 pb-2">
                 <span className="text-stone-400">Davomiyligi:</span>
-                <span className="font-mono text-[#C5A059]">{formatTime(recordingTime)}</span>
+                <span className="font-mono text-[#C5A059] font-bold">{formatTime(recordingSeconds)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-stone-400">Volontyorlik hisobingiz:</span>
-                <span className="font-bold text-emerald-400">+{Math.max(0.25, Math.round(recordingTime / 3600 * 100) / 100)} soat staj</span>
+                <span className="text-stone-400">Qo'shilgan staj:</span>
+                <span className="font-bold text-emerald-400">+{Math.max(0.25, Math.round((recordingSeconds / 3600) * 100) / 100)} soat</span>
               </div>
             </div>
 
@@ -424,10 +548,12 @@ export default function VolunteerAudioStudioModal({
                 onClick={() => {
                   setIsSuccess(false);
                   handleReset();
+                  setCurrentChapterIndex(prev => Math.min(chapters.length - 1, prev + 1));
                 }}
-                className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium text-xs transition-colors cursor-pointer"
+                className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium text-xs transition-colors cursor-pointer flex items-center gap-2"
               >
-                Keyingi Bobni Yozish
+                <span>Keyingi Bobga O'tish</span>
+                <ChevronRight size={14} />
               </button>
               <button
                 onClick={onClose}
@@ -438,62 +564,94 @@ export default function VolunteerAudioStudioModal({
             </div>
           </div>
         ) : (
-          /* ── Main Studio Grid ── */
+          /* ── STUDIO GRID ── */
           <div className="grid grid-cols-1 lg:grid-cols-12 flex-1 overflow-hidden">
             
-            {/* ── LEFT: Interactive Teleprompter (Book Text View) ── */}
-            <div className="lg:col-span-7 flex flex-col border-b lg:border-b-0 lg:border-r border-white/10 bg-stone-900/40 overflow-hidden">
+            {/* ── LEFT: Teleprompter Reading Surface ── */}
+            <div className="lg:col-span-7 flex flex-col border-b lg:border-b-0 lg:border-r border-white/5 bg-[#0C0E14] overflow-hidden">
               
-              {/* Teleprompter Toolbar */}
-              <div className="px-4 py-2.5 bg-black/40 border-b border-white/5 flex items-center justify-between gap-2">
+              {/* Teleprompter Bar */}
+              <div className="px-5 py-3 bg-[#131620] border-b border-white/5 flex items-center justify-between gap-3 flex-wrap">
+                
+                {/* Chapter Dropdown / Stepper */}
                 <div className="flex items-center gap-2 min-w-0">
-                  <BookOpen size={15} className="text-[#E05638] shrink-0" />
-                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-stone-300">
-                    Teleprompter (Kitob Matni)
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-3 shrink-0">
-                  {/* Chapter Selector */}
-                  {chapters.length > 1 && (
-                    <div className="flex items-center gap-1">
+                  <BookOpen size={16} className="text-[#E05638] shrink-0" />
+                  
+                  {isLoadingChapters ? (
+                    <span className="text-xs text-stone-400 flex items-center gap-1.5">
+                      <Loader2 size={13} className="animate-spin text-[#C5A059]" />
+                      <span>Matn yuklanmoqda...</span>
+                    </span>
+                  ) : chapters.length > 1 ? (
+                    <div className="flex items-center gap-1 bg-black/40 px-2 py-1 rounded-xl border border-white/10">
                       <button
                         onClick={() => setCurrentChapterIndex(prev => Math.max(0, prev - 1))}
                         disabled={currentChapterIndex === 0}
-                        className="p-1 rounded bg-white/5 hover:bg-white/10 disabled:opacity-30 cursor-pointer text-xs"
+                        className="p-1 rounded text-stone-400 hover:text-white disabled:opacity-20 cursor-pointer"
                         title="Oldingi bob"
                       >
                         <ChevronLeft size={14} />
                       </button>
-                      <span className="text-[11px] font-mono text-stone-400 px-1">
-                        {currentChapterIndex + 1}/{chapters.length}
-                      </span>
+                      
+                      <select
+                        value={currentChapterIndex}
+                        onChange={(e) => setCurrentChapterIndex(Number(e.target.value))}
+                        className="bg-transparent text-xs font-serif font-medium text-stone-200 outline-none cursor-pointer max-w-[180px] sm:max-w-[240px] truncate"
+                      >
+                        {chapters.map((ch, idx) => (
+                          <option key={ch.id} value={idx} className="bg-stone-900 text-white">
+                            {ch.title || `${idx + 1}-bob`}
+                          </option>
+                        ))}
+                      </select>
+
                       <button
                         onClick={() => setCurrentChapterIndex(prev => Math.min(chapters.length - 1, prev + 1))}
                         disabled={currentChapterIndex === chapters.length - 1}
-                        className="p-1 rounded bg-white/5 hover:bg-white/10 disabled:opacity-30 cursor-pointer text-xs"
+                        className="p-1 rounded text-stone-400 hover:text-white disabled:opacity-20 cursor-pointer"
                         title="Keyingi bob"
                       >
                         <ChevronRight size={14} />
                       </button>
                     </div>
+                  ) : (
+                    <span className="text-xs font-serif font-bold text-stone-200 truncate">
+                      {currentChapter.title}
+                    </span>
                   )}
+                </div>
+
+                {/* Teleprompter Controls (Font & Auto-Scroll) */}
+                <div className="flex items-center gap-2 shrink-0">
+                  {/* Auto-scroll button */}
+                  <button
+                    onClick={() => setIsAutoScroll(!isAutoScroll)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
+                      isAutoScroll
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                        : 'bg-white/5 text-stone-400 hover:text-white hover:bg-white/10 border border-white/5'
+                    }`}
+                    title="Matnni avtomatik yuqoriga siljitish"
+                  >
+                    <ArrowDown size={13} className={isAutoScroll ? 'animate-bounce text-amber-400' : ''} />
+                    <span>{isAutoScroll ? 'Avto-siljish: ON' : 'Avto-siljish'}</span>
+                  </button>
 
                   {/* Font Size Adjust */}
-                  <div className="flex items-center gap-1 border-l border-white/10 pl-2">
+                  <div className="flex items-center gap-1 bg-black/40 px-2 py-1 rounded-lg border border-white/5">
                     <button
-                      onClick={() => setFontSize(prev => Math.max(14, prev - 2))}
-                      className="p-1 text-xs text-stone-400 hover:text-white rounded bg-white/5 hover:bg-white/10 cursor-pointer"
-                      title="Shriftni kichraytirish"
+                      onClick={() => setFontSize(prev => Math.max(15, prev - 2))}
+                      className="p-0.5 text-xs text-stone-400 hover:text-white cursor-pointer"
+                      title="Shriftni kichiklashtirish"
                     >
                       A-
                     </button>
-                    <span className="text-[10px] font-mono text-stone-400 w-5 text-center">
+                    <span className="text-[10px] font-mono text-stone-500 px-1">
                       {fontSize}
                     </span>
                     <button
-                      onClick={() => setFontSize(prev => Math.min(26, prev + 2))}
-                      className="p-1 text-xs text-stone-400 hover:text-white rounded bg-white/5 hover:bg-white/10 cursor-pointer"
+                      onClick={() => setFontSize(prev => Math.min(24, prev + 2))}
+                      className="p-0.5 text-xs text-stone-400 hover:text-white cursor-pointer"
                       title="Shriftni kattalashtirish"
                     >
                       A+
@@ -502,112 +660,126 @@ export default function VolunteerAudioStudioModal({
                 </div>
               </div>
 
-              {/* Scrollable Teleprompter Content */}
+              {/* Scrollable Book Text Area */}
               <div 
-                ref={teleprompterRef}
-                className="p-6 sm:p-8 overflow-y-auto flex-1 space-y-4 font-serif selection:bg-amber-500/30 selection:text-amber-200"
+                ref={teleprompterBoxRef}
+                className="p-6 sm:p-10 overflow-y-auto flex-1 font-serif selection:bg-amber-500/30 selection:text-amber-200"
                 style={{
                   fontSize: `${fontSize}px`,
-                  lineHeight: 1.8,
+                  lineHeight: 1.9,
                   scrollBehavior: 'smooth'
                 }}
               >
-                <div className="pb-3 border-b border-white/10">
-                  <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#C5A059] mb-1">
-                    {book.title}
+                {isLoadingChapters ? (
+                  <div className="py-20 text-center space-y-3">
+                    <Loader2 size={28} className="animate-spin text-[#C5A059] mx-auto" />
+                    <p className="text-xs text-stone-500 font-sans">Kitob sahifalari va matnlari o'qilmoqda...</p>
                   </div>
-                  <h1 className="font-bold text-xl sm:text-2xl text-white">
-                    {currentChapter.title || `${currentChapter.number}-bob`}
-                  </h1>
-                </div>
+                ) : (
+                  <div className="max-w-2xl mx-auto space-y-6">
+                    <div className="pb-4 border-b border-white/5 space-y-1">
+                      <span className="text-[11px] font-mono uppercase tracking-widest text-[#C5A059] block">
+                        {book.title} • {currentChapterIndex + 1} / {chapters.length}-bob
+                      </span>
+                      <h2 className="text-xl sm:text-2xl font-bold text-white">
+                        {currentChapter.title}
+                      </h2>
+                    </div>
 
-                <div className="text-stone-300 leading-relaxed whitespace-pre-line">
-                  {currentChapter.content || (
-                    <p className="text-stone-400 italic">
-                      Ushbu bob uchun matn kiritilmagan. Kitob nusxangizdan o'qib, ovoz yozishingiz mumkin.
-                    </p>
-                  )}
-                </div>
+                    {/* Editorial Rich Text */}
+                    <div className="text-stone-300 whitespace-pre-line text-justify tracking-normal">
+                      {currentChapter.content ? (
+                        currentChapter.content
+                      ) : (
+                        <p className="text-stone-500 italic">
+                          Ushbu bob uchun raqamlashtirilgan matn mavjud emas. Kitobingizning qo'lda bor nusxasidan o'qib ovoz yozishingiz mumkin.
+                        </p>
+                      )}
+                    </div>
 
-                <div className="pt-8 text-center text-xs text-stone-500 font-sans border-t border-white/5">
-                  ✦ Bob yakunlandi. Ovoz yozishni yakunlash uchun o'ngdagi «Stop» tugmasini bosing.
-                </div>
+                    <div className="pt-8 text-center text-xs text-stone-500 font-sans border-t border-white/5 space-y-1">
+                      <div>✦ Bob yakuni. Ovoz yozishni to'xtatish uchun o'ngdagi tugmani bosing.</div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* ── RIGHT: Audio Recording Studio Console ── */}
-            <div className="lg:col-span-5 p-5 sm:p-6 flex flex-col justify-between bg-black/60 space-y-5 overflow-y-auto">
+            {/* ── RIGHT: Audio Engineering Console ── */}
+            <div className="lg:col-span-5 p-6 sm:p-7 flex flex-col justify-between bg-[#11141C] space-y-6 overflow-y-auto">
               
-              {/* Studio VU Meter / Visualizer */}
-              <div className="space-y-2">
+              {/* Studio Waveform Display with dB scale */}
+              <div className="space-y-2.5">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-mono text-stone-400 flex items-center gap-1.5">
-                    <Radio size={14} className={isRecording ? 'text-red-400 animate-pulse' : 'text-stone-500'} />
-                    <span>Real-time Spektrogramma</span>
+                  <span className="font-mono text-stone-300 flex items-center gap-2">
+                    <Radio size={14} className={isRecording ? 'text-red-400 animate-pulse' : 'text-[#C5A059]'} />
+                    <span>Akustik Spektrogramma</span>
                   </span>
-                  <span className="font-mono text-[11px] text-stone-500">
-                    Sezgirlik: {micLevel}%
+                  <span className="font-mono text-[11px] text-stone-400">
+                    {isRecording ? `${micDbLevel} dB` : 'Tayyor'}
                   </span>
                 </div>
 
-                <div className="relative h-28 rounded-2xl bg-stone-900/90 border border-white/10 overflow-hidden shadow-inner flex items-center justify-center">
+                <div className="relative h-32 rounded-2xl bg-[#090A0E] border border-white/10 overflow-hidden shadow-inner flex items-center justify-center">
                   <canvas 
                     ref={canvasRef} 
-                    width={400} 
-                    height={112} 
+                    width={420} 
+                    height={128} 
                     className="w-full h-full object-cover"
                   />
 
                   {!isRecording && !audioBlob && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-stone-500 text-xs space-y-1">
-                      <Mic size={24} className="opacity-40" />
-                      <span>Mikrofon kutish rejimida</span>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-stone-500 text-xs space-y-1.5">
+                      <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-stone-400">
+                        <Mic size={20} />
+                      </div>
+                      <span className="text-[11px] text-stone-400 font-sans">Mikrofon yozishga shay</span>
                     </div>
                   )}
 
-                  {/* Level bar at bottom */}
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/5">
+                  {/* Level meter bar at bottom */}
+                  <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/50">
                     <div 
                       className="h-full bg-gradient-to-r from-emerald-500 via-amber-500 to-red-500 transition-all duration-75"
-                      style={{ width: `${isRecording ? micLevel : 0}%` }}
+                      style={{ width: `${isRecording ? micVolumePercent : 0}%` }}
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Digital Timecode Display */}
-              <div className="text-center p-4 rounded-2xl bg-stone-900/60 border border-white/10 space-y-1">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-stone-400">
-                  {isRecording ? "Yozuv Davomiyligi" : audioBlob ? "Yozilgan Davomiylik" : "Vaqt Hisoblagich"}
+              {/* Broadcast Digital Timecode */}
+              <div className="p-5 rounded-2xl bg-[#141824] border border-white/5 text-center space-y-1 shadow-sm">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-stone-400 block">
+                  {isRecording ? "Jonli Yozuv Vaqti" : audioBlob ? "Yozilgan Vaqt" : "Taymer"}
                 </span>
-                <div className="font-mono font-black text-4xl sm:text-5xl tracking-tight text-white drop-shadow-md">
-                  {formatTime(recordingTime)}
+                <div className="font-mono font-bold text-4xl sm:text-5xl text-white tracking-wider drop-shadow-md">
+                  {formatTime(recordingSeconds)}
                 </div>
               </div>
 
-              {/* Chapter / Track Title Input */}
+              {/* Track Title Metadata Input */}
               <div className="space-y-1.5">
-                <label className="text-[11px] font-mono text-stone-400">
-                  Bob / Trek Sarlavhasi (Ixtiyoriy):
+                <label className="text-xs font-medium text-stone-300 block">
+                  Audio Bob Nomi:
                 </label>
                 <input
                   type="text"
                   value={trackTitle}
                   onChange={(e) => setTrackTitle(e.target.value)}
-                  placeholder="Masalan: 1-bob (Kirish)"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-stone-900/80 border border-white/10 text-xs text-white placeholder-stone-600 focus:outline-none focus:border-[#C5A059]"
+                  placeholder="Masalan: 1-bob: Muqaddima"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#090A0E] border border-white/10 text-xs text-white placeholder-stone-600 focus:outline-none focus:border-[#C5A059] transition-colors"
                 />
               </div>
 
-              {/* ── Audio Studio Action Buttons ── */}
+              {/* ── RECORDING MASTER CONTROLS ── */}
               <div className="space-y-3 pt-1">
                 {!isRecording && !audioBlob && (
                   <button
                     type="button"
                     onClick={startRecording}
-                    className="w-full py-4 rounded-2xl font-bold text-sm sm:text-base text-white transition-all active:scale-[0.98] shadow-xl cursor-pointer flex items-center justify-center gap-2.5 bg-gradient-to-r from-red-600 via-rose-600 to-red-600 hover:brightness-110 shadow-red-600/30"
+                    className="w-full py-4 rounded-2xl font-bold text-sm sm:text-base text-white transition-all active:scale-[0.98] shadow-xl cursor-pointer flex items-center justify-center gap-3 bg-gradient-to-r from-red-600 via-rose-600 to-red-600 hover:brightness-110 shadow-red-600/30"
                   >
-                    <span className="w-3.5 h-3.5 rounded-full bg-white animate-ping" />
+                    <span className="w-3.5 h-3.5 rounded-full bg-white animate-pulse" />
                     <span>Ovoz Yozishni Boshlash 🔴</span>
                   </button>
                 )}
@@ -617,9 +789,9 @@ export default function VolunteerAudioStudioModal({
                     <button
                       type="button"
                       onClick={pauseRecording}
-                      className="py-3.5 rounded-xl font-bold text-xs text-white transition-all active:scale-[0.98] bg-white/10 hover:bg-white/20 border border-white/10 cursor-pointer flex items-center justify-center gap-2"
+                      className="py-3.5 rounded-xl font-bold text-xs text-white transition-all active:scale-[0.98] bg-white/10 hover:bg-white/15 border border-white/10 cursor-pointer flex items-center justify-center gap-2"
                     >
-                      {isPaused ? <Play size={16} /> : <Pause size={16} />}
+                      {isPaused ? <Play size={15} /> : <Pause size={15} />}
                       <span>{isPaused ? "Davom ettirish" : "Pauza"}</span>
                     </button>
 
@@ -628,19 +800,19 @@ export default function VolunteerAudioStudioModal({
                       onClick={stopRecording}
                       className="py-3.5 rounded-xl font-bold text-xs text-white transition-all active:scale-[0.98] bg-red-600 hover:bg-red-700 shadow-lg shadow-red-600/25 cursor-pointer flex items-center justify-center gap-2"
                     >
-                      <Square size={16} fill="white" />
-                      <span>To'xtatish (Stop) ⏹</span>
+                      <Square size={15} fill="white" />
+                      <span>Yakunlash (Stop) ⏹</span>
                     </button>
                   </div>
                 )}
 
-                {/* ── Audio Recorded Review State ── */}
+                {/* ── AUDIO REVIEW STATE ── */}
                 {audioBlob && !isRecording && (
-                  <div className="p-4 rounded-2xl bg-stone-900 border border-white/10 space-y-3 animate-in fade-in">
+                  <div className="p-4 rounded-2xl bg-[#141824] border border-white/10 space-y-3 animate-in fade-in">
                     <div className="flex items-center justify-between text-xs">
                       <span className="font-bold text-white flex items-center gap-1.5">
                         <CheckCircle2 size={15} className="text-emerald-400" />
-                        <span>Yozuv Tayyor ({formatTime(recordingTime)})</span>
+                        <span>Yozuv Muvaffaqiyatli ({formatTime(recordingSeconds)})</span>
                       </span>
                       <button
                         type="button"
@@ -652,17 +824,16 @@ export default function VolunteerAudioStudioModal({
                       </button>
                     </div>
 
-                    {/* Preview Player */}
+                    {/* Audio Preview Player */}
                     {audioUrl && (
                       <audio 
-                        ref={previewAudioRef}
                         src={audioUrl} 
                         controls 
                         className="w-full h-9 rounded-xl outline-none"
                       />
                     )}
 
-                    {/* Upload Button */}
+                    {/* AWS Save Button */}
                     <button
                       type="button"
                       onClick={handleUploadToAws}
@@ -671,7 +842,7 @@ export default function VolunteerAudioStudioModal({
                     >
                       {isUploading ? (
                         <div className="flex items-center gap-2">
-                          <span className="inline-block animate-spin">⏳</span>
+                          <Loader2 size={16} className="animate-spin" />
                           <span>AWS Serverga Yuklanmoqda ({uploadProgress}%)...</span>
                         </div>
                       ) : (
@@ -685,33 +856,44 @@ export default function VolunteerAudioStudioModal({
                 )}
               </div>
 
-              {/* ── Micro Hardware Settings (Noise & Echo) ── */}
-              <div className="pt-2 border-t border-white/5 space-y-2 text-[11px] text-stone-400">
+              {/* ── Hardware DSP Toggles (Custom Clean Switches) ── */}
+              <div className="pt-3 border-t border-white/5 space-y-2.5 text-xs text-stone-300">
                 <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5">
-                    <Sliders size={13} className="text-[#C5A059]" />
-                    <span>Shovqinni bostirish (Noise suppression):</span>
+                  <span className="flex items-center gap-2">
+                    <Sliders size={14} className="text-[#C5A059]" />
+                    <span>Shovqinni tozalash (Noise suppression):</span>
                   </span>
-                  <input
-                    type="checkbox"
-                    checked={noiseSuppression}
-                    onChange={(e) => setNoiseSuppression(e.target.checked)}
+                  <button
+                    type="button"
+                    onClick={() => setNoiseSuppression(!noiseSuppression)}
                     disabled={isRecording}
-                    className="accent-[#C5A059] cursor-pointer"
-                  />
+                    className={`w-9 h-5 rounded-full transition-colors relative cursor-pointer ${
+                      noiseSuppression ? 'bg-[#C5A059]' : 'bg-white/20'
+                    }`}
+                  >
+                    <span className={`w-3.5 h-3.5 rounded-full bg-stone-950 absolute top-0.5 transition-transform ${
+                      noiseSuppression ? 'right-0.5' : 'left-0.5'
+                    }`} />
+                  </button>
                 </div>
+
                 <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5">
-                    <Volume2 size={13} className="text-[#C5A059]" />
-                    <span>Aks-sadoni tozalash (Echo cancellation):</span>
+                  <span className="flex items-center gap-2">
+                    <Volume2 size={14} className="text-[#C5A059]" />
+                    <span>Aks-sadoni bartaraf etish (Echo cancel):</span>
                   </span>
-                  <input
-                    type="checkbox"
-                    checked={echoCancellation}
-                    onChange={(e) => setEchoCancellation(e.target.checked)}
+                  <button
+                    type="button"
+                    onClick={() => setEchoCancellation(!echoCancellation)}
                     disabled={isRecording}
-                    className="accent-[#C5A059] cursor-pointer"
-                  />
+                    className={`w-9 h-5 rounded-full transition-colors relative cursor-pointer ${
+                      echoCancellation ? 'bg-[#C5A059]' : 'bg-white/20'
+                    }`}
+                  >
+                    <span className={`w-3.5 h-3.5 rounded-full bg-stone-950 absolute top-0.5 transition-transform ${
+                      echoCancellation ? 'right-0.5' : 'left-0.5'
+                    }`} />
+                  </button>
                 </div>
               </div>
 
