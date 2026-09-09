@@ -22,6 +22,7 @@ import ComingSoonSection from '../components/Future/ComingSoonSection';
 import VerifyCertificatePage from '../components/Certificate/VerifyCertificatePage';
 import VolunteerPortal from '../components/Volunteer/VolunteerPortal';
 import BookPaywallModal from '../components/Payment/BookPaywallModal';
+import AsciiArtCanvas from '../components/Common/AsciiArtCanvas';
 
 import { BookOpen, Headphones, ArrowRight, Quote, Search, X, Trophy, UploadCloud } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -43,6 +44,7 @@ export default function HomeApp() {
   const [authInitialized, setAuthInitialized] = useState(false);
   const [paywallBook, setPaywallBook] = useState<Book | null>(null);
   const [isVipModalOpen, setIsVipModalOpen] = useState(false);
+  const [isHeroAsciiMode, setIsHeroAsciiMode] = useState(false);
 
   // Check existing session on mount (Hydration safe) & pre-warm backend
   useEffect(() => {
@@ -673,20 +675,73 @@ export default function HomeApp() {
                                 <Headphones size={16} className="text-[#C5A059]" />
                                 <span>Audio Tinglash</span>
                               </button>
+
+                              <button
+                                onClick={() => {
+                                  setIsHeroAsciiMode(!isHeroAsciiMode);
+                                  if (!isHeroAsciiMode) {
+                                    toast.success("ASCII Matn San'ati faollashtirildi! Muqovaga qarang 👾", { icon: '✨' });
+                                  }
+                                }}
+                                className={`px-6 py-4 rounded-2xl font-bold text-xs font-mono uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center gap-2 border ${
+                                  isHeroAsciiMode
+                                    ? 'bg-[#E05638]/20 text-[#E05638] border-[#E05638]/50 shadow-md shadow-[#E05638]/20 animate-pulse'
+                                    : 'bg-stone-100 hover:bg-stone-200 dark:bg-white/10 dark:hover:bg-white/20 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-white/10'
+                                }`}
+                                title="Kitob muqovasini real vaqtda matnli ASCII san'atiga aylantirish"
+                              >
+                                <span>👾</span>
+                                <span>{isHeroAsciiMode ? "Real Muqova" : "ASCII San'ati ✦"}</span>
+                              </button>
                             </div>
                           </>
                         );
                       })()}
                     </div>
 
-                    <div className="relative group cursor-pointer" onClick={() => handleOpenReader(featuredBook.id)}>
-                      <div className="book-card-3d w-56 sm:w-68 aspect-[2/3] scale-100 group-hover:scale-105 transition-transform duration-500">
+                    <div className="relative group flex flex-col items-center gap-3">
+                      {/* Interactive ASCII Mode Badge Switcher */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsHeroAsciiMode(!isHeroAsciiMode);
+                          if (!isHeroAsciiMode) {
+                            toast.success("ASCII Matn San'ati faollashtirildi! 👾", { icon: '✨' });
+                          }
+                        }}
+                        className={`px-3 py-1.5 rounded-full text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-1.5 border shadow-sm cursor-pointer z-30 ${
+                          isHeroAsciiMode
+                            ? 'bg-[#E05638] text-white border-[#E05638] shadow-[#E05638]/30 animate-pulse'
+                            : 'bg-white/90 dark:bg-stone-900/90 backdrop-blur-md text-stone-700 dark:text-stone-300 border-stone-200/90 dark:border-white/15 hover:border-[#E05638]/50 hover:text-[#E05638]'
+                        }`}
+                        title="Kitob muqovasini matnli ASCII san'atiga aylantirish"
+                      >
+                        <span>👾</span>
+                        <span>{isHeroAsciiMode ? "ASCII Rejimi (Faol)" : "ASCII Matn San'ati"}</span>
+                        <span className="text-[10px] text-[#C5A059]">✦</span>
+                      </button>
+
+                      <div 
+                        className="book-card-3d w-56 sm:w-68 aspect-[2/3] scale-100 group-hover:scale-105 transition-transform duration-500 cursor-pointer" 
+                        onClick={() => handleOpenReader(featuredBook.id)}
+                      >
                         <div className="book-card-inner relative w-full h-full rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20">
-                          <img 
-                            src={featuredBook.coverImage} 
-                            alt={featuredBook.title} 
-                            className="w-full h-full object-cover" 
-                          />
+                          {isHeroAsciiMode ? (
+                            <AsciiArtCanvas
+                              imageSrc={featuredBook.coverImage}
+                              colorMode="terracotta"
+                              resolution={5}
+                              interactive={true}
+                              className="w-full h-full"
+                            />
+                          ) : (
+                            <img 
+                              src={featuredBook.coverImage} 
+                              alt={featuredBook.title} 
+                              className="w-full h-full object-cover" 
+                            />
+                          )}
                           <div className="book-spine-hinge" />
                           {Boolean(featuredBook.is_premium || (featuredBook as any).is_premium) && (
                             <div className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-xs font-bold font-mono tracking-wider shadow-xl z-20 bg-stone-950/85 dark:bg-black/85 backdrop-blur-md text-amber-300 border border-amber-500/40 flex items-center gap-1">
