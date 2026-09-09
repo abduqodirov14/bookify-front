@@ -21,8 +21,7 @@ import {
   Eye,
   EyeOff,
   Activity,
-  Disc,
-  Clock
+  HeartHandshake
 } from 'lucide-react';
 import { Book, UserProfile } from '../../types';
 import { api } from '../../services/api';
@@ -234,8 +233,8 @@ export default function VolunteerAudioStudioModal({
 
     ctx.clearRect(0, 0, width, height);
 
-    // Draw Studio Subtle Background Grids
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+    // Subtle background grid
+    ctx.strokeStyle = 'rgba(128, 128, 128, 0.08)';
     ctx.lineWidth = 1;
     for (let y = height / 4; y < height; y += height / 4) {
       ctx.beginPath();
@@ -244,7 +243,7 @@ export default function VolunteerAudioStudioModal({
       ctx.stroke();
     }
 
-    // Dynamic studio golden/copper spectrum bars
+    // Bookify signature Terracotta & Gold spectrum bars
     const barWidth = (width / bufferLength) * 2.2;
     let x = 0;
 
@@ -253,10 +252,10 @@ export default function VolunteerAudioStudioModal({
       const barHeight = Math.max(3, value * height * 0.92);
 
       const gradient = ctx.createLinearGradient(0, height, 0, 0);
-      gradient.addColorStop(0, 'rgba(224, 86, 56, 0.35)');
-      gradient.addColorStop(0.4, '#C5A059');
-      gradient.addColorStop(0.85, '#E05638');
-      gradient.addColorStop(1, '#FF8A65');
+      gradient.addColorStop(0, 'rgba(224, 86, 56, 0.25)'); // Terracotta base
+      gradient.addColorStop(0.4, '#C5A059');               // Antique Gold
+      gradient.addColorStop(0.85, '#E05638');              // Primary Terracotta
+      gradient.addColorStop(1, '#C74326');
 
       ctx.fillStyle = gradient;
       ctx.beginPath();
@@ -265,7 +264,7 @@ export default function VolunteerAudioStudioModal({
 
       // Peak highlight micro dot
       if (barHeight > 8) {
-        ctx.fillStyle = '#FFE5A3';
+        ctx.fillStyle = '#C5A059';
         ctx.fillRect(x, height - barHeight - 1, barWidth - 1.5, 1.5);
       }
 
@@ -352,7 +351,7 @@ export default function VolunteerAudioStudioModal({
       }, 1000);
 
       drawWaveform();
-      toast.success("Ovoz yozish boshlandi. Teleprompterni maromida o'qishingiz mumkin.", { icon: '🎙' });
+      toast.success("Ovoz yozish boshlandi. Matnni maromida o'qishingiz mumkin.", { icon: '🎙' });
 
     } catch (err: any) {
       console.error("[Studio Error]", err);
@@ -468,124 +467,122 @@ export default function VolunteerAudioStudioModal({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Approximate word count and read duration for teleprompter
+  const bookCover = (book as any).cover_image || (book as any).coverImage || '';
+  const bookAuthor = book.authorName || (book as any).author || "O'zbek Adabiyoti";
   const wordCount = currentChapter.content ? currentChapter.content.split(/\s+/).filter(Boolean).length : 0;
   const estimatedReadingMinutes = Math.max(1, Math.round(wordCount / 140));
 
   return (
-    <div className="fixed inset-0 z-[1300] bg-black/85 backdrop-blur-xl flex items-center justify-center p-2 sm:p-5 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[1300] bg-black/65 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 md:p-6 animate-in fade-in duration-200">
       <div 
-        className="relative w-full max-w-6xl bg-[#0D0E13] border border-stone-800/80 rounded-3xl shadow-2xl overflow-hidden h-[94vh] max-h-[890px] flex flex-col text-stone-200"
-        style={{
-          boxShadow: '0 30px 100px -20px rgba(0, 0, 0, 0.9), 0 0 50px rgba(197, 160, 89, 0.08)'
-        }}
+        className="relative w-full max-w-6xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden h-[94vh] max-h-[880px] flex flex-col text-stone-900 dark:text-stone-100 transition-colors"
       >
-        {/* Top copper-gold luxury hairline */}
-        <div className="h-[2px] w-full bg-gradient-to-r from-[#E05638] via-[#C5A059] to-[#E05638]" />
+        {/* Top Bookify Signature Terracotta & Gold Hairline */}
+        <div className="h-1 w-full bg-gradient-to-r from-[#E05638] via-[#C5A059] to-[#E05638] shrink-0" />
 
-        {/* ── Studio Workstation Header Bar ── */}
-        <header className="px-5 sm:px-6 py-3.5 border-b border-white/5 flex items-center justify-between gap-4 bg-[#12141C]/90 shrink-0">
+        {/* ── Studio Header Bar (Bookify Native Design) ── */}
+        <header className="px-5 sm:px-6 py-3.5 border-b border-stone-200/80 dark:border-white/10 flex items-center justify-between gap-4 bg-stone-50/70 dark:bg-white/[0.02] shrink-0">
           
           {/* Left: Book Cover Miniature & Title & Narrator */}
           <div className="flex items-center gap-3.5 min-w-0">
-            <div className="relative w-9 h-12 rounded bg-stone-900 border border-white/10 shadow-md shrink-0 overflow-hidden group">
-              {((book as any).cover_image || (book as any).coverImage) ? (
+            <div className="relative w-9 h-12 rounded-lg bg-stone-100 dark:bg-stone-800 border border-stone-200/90 dark:border-white/10 shadow-xs shrink-0 overflow-hidden">
+              {bookCover ? (
                 <img 
-                  src={(book as any).cover_image || (book as any).coverImage} 
+                  src={bookCover} 
                   alt={book.title} 
                   className="w-full h-full object-cover" 
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-xs text-[#C5A059] font-serif font-bold">
+                <div className="w-full h-full flex items-center justify-center text-xs text-[#E05638] font-serif font-bold bg-[#E05638]/10">
                   {book.title.slice(0, 2)}
                 </div>
               )}
               {/* Spine highlight */}
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-white/20 pointer-events-none" />
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-white/30 pointer-events-none" />
             </div>
 
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className="font-serif font-bold text-sm sm:text-base text-white tracking-tight truncate max-w-[220px] sm:max-w-xs md:max-w-md">
+                <h3 className="font-serif font-bold text-sm sm:text-base text-stone-950 dark:text-white tracking-tight truncate max-w-[220px] sm:max-w-xs md:max-w-md">
                   {book.title}
                 </h3>
-                <span className="hidden md:inline-flex px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-white/5 text-stone-400 border border-white/5">
-                  {book.authorName || (book as any).author || "Muallif"}
+                <span className="hidden md:inline-flex px-2 py-0.5 rounded text-[10px] font-medium bg-stone-200/60 dark:bg-white/10 text-stone-700 dark:text-stone-300">
+                  {bookAuthor}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-stone-400 mt-0.5 truncate">
+              <div className="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400 mt-0.5 truncate">
                 <span>Ovoz ijrochisi:</span>
-                <span className="text-[#C5A059] font-medium truncate">
+                <span className="text-[#E05638] dark:text-[#C5A059] font-medium truncate">
                   {currentUser?.name || 'Volontyor Diktor'}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Center: Live Studio Cockpit State */}
+          {/* Center: Live Studio State Indicator */}
           <div className="hidden sm:flex items-center">
             {isRecording ? (
               <div className={`flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-mono font-bold tracking-wider border transition-all ${
                 isPaused 
-                  ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' 
-                  : 'bg-red-500/20 text-red-400 border-red-500/40 shadow-lg shadow-red-500/20 animate-pulse'
+                  ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30' 
+                  : 'bg-[#E05638]/15 text-[#E05638] border-[#E05638]/35 shadow-xs animate-pulse'
               }`}>
-                <span className={`w-2 h-2 rounded-full ${isPaused ? 'bg-amber-400' : 'bg-red-500'}`} />
+                <span className={`w-2 h-2 rounded-full ${isPaused ? 'bg-amber-500' : 'bg-[#E05638]'}`} />
                 <span>{isPaused ? 'STUDIO PAUZA' : '● BROADCAST ON AIR'}</span>
               </div>
             ) : (
-              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/5 text-[11px] font-mono text-stone-400">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
-                <span className="text-stone-300 font-semibold">STUDIO STANDBY</span>
-                <span className="text-stone-500">•</span>
-                <span className="text-stone-400">48 kHz OPUS</span>
+              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-stone-100 dark:bg-white/5 border border-stone-200/80 dark:border-white/10 text-[11px] font-mono text-stone-600 dark:text-stone-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <span className="text-stone-700 dark:text-stone-300 font-semibold">STUDIYA TAYYOR</span>
+                <span className="text-stone-400">•</span>
+                <span>48 kHz OPUS</span>
               </div>
             )}
           </div>
 
-          {/* Right: Studio Close Button */}
+          {/* Right: Close Button */}
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={onClose}
-              className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 text-stone-400 hover:text-white transition-all flex items-center justify-center border border-white/5 hover:border-white/10 cursor-pointer"
+              className="p-2 rounded-xl text-stone-400 hover:text-stone-700 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
               title="Studiyani yopish"
               aria-label="Studiyani yopish"
             >
-              <X size={18} />
+              <X size={19} />
             </button>
           </div>
         </header>
 
         {/* ── Main Workstation Stage ── */}
         {isSuccess ? (
-          /* ── SUCCESS EMBEDDED CELEBRATION ── */
+          /* ── SUCCESS STATE (Harmonized with Bookify Celebrations) ── */
           <div className="p-8 sm:p-14 text-center flex-1 flex flex-col items-center justify-center space-y-6 animate-in fade-in">
-            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500/20 via-[#C5A059]/20 to-teal-500/20 text-emerald-400 flex items-center justify-center text-4xl border border-emerald-500/30 shadow-2xl shadow-emerald-500/10">
-              <CheckCircle2 size={44} className="text-emerald-400" />
+            <div className="w-20 h-20 rounded-3xl bg-[#E05638]/15 dark:bg-[#E05638]/20 text-[#E05638] flex items-center justify-center text-4xl border border-[#E05638]/30 shadow-lg">
+              <CheckCircle2 size={44} className="text-[#E05638]" />
             </div>
 
             <div className="space-y-2 max-w-lg">
-              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-white tracking-tight">
+              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-950 dark:text-white tracking-tight">
                 Audio Muvaffaqiyatli Saqlandi!
               </h2>
-              <p className="text-sm text-stone-400 leading-relaxed">
+              <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed">
                 «{book.title}» asarining <strong>{trackTitle}</strong> treki AWS serveringizga xavfsiz joylashtirildi va asar tinglovchilari uchun tayyorlandi.
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-[#131622] border border-white/10 text-left w-full max-w-md space-y-3 text-xs shadow-xl">
-              <div className="flex justify-between items-center border-b border-white/5 pb-2.5">
-                <span className="text-stone-400">Yozilgan Bob:</span>
-                <span className="font-semibold text-white truncate max-w-[220px]">{uploadedTrackInfo?.title || trackTitle}</span>
+            <div className="p-5 rounded-2xl bg-stone-50 dark:bg-white/[0.03] border border-stone-200/90 dark:border-white/10 text-left w-full max-w-md space-y-3 text-xs shadow-xs">
+              <div className="flex justify-between items-center border-b border-stone-200/60 dark:border-white/5 pb-2.5">
+                <span className="text-stone-500 dark:text-stone-400">Yozilgan Bob:</span>
+                <span className="font-semibold text-stone-900 dark:text-white truncate max-w-[220px]">{uploadedTrackInfo?.title || trackTitle}</span>
               </div>
-              <div className="flex justify-between items-center border-b border-white/5 pb-2.5">
-                <span className="text-stone-400">Audio Davomiyligi:</span>
-                <span className="font-mono text-[#C5A059] font-bold text-sm">{formatTimecode(recordingSeconds)}</span>
+              <div className="flex justify-between items-center border-b border-stone-200/60 dark:border-white/5 pb-2.5">
+                <span className="text-stone-500 dark:text-stone-400">Audio Davomiyligi:</span>
+                <span className="font-mono text-[#E05638] dark:text-[#C5A059] font-bold text-sm">{formatTimecode(recordingSeconds)}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-stone-400">Hisoblangan Volontyorlik Staji:</span>
-                <span className="font-bold text-emerald-400 font-mono text-sm">
+                <span className="text-stone-500 dark:text-stone-400">Hisoblangan Volontyorlik Staji:</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono text-sm">
                   +{Math.max(0.25, Math.round((recordingSeconds / 3600) * 100) / 100)} soat
                 </span>
               </div>
@@ -599,7 +596,7 @@ export default function VolunteerAudioStudioModal({
                   handleReset();
                   setCurrentChapterIndex(prev => Math.min(chapters.length - 1, prev + 1));
                 }}
-                className="px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium text-xs transition-all cursor-pointer flex items-center gap-2 border border-white/10"
+                className="px-6 py-3.5 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-white/10 dark:hover:bg-white/15 text-stone-800 dark:text-white font-semibold text-xs transition-all cursor-pointer flex items-center gap-2 border border-stone-200 dark:border-white/10"
               >
                 <span>Keyingi Bobga O'tish</span>
                 <ChevronRight size={14} />
@@ -608,7 +605,7 @@ export default function VolunteerAudioStudioModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-[#E05638] via-[#C5A059] to-[#E05638] text-white font-bold text-xs shadow-xl hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+                className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-[#E05638] to-amber-500 hover:from-[#d04b30] hover:to-amber-600 text-white font-bold text-xs shadow-md shadow-[#E05638]/20 transition-all cursor-pointer"
               >
                 Studiyadan Chiqish
               </button>
@@ -618,28 +615,28 @@ export default function VolunteerAudioStudioModal({
           /* ── DUAL BAY WORKSTATION ── */
           <div className="grid grid-cols-1 lg:grid-cols-12 flex-1 overflow-hidden">
             
-            {/* ── LEFT BAY: The Teleprompter Stage (60% width) ── */}
-            <div className="lg:col-span-7 flex flex-col bg-[#0B0C10] border-b lg:border-b-0 lg:border-r border-white/5 overflow-hidden">
+            {/* ── LEFT BAY: The Teleprompter (Authentic Bookify Reading Surface) ── */}
+            <div className="lg:col-span-7 flex flex-col bg-[#FAF6EE] dark:bg-[#0E1218] border-b lg:border-b-0 lg:border-r border-stone-200/90 dark:border-white/10 overflow-hidden transition-colors">
               
               {/* Teleprompter Command Bar */}
-              <div className="px-4 sm:px-6 py-3 bg-[#11131A] border-b border-white/5 flex items-center justify-between gap-3 shrink-0 flex-wrap">
+              <div className="px-4 sm:px-6 py-2.5 bg-[#F5EFE0] dark:bg-[#141824] border-b border-stone-200/90 dark:border-white/10 flex items-center justify-between gap-3 shrink-0 flex-wrap">
                 
-                {/* Chapter Navigator Pill */}
+                {/* Chapter Navigator */}
                 <div className="flex items-center gap-2 min-w-0">
-                  <BookOpen size={15} className="text-[#C5A059] shrink-0" />
+                  <BookOpen size={15} className="text-[#E05638] shrink-0" />
                   
                   {isLoadingChapters ? (
-                    <span className="text-xs text-stone-400 flex items-center gap-1.5">
-                      <Loader2 size={13} className="animate-spin text-[#C5A059]" />
+                    <span className="text-xs text-stone-500 dark:text-stone-400 flex items-center gap-1.5">
+                      <Loader2 size={13} className="animate-spin text-[#E05638]" />
                       <span>Matn yuklanmoqda...</span>
                     </span>
                   ) : chapters.length > 1 ? (
-                    <div className="flex items-center gap-1 bg-black/50 px-2 py-1 rounded-xl border border-white/10 shadow-inner">
+                    <div className="flex items-center gap-1 bg-white dark:bg-black/40 px-2 py-1 rounded-xl border border-stone-200/90 dark:border-white/10 shadow-2xs">
                       <button
                         type="button"
                         onClick={() => setCurrentChapterIndex(prev => Math.max(0, prev - 1))}
                         disabled={currentChapterIndex === 0}
-                        className="p-1 rounded text-stone-400 hover:text-white disabled:opacity-20 cursor-pointer transition-colors"
+                        className="p-1 rounded text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white disabled:opacity-20 cursor-pointer transition-colors"
                         title="Oldingi bob"
                       >
                         <ChevronLeft size={14} />
@@ -648,10 +645,10 @@ export default function VolunteerAudioStudioModal({
                       <select
                         value={currentChapterIndex}
                         onChange={(e) => setCurrentChapterIndex(Number(e.target.value))}
-                        className="bg-transparent text-xs font-serif font-medium text-stone-200 outline-none cursor-pointer max-w-[170px] sm:max-w-[210px] truncate"
+                        className="bg-transparent text-xs font-serif font-medium text-stone-800 dark:text-stone-200 outline-none cursor-pointer max-w-[170px] sm:max-w-[210px] truncate"
                       >
                         {chapters.map((ch, idx) => (
-                          <option key={ch.id} value={idx} className="bg-stone-900 text-white">
+                          <option key={ch.id} value={idx} className="bg-white dark:bg-stone-900 text-stone-900 dark:text-white">
                             {ch.number}-bob: {ch.title}
                           </option>
                         ))}
@@ -661,46 +658,46 @@ export default function VolunteerAudioStudioModal({
                         type="button"
                         onClick={() => setCurrentChapterIndex(prev => Math.min(chapters.length - 1, prev + 1))}
                         disabled={currentChapterIndex === chapters.length - 1}
-                        className="p-1 rounded text-stone-400 hover:text-white disabled:opacity-20 cursor-pointer transition-colors"
+                        className="p-1 rounded text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white disabled:opacity-20 cursor-pointer transition-colors"
                         title="Keyingi bob"
                       >
                         <ChevronRight size={14} />
                       </button>
                     </div>
                   ) : (
-                    <span className="text-xs font-serif font-semibold text-stone-200 truncate">
+                    <span className="text-xs font-serif font-semibold text-stone-800 dark:text-stone-200 truncate">
                       {currentChapter.title}
                     </span>
                   )}
                 </div>
 
-                {/* Teleprompter Precision Controls: Pacing, Focus Eyeline, Font Size */}
+                {/* Teleprompter Precision Controls */}
                 <div className="flex items-center gap-2 shrink-0">
                   
-                  {/* Focus Guide Toggle */}
+                  {/* Focus Eyeline Toggle */}
                   <button
                     type="button"
                     onClick={() => setShowFocusGuide(!showFocusGuide)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-all flex items-center gap-1.5 cursor-pointer border ${
+                    className={`px-2.5 py-1 rounded-xl text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer border ${
                       showFocusGuide
-                        ? 'bg-[#C5A059]/15 text-[#C5A059] border-[#C5A059]/30 shadow-sm'
-                        : 'bg-white/5 text-stone-500 border-white/5 hover:text-stone-300'
+                        ? 'bg-amber-500/20 text-amber-900 dark:text-amber-300 border-amber-500/35 shadow-2xs'
+                        : 'bg-white dark:bg-white/5 text-stone-500 border-stone-200/90 dark:border-white/10 hover:text-stone-800 dark:hover:text-stone-200'
                     }`}
                     title="O'qish uchun fokus chizig'ini yoqish/o'chirish"
                   >
-                    {showFocusGuide ? <Eye size={13} /> : <EyeOff size={13} />}
+                    {showFocusGuide ? <Eye size={13} className="text-[#E05638]" /> : <EyeOff size={13} />}
                     <span className="hidden sm:inline">Fokus</span>
                   </button>
 
                   {/* Auto-scroll Speed Segmented Control */}
-                  <div className="flex items-center gap-0.5 bg-black/50 p-0.5 rounded-lg border border-white/10 text-xs font-mono">
+                  <div className="flex items-center gap-0.5 bg-white dark:bg-black/40 p-0.5 rounded-xl border border-stone-200/90 dark:border-white/10 text-xs shadow-2xs">
                     <button
                       type="button"
                       onClick={() => setAutoScrollSpeed(0)}
-                      className={`px-2 py-0.5 rounded text-[11px] transition-all cursor-pointer ${
+                      className={`px-2 py-0.5 rounded-lg text-[11px] transition-all cursor-pointer ${
                         autoScrollSpeed === 0 
-                          ? 'bg-stone-800 text-white font-bold shadow-sm' 
-                          : 'text-stone-400 hover:text-white'
+                          ? 'bg-stone-200 dark:bg-stone-800 text-stone-900 dark:text-white font-bold' 
+                          : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                       }`}
                       title="Avto-siljishni to'xtatish"
                     >
@@ -709,10 +706,10 @@ export default function VolunteerAudioStudioModal({
                     <button
                       type="button"
                       onClick={() => setAutoScrollSpeed(1)}
-                      className={`px-2 py-0.5 rounded text-[11px] transition-all cursor-pointer ${
+                      className={`px-2 py-0.5 rounded-lg text-[11px] transition-all cursor-pointer ${
                         autoScrollSpeed === 1 
-                          ? 'bg-[#C5A059] text-black font-bold shadow-sm' 
-                          : 'text-stone-400 hover:text-white'
+                          ? 'bg-[#E05638] text-white font-bold shadow-2xs' 
+                          : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                       }`}
                       title="Sekin tezlik"
                     >
@@ -721,10 +718,10 @@ export default function VolunteerAudioStudioModal({
                     <button
                       type="button"
                       onClick={() => setAutoScrollSpeed(2)}
-                      className={`px-2 py-0.5 rounded text-[11px] transition-all cursor-pointer ${
+                      className={`px-2 py-0.5 rounded-lg text-[11px] transition-all cursor-pointer ${
                         autoScrollSpeed === 2 
-                          ? 'bg-[#C5A059] text-black font-bold shadow-sm' 
-                          : 'text-stone-400 hover:text-white'
+                          ? 'bg-[#E05638] text-white font-bold shadow-2xs' 
+                          : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                       }`}
                       title="O'rtacha tezlik"
                     >
@@ -733,10 +730,10 @@ export default function VolunteerAudioStudioModal({
                     <button
                       type="button"
                       onClick={() => setAutoScrollSpeed(3)}
-                      className={`px-2 py-0.5 rounded text-[11px] transition-all cursor-pointer ${
+                      className={`px-2 py-0.5 rounded-lg text-[11px] transition-all cursor-pointer ${
                         autoScrollSpeed === 3 
-                          ? 'bg-[#E05638] text-white font-bold shadow-sm' 
-                          : 'text-stone-400 hover:text-white'
+                          ? 'bg-[#C74326] text-white font-bold shadow-2xs' 
+                          : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                       }`}
                       title="Tez siljish"
                     >
@@ -745,22 +742,22 @@ export default function VolunteerAudioStudioModal({
                   </div>
 
                   {/* Font Size Adjust */}
-                  <div className="flex items-center gap-1 bg-black/50 px-2 py-1 rounded-lg border border-white/10 text-xs">
+                  <div className="flex items-center gap-1 bg-white dark:bg-black/40 px-2 py-1 rounded-xl border border-stone-200/90 dark:border-white/10 text-xs shadow-2xs">
                     <button
                       type="button"
                       onClick={() => setFontSize(prev => Math.max(15, prev - 2))}
-                      className="p-0.5 text-stone-400 hover:text-white cursor-pointer"
+                      className="p-0.5 text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white cursor-pointer"
                       title="Shriftni kichraytirish"
                     >
                       A-
                     </button>
-                    <span className="text-[10px] font-mono text-stone-500 px-1 select-none">
+                    <span className="text-[10px] font-mono text-stone-400 px-1 select-none">
                       {fontSize}
                     </span>
                     <button
                       type="button"
                       onClick={() => setFontSize(prev => Math.min(26, prev + 2))}
-                      className="p-0.5 text-stone-400 hover:text-white cursor-pointer"
+                      className="p-0.5 text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white cursor-pointer"
                       title="Shriftni kattalashtirish"
                     >
                       A+
@@ -771,15 +768,15 @@ export default function VolunteerAudioStudioModal({
 
               </div>
 
-              {/* Scrollable Editorial Teleprompter Canvas */}
+              {/* Scrollable Reading Surface */}
               <div className="relative flex-1 overflow-hidden">
                 
-                {/* Visual Eyeline Laser / Focus Guide across upper reading zone */}
+                {/* Visual Reading Eyeline Guide */}
                 {showFocusGuide && (
                   <div className="absolute top-[35%] left-0 right-0 pointer-events-none z-20 flex items-center justify-between px-4 sm:px-8 select-none">
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#C5A059] shadow-[0_0_8px_#C5A059] shrink-0" />
-                    <div className="flex-1 mx-3 h-[1px] bg-gradient-to-r from-[#C5A059]/40 via-[#C5A059]/70 to-[#C5A059]/40 shadow-[0_0_8px_rgba(197,160,89,0.3)]" />
-                    <span className="text-[9px] font-mono tracking-widest uppercase text-[#C5A059]/80 px-2 py-0.5 rounded bg-black/60 border border-[#C5A059]/30">
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#E05638] shadow-sm shrink-0" />
+                    <div className="flex-1 mx-3 h-[2px] bg-gradient-to-r from-[#E05638]/30 via-[#E05638]/70 to-[#E05638]/30" />
+                    <span className="text-[9px] font-mono tracking-wider uppercase text-white bg-[#E05638] px-2 py-0.5 rounded-full shadow-xs">
                       O'qish Chizig'i
                     </span>
                   </div>
@@ -787,7 +784,7 @@ export default function VolunteerAudioStudioModal({
 
                 <div 
                   ref={teleprompterBoxRef}
-                  className="h-full overflow-y-auto px-6 sm:px-12 py-10 font-serif selection:bg-[#C5A059]/30 selection:text-[#FFF]"
+                  className="h-full overflow-y-auto px-6 sm:px-12 py-10 font-serif selection:bg-[#E05638]/20 selection:text-[#E05638]"
                   style={{
                     fontSize: `${fontSize}px`,
                     lineHeight: 2.1,
@@ -796,31 +793,31 @@ export default function VolunteerAudioStudioModal({
                 >
                   {isLoadingChapters ? (
                     <div className="h-full flex flex-col items-center justify-center py-20 space-y-3">
-                      <Loader2 size={32} className="animate-spin text-[#C5A059]" />
-                      <p className="text-xs text-stone-400 font-sans tracking-wide">
+                      <Loader2 size={32} className="animate-spin text-[#E05638]" />
+                      <p className="text-xs text-stone-500 dark:text-stone-400 font-sans tracking-wide">
                         Kitob sahifalari va matnlari o'qilmoqda...
                       </p>
                     </div>
                   ) : (
                     <div className="max-w-2xl mx-auto space-y-6 pb-40">
                       
-                      {/* Chapter Title Badge & Metadata */}
-                      <div className="pb-6 border-b border-white/5 space-y-1.5">
-                        <div className="flex items-center justify-between text-stone-400 text-xs font-mono">
-                          <span className="uppercase tracking-widest text-[#C5A059] text-[11px] font-semibold">
+                      {/* Chapter Title Badge */}
+                      <div className="pb-6 border-b border-stone-300/60 dark:border-white/10 space-y-1.5">
+                        <div className="flex items-center justify-between text-stone-500 dark:text-stone-400 text-xs font-mono">
+                          <span className="uppercase tracking-widest text-[#E05638] dark:text-[#C5A059] text-[11px] font-semibold">
                             {book.title} • {currentChapterIndex + 1} / {chapters.length}-bob
                           </span>
-                          <span className="text-stone-500">
+                          <span>
                             {wordCount} ta so'z • ~{estimatedReadingMinutes} daqiqa
                           </span>
                         </div>
-                        <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                        <h2 className="text-2xl sm:text-3xl font-bold text-stone-900 dark:text-white tracking-tight">
                           {currentChapter.title}
                         </h2>
                       </div>
 
-                      {/* Editorial Drop-Cap Text */}
-                      <div className="text-[#EAE6DF] whitespace-pre-line text-justify tracking-normal select-text leading-relaxed">
+                      {/* Editorial Paragraphs with Drop-Cap */}
+                      <div className="text-stone-800 dark:text-[#EAE6DF] whitespace-pre-line text-justify tracking-normal select-text leading-relaxed">
                         {currentChapter.content ? (
                           currentChapter.content
                         ) : (
@@ -830,9 +827,9 @@ export default function VolunteerAudioStudioModal({
                         )}
                       </div>
 
-                      {/* Chapter End Literary Seal */}
-                      <div className="pt-12 text-center text-xs text-stone-500 font-sans border-t border-white/5 space-y-1">
-                        <div className="text-stone-400 font-mono">
+                      {/* Literary End of Chapter Seal */}
+                      <div className="pt-12 text-center text-xs text-stone-500 dark:text-stone-400 font-sans border-t border-stone-300/60 dark:border-white/10 space-y-1">
+                        <div className="font-mono">
                           ✦ {currentChapter.number}-bob yakunlandi • Ovoz yozuvini to'xtatish uchun o'ngdagi konsoldan foydalaning ✦
                         </div>
                       </div>
@@ -845,49 +842,49 @@ export default function VolunteerAudioStudioModal({
 
             </div>
 
-            {/* ── RIGHT BAY: Master Sound Console & Acoustic Deck (40% width) ── */}
-            <div className="lg:col-span-5 p-5 sm:p-7 flex flex-col justify-between bg-[#101219] border-t lg:border-t-0 border-white/5 space-y-5 overflow-y-auto">
+            {/* ── RIGHT BAY: Master Sound Console (Theme-Harmonized) ── */}
+            <div className="lg:col-span-5 p-5 sm:p-7 flex flex-col justify-between bg-stone-50 dark:bg-[#121620] border-t lg:border-t-0 lg:border-l border-stone-200/90 dark:border-white/10 space-y-5 overflow-y-auto transition-colors">
               
-              {/* Top: Unified Acoustic Cockpit (Timecode + Oscilloscope + VU HUD) */}
+              {/* Top: Unified Acoustic Monitor Deck */}
               <div className="space-y-4">
                 
-                {/* The Recessed Glass HUD */}
-                <div className="relative rounded-2xl bg-[#08090C] border border-white/10 shadow-2xl p-4 overflow-hidden">
+                {/* Acoustic Monitor Card */}
+                <div className="rounded-2xl bg-white dark:bg-black/40 border border-stone-200/90 dark:border-white/10 shadow-xs p-4 overflow-hidden">
                   
-                  {/* HUD Header Strip */}
-                  <div className="flex items-center justify-between text-[11px] font-mono text-stone-400 border-b border-white/5 pb-2 mb-3">
+                  {/* Monitor Header */}
+                  <div className="flex items-center justify-between text-[11px] font-mono text-stone-500 dark:text-stone-400 border-b border-stone-100 dark:border-white/5 pb-2 mb-3">
                     <div className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full ${isRecording ? 'bg-red-500 animate-ping' : 'bg-stone-600'}`} />
-                      <span className="text-stone-300 font-semibold tracking-wider">
+                      <span className={`w-2 h-2 rounded-full ${isRecording ? 'bg-[#E05638] animate-ping' : 'bg-emerald-500'}`} />
+                      <span className="font-semibold text-stone-700 dark:text-stone-300 tracking-wider">
                         {isRecording ? "CH-01 • REC MASTER" : "CH-01 • AUDIO MONITOR"}
                       </span>
                     </div>
                     <div className="flex items-center gap-1.5 font-bold">
-                      <span className="text-stone-500">VU PEAK:</span>
+                      <span className="text-stone-400">VU PEAK:</span>
                       <span className={
                         micDbLevel > -6 
-                          ? 'text-red-400' 
+                          ? 'text-[#E05638]' 
                           : micDbLevel > -18 
-                          ? 'text-[#C5A059]' 
-                          : 'text-emerald-400'
+                          ? 'text-amber-600 dark:text-amber-400' 
+                          : 'text-emerald-600 dark:text-emerald-400'
                       }>
                         {isRecording ? `${micDbLevel} dB` : 'OFF'}
                       </span>
                     </div>
                   </div>
 
-                  {/* High-Precision Digital Timecode Display */}
+                  {/* Timecode Readout */}
                   <div className="text-center py-2 relative">
-                    <span className="text-[9px] font-mono tracking-widest uppercase text-stone-500 block mb-1">
-                      {isRecording ? "Yozilayotgan Vaqt (Time Elapsed)" : audioBlob ? "Trek Davomiyligi" : "Kutish Vaqti"}
+                    <span className="text-[9px] font-mono tracking-widest uppercase text-stone-400 dark:text-stone-500 block mb-1">
+                      {isRecording ? "Yozilayotgan Vaqt" : audioBlob ? "Trek Davomiyligi" : "Kutish Rejimi"}
                     </span>
-                    <div className="font-mono font-bold text-4xl sm:text-5xl tracking-widest text-white drop-shadow-[0_2px_12px_rgba(255,255,255,0.15)] select-none">
+                    <div className="font-mono font-bold text-4xl sm:text-5xl tracking-widest text-stone-900 dark:text-white select-none">
                       {formatTimecode(recordingSeconds)}
                     </div>
                   </div>
 
-                  {/* High-Resolution Spectrum Canvas */}
-                  <div className="relative h-24 rounded-xl bg-black/60 border border-white/5 overflow-hidden flex items-center justify-center my-2">
+                  {/* Audio Waveform / Spectrogram Canvas */}
+                  <div className="relative h-24 rounded-xl bg-stone-100 dark:bg-black/60 border border-stone-200/80 dark:border-white/5 overflow-hidden flex items-center justify-center my-2">
                     <canvas 
                       ref={canvasRef} 
                       width={440} 
@@ -896,29 +893,29 @@ export default function VolunteerAudioStudioModal({
                     />
 
                     {!isRecording && !audioBlob && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center text-stone-500 text-xs space-y-1 bg-black/40 backdrop-blur-[1px]">
-                        <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-stone-400">
-                          <Mic size={16} className="text-[#C5A059]" />
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-stone-500 text-xs space-y-1 bg-stone-100/70 dark:bg-black/40 backdrop-blur-[1px]">
+                        <div className="w-8 h-8 rounded-full bg-white dark:bg-white/10 flex items-center justify-center text-[#E05638] shadow-xs">
+                          <Mic size={16} />
                         </div>
-                        <span className="text-[10px] font-mono text-stone-400">
+                        <span className="text-[10px] font-mono text-stone-600 dark:text-stone-400 font-medium">
                           Mikrofon tayyor • 48 kHz / 24-bit
                         </span>
                       </div>
                     )}
                   </div>
 
-                  {/* Dynamic Studio Level Meter (Multi-segment VU bar) */}
+                  {/* VU Level Bar */}
                   <div className="pt-2">
-                    <div className="flex justify-between text-[9px] font-mono text-stone-500 mb-1 px-1">
+                    <div className="flex justify-between text-[9px] font-mono text-stone-400 dark:text-stone-500 mb-1 px-1">
                       <span>-48dB</span>
                       <span>-24dB</span>
                       <span>-12dB</span>
                       <span>-6dB</span>
-                      <span className="text-red-400 font-bold">0dB</span>
+                      <span className="text-[#E05638] font-bold">0dB</span>
                     </div>
-                    <div className="h-2 rounded-full bg-stone-900 border border-white/5 overflow-hidden p-0.5">
+                    <div className="h-2 rounded-full bg-stone-200 dark:bg-stone-800 overflow-hidden p-0.5">
                       <div 
-                        className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-[#C5A059] to-red-500 transition-all duration-75"
+                        className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-amber-500 to-[#E05638] transition-all duration-75"
                         style={{ width: `${isRecording ? micVolumePercent : 0}%` }}
                       />
                     </div>
@@ -926,82 +923,82 @@ export default function VolunteerAudioStudioModal({
 
                 </div>
 
-                {/* Track Channel Identifier (Tape Label Style) */}
+                {/* Track Channel Identifier (Metadata) */}
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-mono tracking-wider uppercase text-stone-400 flex items-center justify-between">
+                  <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 flex items-center justify-between">
                     <span>Trek Identifikatori (Bob Nomi):</span>
-                    <span className="text-stone-500">Avto-biriktiriladi</span>
+                    <span className="text-[10px] text-stone-400 font-normal">Avto-biriktiriladi</span>
                   </label>
                   <input
                     type="text"
                     value={trackTitle}
                     onChange={(e) => setTrackTitle(e.target.value)}
                     placeholder="1-bob: Kirish qismi"
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#090A0E] border border-white/10 text-xs font-mono text-white placeholder-stone-600 focus:outline-none focus:border-[#C5A059] transition-colors shadow-inner"
+                    className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-black/40 border border-stone-200/90 dark:border-white/10 text-xs font-medium text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:border-[#E05638] focus:ring-1 focus:ring-[#E05638]/20 transition-all shadow-xs"
                   />
                 </div>
 
               </div>
 
-              {/* ── Middle: Master Tactile Broadcast Record Cockpit ── */}
+              {/* ── Middle: Master Tactile Broadcast Controls ── */}
               <div className="space-y-4 pt-1">
                 
-                {/* 1. STANDBY: Master Circular Broadcast Button */}
+                {/* 1. STANDBY: Bookify Master Record Button */}
                 {!isRecording && !audioBlob && (
                   <div className="flex flex-col items-center justify-center py-2 space-y-3">
                     <button
                       type="button"
                       onClick={startRecording}
-                      className="group relative w-24 h-24 rounded-full flex items-center justify-center transition-transform active:scale-95 cursor-pointer"
+                      className="group relative w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center transition-transform active:scale-95 cursor-pointer"
                       style={{
-                        background: 'radial-gradient(circle at 30% 30%, #303545, #151822)',
-                        boxShadow: '0 10px 30px rgba(0,0,0,0.6), inset 0 2px 3px rgba(255,255,255,0.2), inset 0 -3px 5px rgba(0,0,0,0.5)'
+                        background: 'radial-gradient(circle at 35% 35%, #F4F1EA, #E2DDD3)',
+                        boxShadow: '0 8px 25px rgba(224, 86, 56, 0.25), inset 0 2px 4px rgba(255,255,255,0.8), inset 0 -3px 4px rgba(0,0,0,0.1)'
                       }}
                       title="Ovoz yozishni boshlash"
                     >
-                      {/* Metallic outer bezel */}
-                      <div className="absolute inset-1 rounded-full border-2 border-stone-700/80 group-hover:border-[#C5A059]/60 transition-colors" />
+                      {/* Outer Ring */}
+                      <div className="absolute inset-1 rounded-full border border-stone-300 dark:border-stone-700 group-hover:border-[#E05638]/50 transition-colors" />
 
-                      {/* Glowing ruby inner core */}
+                      {/* Inner Terracotta/Coral Core */}
                       <div 
-                        className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all group-hover:scale-105"
+                        className="w-13 h-13 sm:w-15 sm:h-15 rounded-full flex items-center justify-center shadow-md transition-all group-hover:scale-105"
                         style={{
-                          background: 'radial-gradient(circle at 35% 35%, #EF4444, #991B1B)',
-                          boxShadow: '0 0 25px rgba(239, 68, 68, 0.4), inset 0 2px 4px rgba(255,255,255,0.3)'
+                          background: 'linear-gradient(135deg, #E05638 0%, #C74326 100%)',
+                          boxShadow: '0 4px 15px rgba(224, 86, 56, 0.4), inset 0 2px 3px rgba(255,255,255,0.3)'
                         }}
                       >
-                        <div className="w-5 h-5 rounded-full bg-white shadow-md animate-pulse" />
+                        <Mic size={22} className="text-white" />
                       </div>
                     </button>
 
                     <div className="text-center space-y-0.5">
-                      <span className="font-bold text-xs tracking-wider uppercase text-white block">
+                      <span className="font-bold text-xs uppercase tracking-wider text-stone-900 dark:text-white block">
                         Ovoz Yozishni Boshlash
                       </span>
-                      <span className="text-[10px] font-mono text-stone-400 block">
-                        Qizil tugmani bosing • Mikrofon 48kHz
+                      <span className="text-[10px] text-stone-500 dark:text-stone-400 font-medium block">
+                        Tugmani bosing • Mikrofon 48kHz
                       </span>
                     </div>
                   </div>
                 )}
 
-                {/* 2. RECORDING: Tactile Master Pause & Stop Strip */}
+                {/* 2. RECORDING: Master Pause & Stop Strip */}
                 {isRecording && (
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <button
                         type="button"
                         onClick={pauseRecording}
-                        className="py-3.5 rounded-xl font-mono font-bold text-xs text-white transition-all active:scale-[0.98] bg-white/10 hover:bg-white/15 border border-white/10 cursor-pointer flex items-center justify-center gap-2"
+                        className="py-3.5 rounded-xl font-mono font-bold text-xs text-stone-800 dark:text-white transition-all active:scale-[0.98] bg-stone-200/70 hover:bg-stone-200 dark:bg-white/10 dark:hover:bg-white/15 border border-stone-300/80 dark:border-white/10 cursor-pointer flex items-center justify-center gap-2 shadow-2xs"
                       >
-                        {isPaused ? <Play size={16} className="text-emerald-400" /> : <Pause size={16} className="text-amber-400" />}
+                        {isPaused ? <Play size={16} className="text-emerald-600 dark:text-emerald-400" /> : <Pause size={16} className="text-amber-600 dark:text-amber-400" />}
                         <span>{isPaused ? "Davom Etish" : "Pauza"}</span>
                       </button>
 
                       <button
                         type="button"
                         onClick={stopRecording}
-                        className="py-3.5 rounded-xl font-mono font-bold text-xs text-white transition-all active:scale-[0.98] bg-red-600 hover:bg-red-700 shadow-xl shadow-red-600/30 cursor-pointer flex items-center justify-center gap-2"
+                        className="py-3.5 rounded-xl font-mono font-bold text-xs text-white transition-all active:scale-[0.98] bg-gradient-to-r from-[#E05638] to-[#C74326] hover:brightness-105 shadow-md shadow-[#E05638]/25 cursor-pointer flex items-center justify-center gap-2"
                       >
                         <Square size={16} fill="white" />
                         <span>To'xtatish (Stop)</span>
@@ -1009,36 +1006,36 @@ export default function VolunteerAudioStudioModal({
                     </div>
 
                     <div className="text-center">
-                      <span className="text-[10px] font-mono text-stone-400 flex items-center justify-center gap-1.5">
-                        <Radio size={12} className="text-red-400 animate-pulse" />
+                      <span className="text-[10px] font-mono text-stone-500 dark:text-stone-400 flex items-center justify-center gap-1.5">
+                        <Radio size={12} className="text-[#E05638] animate-pulse" />
                         <span>Trek yozilmoqda. Matnni maromida talaffuz qiling.</span>
                       </span>
                     </div>
                   </div>
                 )}
 
-                {/* 3. AUDIO REVIEW STATE: Custom Luxury Player & AWS Upload */}
+                {/* 3. AUDIO REVIEW STATE: Custom Player & AWS Upload */}
                 {audioBlob && !isRecording && (
-                  <div className="p-4 rounded-2xl bg-[#090A0E] border border-white/10 space-y-3.5 animate-in fade-in shadow-xl">
+                  <div className="p-4 rounded-2xl bg-white dark:bg-black/40 border border-stone-200/90 dark:border-white/10 space-y-3.5 animate-in fade-in shadow-xs">
                     
-                    {/* Header: Verified Recording Status & Retake Button */}
+                    {/* Header */}
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-bold text-white flex items-center gap-1.5">
-                        <CheckCircle2 size={15} className="text-emerald-400" />
+                      <span className="font-bold text-stone-900 dark:text-white flex items-center gap-1.5">
+                        <CheckCircle2 size={15} className="text-emerald-600 dark:text-emerald-400" />
                         <span>Yozuv Tayyor ({formatTimecode(recordingSeconds)})</span>
                       </span>
                       <button
                         type="button"
                         onClick={handleReset}
-                        className="text-[11px] font-mono text-stone-400 hover:text-red-400 transition-colors flex items-center gap-1 cursor-pointer"
-                        title="Ushbu yozuvni bekor qilib qayta boshlash"
+                        className="text-[11px] font-medium text-stone-500 hover:text-[#E05638] transition-colors flex items-center gap-1 cursor-pointer"
+                        title="Bekor qilib qayta boshlash"
                       >
                         <RotateCcw size={12} />
                         <span>Qayta yozish</span>
                       </button>
                     </div>
 
-                    {/* Hidden Native Audio Element */}
+                    {/* Hidden Audio Element */}
                     {audioUrl && (
                       <audio 
                         ref={audioPlayerRef} 
@@ -1058,8 +1055,8 @@ export default function VolunteerAudioStudioModal({
                       />
                     )}
 
-                    {/* Bespoke Custom Studio Player Scrubber */}
-                    <div className="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center gap-3">
+                    {/* Custom Player Controls */}
+                    <div className="p-3 rounded-xl bg-stone-50 dark:bg-white/5 border border-stone-200/80 dark:border-white/5 flex items-center gap-3">
                       <button
                         type="button"
                         onClick={() => {
@@ -1072,19 +1069,19 @@ export default function VolunteerAudioStudioModal({
                             setIsPlayingPreview(true);
                           }
                         }}
-                        className="w-9 h-9 rounded-full bg-gradient-to-br from-[#E05638] to-[#C5A059] text-white flex items-center justify-center shrink-0 shadow-md hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+                        className="w-9 h-9 rounded-full bg-gradient-to-r from-[#E05638] to-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm hover:brightness-105 active:scale-95 transition-all cursor-pointer"
                         title={isPlayingPreview ? "Pauza" : "Eshitib ko'rish"}
                       >
                         {isPlayingPreview ? <Pause size={14} /> : <Play size={14} className="ml-0.5" />}
                       </button>
 
                       <div className="flex-1 min-w-0 space-y-1">
-                        <div className="flex justify-between text-[10px] font-mono text-stone-400">
-                          <span className="text-white font-bold">{formatTimecode(Math.floor(playbackCurrentTime))}</span>
+                        <div className="flex justify-between text-[10px] font-mono text-stone-500 dark:text-stone-400">
+                          <span className="font-bold text-stone-800 dark:text-stone-200">{formatTimecode(Math.floor(playbackCurrentTime))}</span>
                           <span>{formatTimecode(Math.floor(playbackDuration || recordingSeconds))}</span>
                         </div>
                         <div 
-                          className="h-1.5 rounded-full bg-stone-800 cursor-pointer overflow-hidden relative"
+                          className="h-1.5 rounded-full bg-stone-200 dark:bg-stone-800 cursor-pointer overflow-hidden relative"
                           onClick={(e) => {
                             if (!audioPlayerRef.current) return;
                             const rect = e.currentTarget.getBoundingClientRect();
@@ -1095,7 +1092,7 @@ export default function VolunteerAudioStudioModal({
                           }}
                         >
                           <div 
-                            className="h-full rounded-full bg-[#C5A059] transition-all"
+                            className="h-full rounded-full bg-[#E05638] transition-all"
                             style={{ 
                               width: `${playbackDuration ? (playbackCurrentTime / playbackDuration) * 100 : 0}%` 
                             }}
@@ -1104,12 +1101,12 @@ export default function VolunteerAudioStudioModal({
                       </div>
                     </div>
 
-                    {/* AWS Authoritative Save Button */}
+                    {/* AWS Save Button */}
                     <button
                       type="button"
                       onClick={handleUploadToAws}
                       disabled={isUploading}
-                      className="w-full py-3.5 rounded-xl font-bold text-xs sm:text-sm text-white transition-all active:scale-[0.98] disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2 shadow-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:brightness-110 shadow-emerald-600/25"
+                      className="w-full py-3.5 rounded-xl font-bold text-xs sm:text-sm text-white transition-all active:scale-[0.98] disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:brightness-105"
                     >
                       {isUploading ? (
                         <div className="flex items-center gap-2">
@@ -1130,21 +1127,21 @@ export default function VolunteerAudioStudioModal({
               </div>
 
               {/* ── Bottom: Studio Hardware DSP Toggles ── */}
-              <div className="pt-3 border-t border-white/5 space-y-2.5 text-xs text-stone-300 shrink-0">
+              <div className="pt-3 border-t border-stone-200/80 dark:border-white/10 space-y-2.5 text-xs text-stone-700 dark:text-stone-300 shrink-0">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Sliders size={13} className="text-[#C5A059]" />
-                    <span className="font-medium text-stone-300">Shovqin filtri (Noise Gate):</span>
+                    <Sliders size={13} className="text-[#E05638]" />
+                    <span className="font-medium">Shovqin filtri (Noise Gate):</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setNoiseSuppression(!noiseSuppression)}
                     disabled={isRecording}
                     className={`w-9 h-5 rounded-full transition-colors relative cursor-pointer ${
-                      noiseSuppression ? 'bg-[#C5A059]' : 'bg-white/20'
+                      noiseSuppression ? 'bg-[#E05638]' : 'bg-stone-300 dark:bg-stone-700'
                     }`}
                   >
-                    <span className={`w-3.5 h-3.5 rounded-full bg-stone-950 absolute top-0.5 transition-transform ${
+                    <span className={`w-3.5 h-3.5 rounded-full bg-white absolute top-0.5 transition-transform ${
                       noiseSuppression ? 'right-0.5' : 'left-0.5'
                     }`} />
                   </button>
@@ -1152,18 +1149,18 @@ export default function VolunteerAudioStudioModal({
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Volume2 size={13} className="text-[#C5A059]" />
-                    <span className="font-medium text-stone-300">Aks-sado to'siq (Echo Cancel):</span>
+                    <Volume2 size={13} className="text-[#E05638]" />
+                    <span className="font-medium">Aks-sado to'siq (Echo Cancel):</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setEchoCancellation(!echoCancellation)}
                     disabled={isRecording}
                     className={`w-9 h-5 rounded-full transition-colors relative cursor-pointer ${
-                      echoCancellation ? 'bg-[#C5A059]' : 'bg-white/20'
+                      echoCancellation ? 'bg-[#E05638]' : 'bg-stone-300 dark:bg-stone-700'
                     }`}
                   >
-                    <span className={`w-3.5 h-3.5 rounded-full bg-stone-950 absolute top-0.5 transition-transform ${
+                    <span className={`w-3.5 h-3.5 rounded-full bg-white absolute top-0.5 transition-transform ${
                       echoCancellation ? 'right-0.5' : 'left-0.5'
                     }`} />
                   </button>
