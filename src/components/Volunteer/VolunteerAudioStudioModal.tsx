@@ -445,7 +445,11 @@ export default function VolunteerAudioStudioModal({
 
       setIsSuccess(true);
       setUploadedTrackInfo(result);
-      toast.success("Audio yozuv AWS serveringizga to'liq saqlandi! 🎉");
+      if (currentUser?.role === 'ADMIN') {
+        toast.success("Audio yozuv qabul qilindi va darhol e'lon qilindi! 🎉");
+      } else {
+        toast.success("Audio yozuv qabul qilindi va moderator tekshiruviga yuborildi! Administrator tasdiqlagach saytda e'lon qilinadi. 🎙", { duration: 6000 });
+      }
       
       if (onSuccessUpload) onSuccessUpload();
 
@@ -564,14 +568,30 @@ export default function VolunteerAudioStudioModal({
 
             <div className="space-y-2 max-w-lg">
               <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-950 dark:text-white tracking-tight">
-                Audio Muvaffaqiyatli Saqlandi!
+                {currentUser?.role === 'ADMIN' ? "Audio Darhol Chop Etildi!" : "Audio Yozuv Qabul Qilindi!"}
               </h2>
               <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed">
-                «{book.title}» asarining <strong>{trackTitle}</strong> treki AWS serveringizga xavfsiz joylashtirildi va asar tinglovchilari uchun tayyorlandi.
+                {currentUser?.role === 'ADMIN' ? (
+                  <>«{book.title}» asarining <strong>{trackTitle}</strong> treki serverga joylandi va darhol kitobxonlar uchun e'lon qilindi.</>
+                ) : (
+                  <>«{book.title}» asarining <strong>{trackTitle}</strong> treki xavfsiz yuklandi va <strong>Administrator moderatsiyasiga</strong> yuborildi. Administrator ko'rib chiqib tasdiqlagach, asar sahifasida barcha tinglovchilarga ko'rinadi.</>
+                )}
               </p>
             </div>
 
             <div className="p-5 rounded-2xl bg-stone-50 dark:bg-white/[0.03] border border-stone-200/90 dark:border-white/10 text-left w-full max-w-md space-y-3 text-xs shadow-xs">
+              <div className="flex justify-between items-center border-b border-stone-200/60 dark:border-white/5 pb-2.5">
+                <span className="text-stone-500 dark:text-stone-400">Holat:</span>
+                {currentUser?.role === 'ADMIN' ? (
+                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                    <Check size={12} /> Chop etildi (Faol)
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1">
+                    ⏳ Moderator ko'rigida (Kutilmoqda)
+                  </span>
+                )}
+              </div>
               <div className="flex justify-between items-center border-b border-stone-200/60 dark:border-white/5 pb-2.5">
                 <span className="text-stone-500 dark:text-stone-400">Yozilgan Bob:</span>
                 <span className="font-semibold text-stone-900 dark:text-white truncate max-w-[220px]">{uploadedTrackInfo?.title || trackTitle}</span>
@@ -581,7 +601,7 @@ export default function VolunteerAudioStudioModal({
                 <span className="font-mono text-[#E05638] dark:text-[#C5A059] font-bold text-sm">{formatTimecode(recordingSeconds)}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-stone-500 dark:text-stone-400">Hisoblangan Volontyorlik Staji:</span>
+                <span className="text-stone-500 dark:text-stone-400">Hisoblanadigan Volontyorlik Staji:</span>
                 <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono text-sm">
                   +{Math.max(0.25, Math.round((recordingSeconds / 3600) * 100) / 100)} soat
                 </span>

@@ -1127,6 +1127,50 @@ export const api = {
     return res.json();
   },
 
+  // ─── Volunteer Audio Moderation ────────────────────────────────────────────
+
+  async getAudioModerationQueue(status: string = "PENDING"): Promise<any[]> {
+    const token = getAuthToken();
+    if (!token) return [];
+    try {
+      const res = await fetchWithRetry(`${API_BASE_URL}/admin/audio-moderation?status=${status}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) return [];
+      return await res.json();
+    } catch {
+      return [];
+    }
+  },
+
+  async approveAudioTrack(trackId: string): Promise<any> {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetch(`${API_BASE_URL}/admin/audio-moderation/${trackId}/approve`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Audio trekni tasdiqlashda xatolik");
+    }
+    return await res.json();
+  },
+
+  async rejectAudioTrack(trackId: string): Promise<any> {
+    const token = getAuthToken();
+    if (!token) throw new Error("Avtorizatsiya talab qilinadi");
+    const res = await fetch(`${API_BASE_URL}/admin/audio-moderation/${trackId}/reject`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Audio trekni rad etishda xatolik");
+    }
+    return await res.json();
+  },
+
   // ─── Payment / InPay ───────────────────────────────────────────────────────
 
   async getPaymentPlans(): Promise<any> {

@@ -48,7 +48,8 @@ import {
   Calendar,
   EyeOff,
   Award,
-  HeartHandshake
+  HeartHandshake,
+  Mic
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import VolunteerCertificateModal, { CertificateData } from '../Certificate/VolunteerCertificateModal';
@@ -70,7 +71,7 @@ const COVER_PRESETS = [
 ];
 
 export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props) {
-  const [tab, setTab] = useState<'dashboard' | 'users' | 'upload' | 'seasons' | 'comments'>('dashboard');
+  const [tab, setTab] = useState<'dashboard' | 'users' | 'audio_moderation' | 'upload' | 'seasons' | 'comments'>('dashboard');
   
   // Registered Users State
   const [adminUsers, setAdminUsers] = useState<any[]>([]);
@@ -78,6 +79,14 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
   const [userSearchQuery, setUserSearchQuery] = useState('');
   const [userRoleFilter, setUserRoleFilter] = useState<'ALL' | 'VOLUNTEER' | 'USER' | 'ADMIN'>('ALL');
   const [userStatusFilter, setUserStatusFilter] = useState<'ALL' | 'ACTIVE' | 'BANNED'>('ALL');
+
+  // Audio Moderation Queue State
+  const [pendingAudioTracks, setPendingAudioTracks] = useState<any[]>([]);
+  const [isLoadingModerationTracks, setIsLoadingModerationTracks] = useState(false);
+  const [audioModerationFilter, setAudioModerationFilter] = useState<'PENDING' | 'APPROVED' | 'ALL'>('PENDING');
+  const [playingTrackUrl, setPlayingTrackUrl] = useState<string | null>(null);
+  const [actionTrackId, setActionTrackId] = useState<string | null>(null);
+  const moderationAudioRef = useRef<HTMLAudioElement | null>(null);
   
   // Volunteer Modal State
   const [volunteerModalUser, setVolunteerModalUser] = useState<any>(null);
@@ -269,10 +278,55 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
     }
   }, []);
 
+  const fetchAudioModeration = useCallback(async () => {
+    setIsLoadingModerationTracks(true);
+    try {
+      const data = await api.getAudioModerationQueue(audioModerationFilter);
+      setPendingAudioTracks(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.warn("Failed to fetch audio moderation queue:", err);
+    } finally {
+      setIsLoadingModerationTracks(false);
+    }
+  }, [audioModerationFilter]);
+
+  const handleApproveAudio = async (trackId: string, trackTitle: string) => {
+    setActionTrackId(trackId);
+    try {
+      const res = await api.approveAudioTrack(trackId);
+      toast.success(res.message || `«${trackTitle}» tasdiqlandi va chop etildi! 🎉`);
+      setPendingAudioTracks(prev => prev.filter(t => t.id !== trackId));
+      onRefreshBooks();
+    } catch (err: any) {
+      toast.error(err.message || "Xatolik yuz berdi");
+    } finally {
+      setActionTrackId(null);
+    }
+  };
+
+  const handleRejectAudio = async (trackId: string, trackTitle: string) => {
+    if (!confirm(`Haqiqatan ham «${trackTitle}» audio trekini rad etmoqchimisiz?`)) return;
+    setActionTrackId(trackId);
+    try {
+      await api.rejectAudioTrack(trackId);
+      toast.success(`«${trackTitle}» rad etildi va o'chirildi`);
+      setPendingAudioTracks(prev => prev.filter(t => t.id !== trackId));
+      if (playingTrackUrl?.includes(trackId) && moderationAudioRef.current) {
+        moderationAudioRef.current.pause();
+        setPlayingTrackUrl(null);
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Xatolik yuz berdi");
+    } finally {
+      setActionTrackId(null);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
     onRefreshBooks();
-  }, [fetchUsers, onRefreshBooks]);
+    fetchAudioModeration();
+  }, [fetchUsers, onRefreshBooks, fetchAudioModeration]);
 
   useEffect(() => {
     if (tab === 'dashboard') {
@@ -283,8 +337,10 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
       fetchAdminComments();
     } else if (tab === 'users') {
       fetchUsers();
+    } else if (tab === 'audio_moderation') {
+      fetchAudioModeration();
     }
-  }, [tab, fetchUsers, onRefreshBooks]);
+  }, [tab, fetchUsers, onRefreshBooks, fetchAudioModeration]);
 
   // Periodic background check so newly uploaded books (e.g. from volunteers) appear live
   useEffect(() => {
@@ -879,6 +935,23 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
           </button>
 
           <button
+            onClick={() => setTab('audio_moderation')}
+            className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
+              tab === 'audio_moderation' 
+                ? 'bg-[#E05638] text-white font-bold shadow-xs' 
+                : 'text-stone-600 dark:text-stone-300 hover:text-stone-950'
+            }`}
+          >
+            <Mic size={14} />
+            <span>Audio Moderatsiya</span>
+            {pendingAudioTracks.filter(t => t.status === 'PENDING').length > 0 && (
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-400 text-stone-950 ml-1">
+                {pendingAudioTracks.filter(t => t.status === 'PENDING').length}
+              </span>
+            )}
+          </button>
+
+          <button
             onClick={() => setTab('comments')}
             className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
               tab === 'comments' 
@@ -1460,6 +1533,223 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
           </div>
         </div>
       )}
+
+      
+      {/* ── AUDIO MODERATION TAB ── */}
+      {tab === 'audio_moderation' && (
+        <div className="space-y-6 animate-in fade-in duration-200">
+          
+          {/* Header & Filter Card */}
+          <div className="p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+                <h2 className="font-serif font-bold text-xl sm:text-2xl text-stone-950 dark:text-white">
+                  Volontyorlar Audio Moderatsiyasi
+                </h2>
+              </div>
+              <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400">
+                Volontyorlar tomonidan Studiyada yozilgan audioboblarni eshitib ko'rish, sifatini tekshirish va bir klik bilan saytda chop etish maydoni.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+              {/* Filter */}
+              <div className="flex items-center gap-1 bg-stone-100 dark:bg-white/5 p-1 rounded-2xl border border-stone-200/80 dark:border-white/10 text-xs">
+                <button
+                  onClick={() => setAudioModerationFilter('PENDING')}
+                  className={`px-3 py-1.5 rounded-xl font-semibold transition-colors cursor-pointer ${
+                    audioModerationFilter === 'PENDING'
+                      ? 'bg-[#E05638] text-white shadow-xs'
+                      : 'text-stone-600 dark:text-stone-400 hover:text-stone-950'
+                  }`}
+                >
+                  Kutilayotgan ({pendingAudioTracks.filter(t => t.status === 'PENDING').length})
+                </button>
+                <button
+                  onClick={() => setAudioModerationFilter('APPROVED')}
+                  className={`px-3 py-1.5 rounded-xl font-semibold transition-colors cursor-pointer ${
+                    audioModerationFilter === 'APPROVED'
+                      ? 'bg-emerald-600 text-white shadow-xs'
+                      : 'text-stone-600 dark:text-stone-400 hover:text-stone-950'
+                  }`}
+                >
+                  Tasdiqlanganlar
+                </button>
+                <button
+                  onClick={() => setAudioModerationFilter('ALL')}
+                  className={`px-3 py-1.5 rounded-xl font-semibold transition-colors cursor-pointer ${
+                    audioModerationFilter === 'ALL'
+                      ? 'bg-stone-800 text-white shadow-xs'
+                      : 'text-stone-600 dark:text-stone-400 hover:text-stone-950'
+                  }`}
+                >
+                  Barchasi
+                </button>
+              </div>
+
+              <button
+                onClick={fetchAudioModeration}
+                disabled={isLoadingModerationTracks}
+                className="p-2.5 rounded-xl bg-stone-100 dark:bg-white/5 hover:bg-stone-200 dark:hover:bg-white/10 text-stone-600 dark:text-stone-300 transition-colors cursor-pointer border border-stone-200/80 dark:border-white/10"
+                title="Yangilash"
+              >
+                <RefreshCw size={15} className={isLoadingModerationTracks ? 'animate-spin' : ''} />
+              </button>
+            </div>
+          </div>
+
+          {/* Hidden Global Moderation Audio Element */}
+          <audio
+            ref={moderationAudioRef}
+            src={playingTrackUrl ? resolveAudioUrl(playingTrackUrl) : undefined}
+            onEnded={() => setPlayingTrackUrl(null)}
+            className="hidden"
+          />
+
+          {/* Tracks List */}
+          {isLoadingModerationTracks ? (
+            <div className="p-16 text-center space-y-3 bg-white dark:bg-[#121620] rounded-3xl border border-stone-200/90 dark:border-white/10">
+              <Loader2 size={32} className="animate-spin text-[#E05638] mx-auto" />
+              <p className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+                Moderatsiyadagi audio yozuvlar yuklanmoqda...
+              </p>
+            </div>
+          ) : pendingAudioTracks.length === 0 ? (
+            <div className="p-16 text-center space-y-3 bg-white dark:bg-[#121620] rounded-3xl border border-stone-200/90 dark:border-white/10">
+              <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mx-auto flex items-center justify-center">
+                <CheckCircle2 size={32} />
+              </div>
+              <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-white">
+                Barcha Audio Yozuvlar Ko'rib Chiqilgan!
+              </h3>
+              <p className="text-xs text-stone-500 dark:text-stone-400 max-w-md mx-auto">
+                Hozircha moderatsiyada kutilayotgan yangi audio treklar yo'q. Volontyorlar Studiyada ovoz yozganda bu yerda avtomatik paydo bo'ladi.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4">
+              {pendingAudioTracks.map(track => {
+                const isPlaying = playingTrackUrl === track.audio_url;
+                const durMin = Math.floor((track.duration_seconds || 0) / 60);
+                const durSec = Math.floor((track.duration_seconds || 0) % 60);
+                const durFormatted = `${durMin.toString().padStart(2, '0')}:${durSec.toString().padStart(2, '0')}`;
+                const isActing = actionTrackId === track.id;
+
+                return (
+                  <div 
+                    key={track.id}
+                    className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-5 transition-all hover:border-[#E05638]/40"
+                  >
+                    {/* Left: Book thumbnail + Track Info */}
+                    <div className="flex items-start gap-4 min-w-0 flex-1">
+                      {/* Book Cover Miniature */}
+                      <div className="w-12 h-16 rounded-xl bg-stone-100 dark:bg-stone-800 border border-stone-200/80 dark:border-white/10 shrink-0 overflow-hidden shadow-xs relative">
+                        {track.book_cover ? (
+                          <img src={track.book_cover} alt={track.book_title} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-xs font-serif font-bold text-[#E05638]">
+                            📖
+                          </div>
+                        )}
+                        <div className="book-spine-hinge" />
+                      </div>
+
+                      <div className="space-y-1.5 min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-medium text-stone-500 dark:text-stone-400">
+                            Asar: <strong className="text-stone-900 dark:text-white font-serif">{track.book_title}</strong>
+                          </span>
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider ${
+                            track.status === 'APPROVED'
+                              ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25'
+                              : 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/25'
+                          }`}>
+                            {track.status === 'APPROVED' ? '✅ Chop Etilgan' : '⏳ Moderatsiyada'}
+                          </span>
+                        </div>
+
+                        <h3 className="font-serif font-bold text-base sm:text-lg text-stone-950 dark:text-white truncate">
+                          {track.title}
+                        </h3>
+
+                        <div className="flex items-center gap-3 text-xs text-stone-500 dark:text-stone-400 flex-wrap">
+                          <span className="flex items-center gap-1 text-[#E05638] font-medium">
+                            <HeartHandshake size={13} />
+                            <span>Diktor: {track.volunteer_name || track.narrator}</span>
+                          </span>
+                          <span>•</span>
+                          <span className="font-mono">Davomiyligi: <strong>{durFormatted}</strong></span>
+                          <span>•</span>
+                          <span className="text-stone-400">Hajmi: {((track.file_size_bytes || 0) / (1024 * 1024)).toFixed(1)} MB</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right: Audio Player & Action Buttons */}
+                    <div className="flex items-center gap-3 shrink-0 flex-wrap sm:flex-nowrap justify-end pt-3 md:pt-0 border-t md:border-t-0 border-stone-100 dark:border-white/5">
+                      
+                      {/* Play / Listen Button */}
+                      <button
+                        onClick={() => {
+                          if (!moderationAudioRef.current) return;
+                          if (isPlaying) {
+                            moderationAudioRef.current.pause();
+                            setPlayingTrackUrl(null);
+                          } else {
+                            setPlayingTrackUrl(track.audio_url);
+                            setTimeout(() => {
+                              moderationAudioRef.current?.play().catch(() => {});
+                            }, 50);
+                          }
+                        }}
+                        className={`px-4 py-2.5 rounded-2xl text-xs font-semibold flex items-center gap-2 cursor-pointer transition-all ${
+                          isPlaying
+                            ? 'bg-[#E05638] text-white shadow-md'
+                            : 'bg-stone-100 dark:bg-white/10 text-stone-800 dark:text-white hover:bg-stone-200 dark:hover:bg-white/15'
+                        }`}
+                      >
+                        {isPlaying ? <Pause size={15} /> : <Play size={15} className="text-[#E05638]" />}
+                        <span>{isPlaying ? "To'xtatish" : "Eshitib Ko'rish"}</span>
+                      </button>
+
+                      {/* Approve Button (if pending) */}
+                      {track.status !== 'APPROVED' && (
+                        <button
+                          onClick={() => handleApproveAudio(track.id, track.title)}
+                          disabled={isActing}
+                          className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-105 text-white text-xs font-bold transition-all shadow-md shadow-emerald-600/20 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                        >
+                          {isActing ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            <CheckCircle2 size={15} />
+                          )}
+                          <span>Tasdiqlash & Chop Etish</span>
+                        </button>
+                      )}
+
+                      {/* Reject Button */}
+                      <button
+                        onClick={() => handleRejectAudio(track.id, track.title)}
+                        disabled={isActing}
+                        className="px-3.5 py-2.5 rounded-2xl bg-stone-100 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 text-stone-500 dark:text-stone-400 text-xs font-semibold transition-all border border-stone-200/80 dark:border-white/10 cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                        title="Rad etish va o'chirish"
+                      >
+                        <Trash2 size={14} />
+                        <span>Rad Etish</span>
+                      </button>
+
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+        </div>
+      )}
+
 
       {/* ── 2. COMMENTS MODERATION TAB (WHO WROTE WHAT & WHEN) ── */}
       {tab === 'comments' && (
