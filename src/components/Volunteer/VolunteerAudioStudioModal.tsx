@@ -940,77 +940,77 @@ export default function VolunteerAudioStudioModal({
 
               </div>
 
-              {/* ── Middle: Master Tactile Broadcast Controls ── */}
+              {/* ── Middle: Master Tactile Broadcast Controls (1-Click ON / 1-Click OFF Toggle) ── */}
               <div className="space-y-4 pt-1">
                 
-                {/* 1. STANDBY: Bookify Master Record Button */}
-                {!isRecording && !audioBlob && (
+                {/* PERSISTENT MASTER MIC BUTTON (Toggle: 1 click starts, 1 click stops!) */}
+                {!audioBlob && (
                   <div className="flex flex-col items-center justify-center py-2 space-y-3">
                     <button
                       type="button"
-                      onClick={startRecording}
-                      className="group relative w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center transition-transform active:scale-95 cursor-pointer"
+                      onClick={isRecording ? stopRecording : startRecording}
+                      className="group relative w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center transition-transform active:scale-95 cursor-pointer select-none"
                       style={{
-                        background: 'radial-gradient(circle at 35% 35%, #F4F1EA, #E2DDD3)',
-                        boxShadow: '0 8px 25px rgba(224, 86, 56, 0.25), inset 0 2px 4px rgba(255,255,255,0.8), inset 0 -3px 4px rgba(0,0,0,0.1)'
+                        background: isRecording 
+                          ? 'radial-gradient(circle at 35% 35%, #FEE2E2, #FECACA)'
+                          : 'radial-gradient(circle at 35% 35%, #F4F1EA, #E2DDD3)',
+                        boxShadow: isRecording
+                          ? '0 0 35px rgba(224, 86, 56, 0.45), inset 0 2px 4px rgba(255,255,255,0.8), inset 0 -3px 4px rgba(0,0,0,0.1)'
+                          : '0 8px 25px rgba(224, 86, 56, 0.25), inset 0 2px 4px rgba(255,255,255,0.8), inset 0 -3px 4px rgba(0,0,0,0.1)'
                       }}
-                      title="Ovoz yozishni boshlash"
+                      title={isRecording ? "Yozishni to'xtatish (Stop)" : "Ovoz yozishni boshlash"}
                     >
                       {/* Outer Ring */}
-                      <div className="absolute inset-1 rounded-full border border-stone-300 dark:border-stone-700 group-hover:border-[#E05638]/50 transition-colors" />
+                      <div className={`absolute inset-1 rounded-full border transition-all ${
+                        isRecording 
+                          ? 'border-[#E05638] animate-ping opacity-60' 
+                          : 'border-stone-300 dark:border-stone-700 group-hover:border-[#E05638]/50'
+                      }`} />
 
-                      {/* Inner Terracotta/Coral Core */}
+                      {/* Inner Core */}
                       <div 
-                        className="w-13 h-13 sm:w-15 sm:h-15 rounded-full flex items-center justify-center shadow-md transition-all group-hover:scale-105"
+                        className={`w-13 h-13 sm:w-15 sm:h-15 rounded-full flex items-center justify-center shadow-md transition-all group-hover:scale-105 ${
+                          isRecording ? 'animate-pulse' : ''
+                        }`}
                         style={{
-                          background: 'linear-gradient(135deg, #E05638 0%, #C74326 100%)',
-                          boxShadow: '0 4px 15px rgba(224, 86, 56, 0.4), inset 0 2px 3px rgba(255,255,255,0.3)'
+                          background: isRecording
+                            ? 'linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)'
+                            : 'linear-gradient(135deg, #E05638 0%, #C74326 100%)',
+                          boxShadow: isRecording
+                            ? '0 0 20px rgba(220, 38, 38, 0.6), inset 0 2px 3px rgba(255,255,255,0.3)'
+                            : '0 4px 15px rgba(224, 86, 56, 0.4), inset 0 2px 3px rgba(255,255,255,0.3)'
                         }}
                       >
-                        <Mic size={22} className="text-white" />
+                        {isRecording ? (
+                          <Square size={20} fill="white" className="text-white" />
+                        ) : (
+                          <Mic size={22} className="text-white" />
+                        )}
                       </div>
                     </button>
 
                     <div className="text-center space-y-0.5">
                       <span className="font-bold text-xs uppercase tracking-wider text-stone-900 dark:text-white block">
-                        Ovoz Yozishni Boshlash
+                        {isRecording ? "To'xtatish uchun bosing (Stop ⏹)" : "Ovoz Yozishni Boshlash (🎙)"}
                       </span>
                       <span className="text-[10px] text-stone-500 dark:text-stone-400 font-medium block">
-                        Tugmani bosing • Mikrofon 48kHz
+                        {isRecording ? "1 marta bossangiz yozuv to'xtaydi" : "1 marta bossangiz yozish boshlanadi"}
                       </span>
                     </div>
-                  </div>
-                )}
 
-                {/* 2. RECORDING: Master Pause & Stop Strip */}
-                {isRecording && (
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        type="button"
-                        onClick={pauseRecording}
-                        className="py-3.5 rounded-xl font-mono font-bold text-xs text-stone-800 dark:text-white transition-all active:scale-[0.98] bg-stone-200/70 hover:bg-stone-200 dark:bg-white/10 dark:hover:bg-white/15 border border-stone-300/80 dark:border-white/10 cursor-pointer flex items-center justify-center gap-2 shadow-2xs"
-                      >
-                        {isPaused ? <Play size={16} className="text-emerald-600 dark:text-emerald-400" /> : <Pause size={16} className="text-amber-600 dark:text-amber-400" />}
-                        <span>{isPaused ? "Davom Etish" : "Pauza"}</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={stopRecording}
-                        className="py-3.5 rounded-xl font-mono font-bold text-xs text-white transition-all active:scale-[0.98] bg-gradient-to-r from-[#E05638] to-[#C74326] hover:brightness-105 shadow-md shadow-[#E05638]/25 cursor-pointer flex items-center justify-center gap-2"
-                      >
-                        <Square size={16} fill="white" />
-                        <span>To'xtatish (Stop)</span>
-                      </button>
-                    </div>
-
-                    <div className="text-center">
-                      <span className="text-[10px] font-mono text-stone-500 dark:text-stone-400 flex items-center justify-center gap-1.5">
-                        <Radio size={12} className="text-[#E05638] animate-pulse" />
-                        <span>Trek yozilmoqda. Matnni maromida talaffuz qiling.</span>
-                      </span>
-                    </div>
+                    {/* Secondary Pause / Resume Button while recording */}
+                    {isRecording && (
+                      <div className="pt-1 flex items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          onClick={pauseRecording}
+                          className="px-4 py-1.5 rounded-xl font-mono text-xs font-semibold text-stone-700 dark:text-stone-200 bg-stone-200/80 hover:bg-stone-200 dark:bg-white/10 dark:hover:bg-white/15 border border-stone-300/80 dark:border-white/10 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                        >
+                          {isPaused ? <Play size={13} className="text-emerald-600 dark:text-emerald-400" /> : <Pause size={13} className="text-amber-600 dark:text-amber-400" />}
+                          <span>{isPaused ? "Yozuvni davom ettirish" : "Vaqtincha pauza"}</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
 
