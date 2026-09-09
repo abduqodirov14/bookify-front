@@ -46,9 +46,9 @@ export default function HomeApp() {
 
   // Check existing session on mount (Hydration safe) & pre-warm backend
   useEffect(() => {
-    // Pre-warm backend immediately so Render doesn't lag on cold-start
+    // Pre-warm backend immediately
     try {
-      fetch('https://bookify-vz6r.onrender.com/health', { mode: 'no-cors' }).catch(() => {});
+      fetch('https://3-68-191-39.sslip.io/health', { mode: 'no-cors' }).catch(() => {});
     } catch {}
 
     const cached = getCachedUser();

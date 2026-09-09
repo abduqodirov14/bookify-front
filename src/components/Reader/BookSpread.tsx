@@ -23,7 +23,7 @@ import {
   Quote
 } from 'lucide-react';
 import { Book, ReaderTheme, ReaderFont } from '../../types';
-import { api } from '../../services/api';
+import { api, API_BASE_URL } from '../../services/api';
 import { toast } from 'react-hot-toast';
 
 interface Props {
@@ -637,7 +637,7 @@ export default function BookSpread({ book, onBack, onPlayAudio, isAudioActive = 
                 {leftPage.imagePath ? (
                   <div className="w-full h-full flex items-center justify-center p-1 overflow-hidden my-auto">
                     <img 
-                      src={leftPage.imagePath.startsWith('http') ? leftPage.imagePath : `https://bookify-vz6r.onrender.com${leftPage.imagePath}`} 
+                      src={leftPage.imagePath.startsWith('http') ? leftPage.imagePath : `${API_BASE_URL.replace(/\/api\/v1\/?$/, '')}${leftPage.imagePath}`} 
                       alt={`Sahifa ${leftPage.pageNumber}`} 
                       className="max-h-full max-w-full object-contain rounded-md shadow-xs select-none" 
                     />
@@ -691,7 +691,7 @@ export default function BookSpread({ book, onBack, onPlayAudio, isAudioActive = 
                   rightPage.imagePath ? (
                     <div className="w-full h-full flex items-center justify-center p-1 overflow-hidden my-auto">
                       <img 
-                        src={rightPage.imagePath.startsWith('http') ? rightPage.imagePath : `https://bookify-vz6r.onrender.com${rightPage.imagePath}`} 
+                        src={rightPage.imagePath.startsWith('http') ? rightPage.imagePath : `${API_BASE_URL.replace(/\/api\/v1\/?$/, '')}${rightPage.imagePath}`} 
                         alt={`Sahifa ${rightPage.pageNumber}`} 
                         className="max-h-full max-w-full object-contain rounded-md shadow-xs select-none" 
                       />
