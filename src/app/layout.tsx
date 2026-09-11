@@ -1,21 +1,34 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Literata, JetBrains_Mono } from "next/font/google";
+import { Fraunces, Public_Sans, Literata, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
 
-const sans = Plus_Jakarta_Sans({
+// Fraunces — display serif for headings (brand spec §4.5)
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-fraunces",
+  display: "swap",
+});
+
+// Public Sans — clean UI sans-serif (brand spec §4.5)
+const publicSans = Public_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
+  display: "swap",
 });
 
-const serif = Literata({
+// Literata — reader body text (brand spec §4.5)
+const literata = Literata({
   subsets: ["latin"],
-  variable: "--font-serif",
+  variable: "--font-literata",
+  display: "swap",
 });
 
+// JetBrains Mono — monospace for labels, prices, metadata
 const mono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -34,7 +47,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="uz" suppressHydrationWarning className={`${sans.variable} ${serif.variable} ${mono.variable}`}>
+    <html lang="uz" suppressHydrationWarning className={`${fraunces.variable} ${publicSans.variable} ${literata.variable} ${mono.variable}`}>
       <head>
         <script
           dangerouslySetInnerHTML={{

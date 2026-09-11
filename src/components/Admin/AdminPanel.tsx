@@ -1338,12 +1338,15 @@ export default function AdminPanel({ books, onRefreshBooks, onNavigate }: Props)
                     
                     {/* Book Info with Real Cover Thumbnail */}
                     <div className="flex items-center gap-4 min-w-0">
-                      <div className="w-14 h-20 rounded-xl overflow-hidden shadow-md bg-stone-900 shrink-0 border border-black/10 relative group">
-                        <img 
-                          src={b.coverImage || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80'} 
-                          alt={b.title} 
-                          className="w-full h-full object-cover transition-transform group-hover:scale-105" 
-                        />
+                      <div className="w-14 h-20 rounded-xl overflow-hidden shadow-md shrink-0 border border-black/10 relative group flex-shrink-0" style={{ background: b.spineColor || '#16213E' }}>
+                        {b.coverImage ? (
+                          <img
+                            src={b.coverImage}
+                            alt={b.title}
+                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                          />
+                        ) : null}
                       </div>
                       <div className="min-w-0 space-y-1">
                         <div className="flex items-center gap-2">

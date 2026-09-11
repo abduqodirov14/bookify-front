@@ -565,11 +565,16 @@ export default function VolunteerPortal({
                   className="p-4 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs flex items-center justify-between gap-3"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <img
-                      src={bk.cover_image || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80"}
-                      alt={bk.title}
-                      className="w-12 h-16 rounded-xl object-cover shrink-0 shadow-xs border border-stone-200 dark:border-white/10"
-                    />
+                    <div className="w-12 h-16 rounded-xl shrink-0 shadow-xs border border-stone-200 dark:border-white/10 overflow-hidden" style={{ background: (bk as any).spineColor || '#16213E' }}>
+                      {bk.cover_image ? (
+                        <img
+                          src={bk.cover_image}
+                          alt={bk.title}
+                          className="w-full h-full object-cover"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      ) : null}
+                    </div>
                     <div className="min-w-0">
                       <h4 className="font-serif font-bold text-xs sm:text-sm text-stone-950 dark:text-white truncate">
                         {bk.title}

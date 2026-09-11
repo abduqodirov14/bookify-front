@@ -2,26 +2,82 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Brand design tokens (app_ui_prompt.md §2) ─────────────────────────── */
+:root {
+  --color-ink:           #0B0F1A;
+  --color-ink-soft:      #131828;
+  --color-parchment:     #EDE6D3;
+  --color-parchment-dim: #A9A38C;
+  --color-gold:          #C9A24B;
+  --color-gold-dim:      rgba(201, 162, 75, 0.22);
+  --color-ember:         #B5442E;
+  --color-ember-soft:    rgba(181, 68, 46, 0.12);
+}
+
 @layer base {
   body {
-    @apply antialiased selection:bg-[#E05638]/20 selection:text-[#E05638];
+    /* Public Sans for all UI text — Fraunces via .font-serif on headings */
+    font-family: var(--font-sans), system-ui, sans-serif;
+    @apply antialiased selection:bg-[#B5442E]/15 selection:text-[#B5442E];
+  }
+
+  /* Fraunces for h1–h4 by default */
+  h1, h2, h3, h4 {
+    font-family: var(--font-fraunces), Georgia, serif;
   }
 }
 
-/* Custom Literary & Reader Scrollbars */
+/* ── Scrollbar — thin gold hairline style ──────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(197, 160, 89, 0.25);
+  background: var(--color-gold-dim);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(197, 160, 89, 0.5);
+  background: var(--color-gold);
+}
+
+/* ── Typographic book cover placeholder (§3 spec) ─────────────────────── */
+/* Used when cover image 404s — renders title + author as flat colored card */
+.book-cover-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  text-align: center;
+  border: 1px solid var(--color-gold-dim);
+  border-radius: 4px;
+  font-family: var(--font-fraunces), Georgia, serif;
+  color: var(--color-parchment);
+  user-select: none;
+  overflow: hidden;
+}
+.book-cover-placeholder .bcp-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+}
+.book-cover-placeholder .bcp-author {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.6rem;
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.book-cover-placeholder .bcp-line {
+  width: 24px;
+  height: 1px;
+  background: var(--color-gold-dim);
+  margin: 0.4rem auto;
 }
 
 /* Google Play Books & Apple Books 3D Hardcover & Spine Physics */

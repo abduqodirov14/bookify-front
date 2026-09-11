@@ -325,16 +325,15 @@ export default function AudioDock({ track, onClose, onOpenReader }: Props) {
 
           {/* Left: Cover + Info + Part switcher */}
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            <div className="relative w-11 h-14 rounded-md overflow-hidden shrink-0 shadow-sm border border-black/10 bg-stone-900">
-              <img
-                src={track.coverImage}
-                alt={track.title}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src =
-                    'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80';
-                }}
-              />
+            <div className="relative w-11 h-14 rounded-md overflow-hidden shrink-0 shadow-sm border border-black/10 bg-stone-800" style={{ background: '#16213E' }}>
+              {track.coverImage ? (
+                <img
+                  src={track.coverImage}
+                  alt={track.title}
+                  className="w-full h-full object-cover"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+              ) : null}
             </div>
 
             <div className="flex flex-col min-w-0">
