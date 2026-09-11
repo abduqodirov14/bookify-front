@@ -42,7 +42,7 @@ export default function BookSpread({ book, onBack, onPlayAudio, isAudioActive = 
   const [readingMode, setReadingMode] = useState<'spread' | 'vertical'>('spread');
   const [theme, setTheme] = useState<ReaderTheme>('sepia');
   const [font, setFont] = useState<ReaderFont>('literata');
-  const [fontSize, setFontSize] = useState<number>(18);
+  const [fontSize, setFontSize] = useState<number>(16);
   const [lineHeight, setLineHeight] = useState<number>(1.8);
   const [showControls, setShowControls] = useState(true);
   const [showToc, setShowToc] = useState(false);
@@ -174,7 +174,7 @@ export default function BookSpread({ book, onBack, onPlayAudio, isAudioActive = 
     const pages: string[][] = [];
     let currentPage: string[] = [];
     let currentWords = 0;
-    const WORDS_PER_PAGE = 130;
+    const WORDS_PER_PAGE = 220;
 
     for (const p of rawParagraphs) {
       const pWords = p.split(/\s+/).filter(Boolean).length;
@@ -666,15 +666,15 @@ export default function BookSpread({ book, onBack, onPlayAudio, isAudioActive = 
           <div className="relative w-full max-w-[97vw] 2xl:max-w-[1600px] flex items-center justify-center my-auto">
             
             {/* FlipBook 3D Implementation */}
-            <div className="w-full max-w-5xl mx-auto h-[85vh] 2xl:h-[87vh] flex items-center justify-center relative shadow-sm rounded-sm overflow-hidden" style={{ backgroundColor: themeStyles.pageBg }}>
+            <div className="w-full max-w-[1400px] mx-auto h-[82vh] 2xl:h-[86vh] flex items-center justify-center relative">
               <FlipBook
                 ref={flipBookRef}
-                width={450}
-                height={700}
+                width={600}
+                height={800}
                 onFlip={onPageFlip}
               >
                 {flatPages.map((page, i) => (
-                  <div key={i} className="demoPage relative overflow-hidden bg-white border-r border-black/5" style={{ backgroundColor: themeStyles.pageBg }}>
+                  <div key={i} className="demoPage relative overflow-hidden border-r border-black/5 shadow-[0_0_10px_rgba(0,0,0,0.1)]" style={{ backgroundColor: themeStyles.pageBg }}>
                     
                     {/* Click zones for mobile / mouse tapping without dragging */}
                     <div className="absolute inset-0 z-10 cursor-pointer pointer-events-auto" onClick={(e) => {
