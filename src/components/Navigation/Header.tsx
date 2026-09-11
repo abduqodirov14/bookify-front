@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Search, Bell, ArrowLeft, Menu, Sun, Moon, LogOut, Command, BookOpen, Trophy, CheckCheck, X } from 'lucide-react';
 import { UserProfile, Book, Page } from '../../types';
 
@@ -48,17 +48,14 @@ export default function Header({
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
-  // Generate dynamic notifications based on real books in PostgreSQL
   useEffect(() => {
     const list: AppNotification[] = [];
-
-    // Latest book notifications
     if (books && books.length > 0) {
       books.slice(0, 3).forEach((b, idx) => {
         list.push({
           id: `notif-book-${b.id}`,
-          title: `Yangi Asar: ${b.title}`,
-          message: `${b.authorName} qalamiga mansub durdona asar kutubxonaga qo'shildi. Mutolaa qilish uchun bosing!`,
+          title: `Yangi Kitob: ${b.title}`,
+          message: `${b.authorName} asari kutubxonaga qo'shildi. Mutolaa qilish uchun bosing.`,
           type: 'book',
           bookId: b.id,
           time: idx === 0 ? 'Hozirgina' : `${(idx + 1) * 10} daqiqa oldin`,
@@ -66,27 +63,22 @@ export default function Header({
         });
       });
     }
-
-    // Active tournament notification
     list.push({
       id: 'notif-tournament',
-      title: '🏆 Bahoriy Adabiy Chempionat 2026',
-      message: "15,000,000 UZS mukofot jamg'armasi bilan yangi adabiy mavsum boshlandi. Ishtirok etish uchun bosing!",
+      title: '🏆 Adabiy Chempionat 2026',
+      message: "Yangi adabiy mavsum boshlandi. Ishtirok etish uchun bosing.",
       type: 'challenge',
       time: 'Bugun',
       unread: true
     });
-
     setNotifications(list);
   }, [books]);
 
   const unreadCount = notifications.filter(n => n.unread).length;
 
   const handleNotificationClick = (notif: AppNotification) => {
-    // Mark as read
     setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, unread: false } : n));
     setShowNotifications(false);
-
     if (notif.type === 'book' && notif.bookId) {
       onOpenBookReader(notif.bookId);
     } else if (notif.type === 'challenge') {
@@ -94,247 +86,154 @@ export default function Header({
     }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
-  };
-
   return (
-    <header className="h-16 px-3 sm:px-6 lg:px-8 flex items-center justify-between border-b border-stone-200/90 dark:border-white/10 bg-white/90 dark:bg-[#0A0D14]/90 backdrop-blur-md shrink-0 z-30 transition-colors">
-      
-      <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-        {/* Mobile Hamburger Menu Button */}
-        <button
-          onClick={onOpenMobileMenu}
-          className="md:hidden p-2 rounded-xl bg-stone-100 dark:bg-white/10 text-stone-700 dark:text-stone-300 hover:bg-stone-200 transition-colors cursor-pointer shrink-0"
-          title="Menyu"
-        >
-          <Menu size={18} />
-        </button>
+    <header className="sticky top-0 z-40 bg-parchment dark:bg-ink border-b border-black/10 dark:border-white/10 transition-colors">
+      <div className="flex h-16 items-center justify-between px-4 sm:px-6">
+        
+        {/* Left Section */}
+        <div className="flex items-center gap-4 flex-1">
+          {onOpenMobileMenu && (
+            <button
+              onClick={onOpenMobileMenu}
+              className="md:hidden p-2 -ml-2 text-ink/70 dark:text-parchment/70 hover:bg-black/5 dark:hover:bg-white/5 rounded-md cursor-pointer"
+            >
+              <Menu size={20} />
+            </button>
+          )}
 
-        {/* Back Button */}
-        <button
-          onClick={onGoBack}
-          disabled={!canGoBack}
-          className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${
-            canGoBack 
-              ? 'bg-stone-100 dark:bg-white/10 hover:bg-stone-200 dark:hover:bg-white/20 text-stone-800 dark:text-stone-200' 
-              : 'opacity-30 cursor-not-allowed text-stone-400'
-          }`}
-          title="Orqaga"
-        >
-          <ArrowLeft size={16} />
-        </button>
+          {canGoBack && (
+            <button
+              onClick={onGoBack}
+              className="hidden sm:flex p-2 items-center justify-center text-ink/70 dark:text-parchment/70 hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors cursor-pointer"
+            >
+              <ArrowLeft size={18} strokeWidth={2.5} />
+            </button>
+          )}
 
-        {/* Mobile Search Button */}
-        <button
-          onClick={onOpenSearch}
-          className="sm:hidden p-2 rounded-xl bg-stone-100 dark:bg-white/10 text-stone-700 dark:text-stone-300 hover:bg-stone-200 transition-colors cursor-pointer shrink-0"
-          title="Qidiruv"
-        >
-          <Search size={16} />
-        </button>
-
-        {/* Desktop / Tablet Spotlight Search Pill (Cmd+K) */}
-        <div
-          onClick={onOpenSearch}
-          className="hidden sm:flex items-center gap-2.5 w-64 md:w-80 lg:w-96 px-3.5 py-2 rounded-xl bg-stone-100/90 dark:bg-white/[0.05] border border-stone-200 dark:border-white/10 hover:border-stone-300 dark:hover:border-white/20 transition-colors cursor-pointer group shadow-2xs"
-        >
-          <Search size={15} className="text-stone-400 group-hover:text-[#E05638] transition-colors shrink-0" />
-          <span className="flex-1 text-xs text-stone-500 dark:text-stone-400 truncate whitespace-nowrap">
-            Kitob yoki muallif nomi...
-          </span>
-          <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white dark:bg-white/10 border border-stone-200 dark:border-white/10 text-[10px] font-mono text-stone-500 shrink-0">
-            <Command size={10} />
-            <span>K</span>
+          {/* Minimal Search Bar */}
+          <div className="max-w-md w-full hidden sm:block relative group">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search size={16} className="text-ink/40 dark:text-parchment/40" />
+            </div>
+            <input
+              type="text"
+              placeholder="Kitob yoki muallifni izlash..."
+              onClick={onOpenSearch}
+              readOnly
+              className="w-full pl-9 pr-12 py-2 bg-transparent border border-black/10 dark:border-white/10 rounded-md text-sm text-ink dark:text-parchment placeholder-ink/40 dark:placeholder-parchment/40 focus:outline-none focus:border-ink/30 dark:focus:border-parchment/30 transition-colors cursor-pointer"
+            />
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+              <div className="flex items-center gap-1 px-1.5 py-0.5 rounded border border-black/10 dark:border-white/10">
+                <Command size={10} className="text-ink/40 dark:text-parchment/40" />
+                <span className="text-[10px] font-mono text-ink/40 dark:text-parchment/40">K</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Public Desktop Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-1 ml-1">
-          {[
-            { id: 'home' as Page, label: 'Bosh Sahifa' },
-            { id: 'discover' as Page, label: 'Katalog' },
-            { id: 'author' as Page, label: 'Allomalar' },
-            { id: 'challenge' as Page, label: 'Chempionat' },
-            { id: 'library' as Page, label: 'Javonim' }
-          ].map((item) => (
-            <button
-              key={item.id}
-              onClick={() => onNavigatePage(item.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                currentPage === item.id
-                  ? 'bg-[#E05638]/10 text-[#E05638] dark:text-amber-400 font-bold shadow-2xs'
-                  : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/5'
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </nav>
-      </div>
-
-      {/* Right Controls */}
-      <div className="flex items-center gap-2.5 sm:gap-3">
-
-        {/* 👑 VIP Obuna Button */}
-        <button
-          onClick={onOpenVipModal}
-          className="px-3 sm:px-3.5 py-1.5 rounded-full text-xs font-bold font-mono transition-all duration-300 flex items-center gap-1.5 cursor-pointer shadow-md hover:scale-105 active:scale-95 bg-gradient-to-r from-[#C5A059] via-amber-400 to-[#C5A059] text-stone-950 border border-amber-400/50 shadow-amber-500/20"
-          title={currentUser?.is_premium ? "VIP A'zolik faol" : "Bookify VIP Obuna tariflari va imtiyozlari"}
-        >
-          <span>{currentUser?.is_premium ? "👑" : "💎"}</span>
-          <span className="hidden sm:inline font-bold">{currentUser?.is_premium ? "VIP A'zo" : "VIP Obuna"}</span>
-          {!currentUser?.is_premium && (
-            <span className="px-1.5 py-0.5 rounded bg-black/15 text-[10px] hidden md:inline font-bold">29 000/oy</span>
-          )}
-        </button>
-        
-        {/* Dark/Light Theme Toggle */}
-        <button
-          onClick={onToggleTheme}
-          className="p-2 rounded-xl bg-stone-100 dark:bg-white/10 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-white/20 transition-colors cursor-pointer"
-          title="Mavzuni o'zgartirish"
-        >
-          {theme === 'dark' ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-amber-600" />}
-        </button>
-
-        {/* Real Dynamic Notifications */}
-        <div className="relative">
+        {/* Right Section */}
+        <div className="flex items-center justify-end gap-2 sm:gap-4 flex-1">
+          
           <button
-            onClick={() => setShowNotifications(!showNotifications)}
-            className="p-2 rounded-xl bg-stone-100 dark:bg-white/10 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-white/20 transition-colors cursor-pointer relative"
-            title="Xabarnomalar"
+            onClick={onOpenSearch}
+            className="sm:hidden p-2 text-ink/70 dark:text-parchment/70 cursor-pointer"
           >
-            <Bell size={16} />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#E05638] text-white text-[10px] font-bold font-mono flex items-center justify-center animate-pulse shadow-sm">
-                {unreadCount}
-              </span>
-            )}
+            <Search size={20} />
           </button>
 
-          {showNotifications && (
-            <div className="absolute right-0 mt-2 w-84 sm:w-96 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200 dark:border-white/10 shadow-2xl p-4 space-y-3 z-50 animate-in fade-in zoom-in-95">
-              <div className="flex items-center justify-between pb-2 border-b border-stone-100 dark:border-white/5">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-serif font-bold text-stone-900 dark:text-white">Xabarnomalar</span>
-                  {unreadCount > 0 && (
-                    <span className="px-2 py-0.5 rounded-full bg-[#E05638]/10 text-[#E05638] text-[10px] font-mono font-bold">
-                      {unreadCount} ta yangi
-                    </span>
-                  )}
-                </div>
-                {unreadCount > 0 && (
+          {/* Theme Toggle (Mobile only, Desktop is in Sidebar) */}
+          <button
+            onClick={onToggleTheme}
+            className="md:hidden p-2 text-ink/70 dark:text-parchment/70 cursor-pointer"
+          >
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+
+          {/* Notification Bell */}
+          <div className="relative">
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="p-2 relative text-ink/70 dark:text-parchment/70 hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors cursor-pointer"
+            >
+              <Bell size={20} />
+              {unreadCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-ember rounded-full"></span>
+              )}
+            </button>
+
+            {/* Notifications Dropdown (Flat, no shadow, just border) */}
+            {showNotifications && (
+              <div className="absolute right-0 mt-2 w-80 bg-parchment dark:bg-ink border border-black/10 dark:border-white/10 rounded-md z-50">
+                <div className="flex items-center justify-between p-3 border-b border-black/10 dark:border-white/10">
+                  <span className="font-bold text-sm text-ink dark:text-parchment">Xabarnomalar</span>
                   <button 
-                    onClick={markAllAsRead}
-                    className="text-[10px] text-stone-500 hover:text-[#E05638] font-mono cursor-pointer flex items-center gap-1"
+                    onClick={() => setNotifications(prev => prev.map(n => ({ ...n, unread: false })))}
+                    className="text-[11px] font-mono text-ink/60 dark:text-parchment/60 hover:text-ink dark:hover:text-parchment cursor-pointer"
                   >
-                    <CheckCheck size={12} />
-                    <span>O'qilgan deb belgilash</span>
+                    Barchasini o'qilgan qilish
                   </button>
-                )}
-              </div>
-
-              <div className="max-h-80 overflow-y-auto space-y-2 pr-1 divide-y divide-stone-100 dark:divide-white/5">
-                {notifications.map(n => (
-                  <div
-                    key={n.id}
-                    onClick={() => handleNotificationClick(n)}
-                    className={`p-3 rounded-2xl cursor-pointer transition-all ${
-                      n.unread 
-                        ? 'bg-[#E05638]/5 dark:bg-[#E05638]/10 hover:bg-[#E05638]/15 border border-[#E05638]/20' 
-                        : 'hover:bg-stone-50 dark:hover:bg-white/5 opacity-80'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-                        n.type === 'book' 
-                          ? 'bg-amber-500/10 text-amber-600' 
-                          : 'bg-[#E05638]/10 text-[#E05638]'
-                      }`}>
-                        {n.type === 'book' ? <BookOpen size={15} /> : <Trophy size={15} />}
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-1">
-                          <h4 className="font-serif font-bold text-xs text-stone-900 dark:text-white truncate">
-                            {n.title}
-                          </h4>
-                          <span className="text-[10px] text-stone-400 font-mono shrink-0">
-                            {n.time}
-                          </span>
+                </div>
+                <div className="max-h-80 overflow-y-auto">
+                  {notifications.map(notif => (
+                    <div 
+                      key={notif.id}
+                      onClick={() => handleNotificationClick(notif)}
+                      className={`p-3 border-b border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer transition-colors ${notif.unread ? 'bg-black/5 dark:bg-white/5' : ''}`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="mt-1">
+                          {notif.type === 'book' ? <BookOpen size={16} className="text-ink/60 dark:text-parchment/60" /> : <Trophy size={16} className="text-ember" />}
                         </div>
-                        <p className="text-[11px] text-stone-600 dark:text-stone-300 leading-relaxed mt-0.5 line-clamp-2">
-                          {n.message}
-                        </p>
-                        <span className="text-[10px] text-[#E05638] font-semibold font-mono mt-1 inline-block">
-                          {n.type === 'book' ? "📖 O'qishni boshlash →" : "🏆 Chempionatga o'tish →"}
-                        </span>
+                        <div className="flex-1">
+                          <h4 className="text-[13px] font-bold text-ink dark:text-parchment mb-0.5">{notif.title}</h4>
+                          <p className="text-[11px] text-ink/70 dark:text-parchment/70 leading-relaxed mb-1">{notif.message}</p>
+                          <span className="text-[10px] font-mono text-ink/40 dark:text-parchment/40">{notif.time}</span>
+                        </div>
+                        {notif.unread && (
+                          <div className="w-1.5 h-1.5 bg-ember rounded-full mt-1.5"></div>
+                        )}
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* User Pill & Log Out */}
-        {currentUser ? (
-          <>
-            {(currentUser.is_volunteer || currentUser.role === 'VOLUNTEER' || currentUser.volunteer_code) && (
-              <button
-                onClick={() => onNavigatePage('volunteer')}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-xs font-mono font-bold transition-all cursor-pointer shadow-xs"
-                title="Volontyorlik Markaziga o'tish"
-              >
-                <span>🤝 VIP Volontyor</span>
-              </button>
-            )}
-
-            <div 
-              onClick={onNavigateProfile}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-stone-100 dark:bg-white/10 border border-stone-200 dark:border-white/10 cursor-pointer hover:bg-stone-200 dark:hover:bg-white/20 transition-colors"
-            >
-              {currentUser.avatarUrl ? (
-                <img src={currentUser.avatarUrl} alt={currentUser.name} className="w-6 h-6 rounded-full object-cover" />
-              ) : (
-                <div className="w-6 h-6 rounded-full bg-[#E05638] text-white font-bold text-[10px] flex items-center justify-center">
-                  {currentUser.name?.[0]?.toUpperCase() || 'K'}
+                  ))}
                 </div>
-              )}
-              <span className="text-xs font-medium text-stone-800 dark:text-stone-200 hidden sm:inline">
-                {currentUser.name}
-              </span>
-            </div>
+              </div>
+            )}
+          </div>
 
-            <button
-              onClick={onLogout}
-              className="p-2 rounded-xl bg-stone-100 dark:bg-white/10 text-stone-500 hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
-              title="Tizimdan Chiqish"
-            >
-              <LogOut size={16} />
-            </button>
-          </>
-        ) : (
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Profile / Auth Button */}
+          {currentUser ? (
+            <div className="flex items-center gap-3 border-l border-black/10 dark:border-white/10 pl-3 sm:pl-4">
+              {currentUser.is_premium && (
+                <span className="hidden sm:flex items-center gap-1 px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded-sm text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
+                  <CheckCheck size={12} /> VIP
+                </span>
+              )}
+              <button
+                onClick={onNavigateProfile}
+                className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+              >
+                {currentUser.avatarUrl ? (
+                  <img src={currentUser.avatarUrl} alt={currentUser.name} className="w-8 h-8 rounded-full border border-black/10 dark:border-white/10 object-cover" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10 flex items-center justify-center">
+                    <span className="font-bold text-sm text-ink dark:text-parchment">
+                      {currentUser.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+              </button>
+            </div>
+          ) : (
             <button
               onClick={() => onNavigatePage('auth')}
-              className="px-3 py-1.5 rounded-full text-xs font-semibold text-stone-700 dark:text-stone-300 hover:text-[#E05638] dark:hover:text-white transition-colors cursor-pointer"
+              className="ml-2 px-4 py-2 bg-ink dark:bg-parchment text-parchment dark:text-ink text-xs font-bold rounded-sm uppercase tracking-wider hover:opacity-90 transition-opacity cursor-pointer"
             >
               Kirish
             </button>
-            <button
-              onClick={() => onNavigatePage('auth')}
-              className="px-3.5 sm:px-4 py-1.5 rounded-full bg-[#E05638] hover:bg-[#c94529] text-white text-xs font-bold transition-all shadow-sm hover:shadow-md cursor-pointer active:scale-95 whitespace-nowrap"
-            >
-              Ro'yxatdan O'tish
-            </button>
-          </div>
-        )}
+          )}
 
+        </div>
       </div>
-
     </header>
   );
 }

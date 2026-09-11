@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { 
   Home, 
   Compass, 
@@ -66,27 +66,22 @@ export default function Sidebar({
   };
 
   const content = (
-    <div className="w-60 lg:w-64 h-full bg-white dark:bg-[#0A0D14] border-r border-stone-200/90 dark:border-white/10 flex flex-col justify-between p-4 transition-colors">
+    <div className="w-60 lg:w-64 h-full bg-parchment dark:bg-ink border-r border-black/10 dark:border-white/10 flex flex-col justify-between p-4 transition-colors">
       
       {/* Brand Header */}
-      <div className="space-y-6">
-        <div className="flex items-center justify-between px-2">
+      <div className="space-y-8">
+        <div className="flex items-center justify-between px-2 pt-2">
           <div 
             onClick={() => handleNav('home')}
             className="flex items-center gap-3 cursor-pointer group select-none"
           >
-            <img 
-              src="/icon.png" 
-              alt="Bookify Logo" 
-              className="w-10 h-10 rounded-2xl object-cover shadow-md ring-2 ring-[#C5A059]/20 group-hover:scale-105 transition-transform" 
-            />
+            <div className="w-8 h-8 bg-ink dark:bg-parchment rounded-sm flex items-center justify-center">
+              <span className="font-serif font-bold text-parchment dark:text-ink text-xl leading-none pt-1">B</span>
+            </div>
             <div>
-              <h1 className="font-serif font-bold text-lg tracking-tight text-stone-900 dark:text-white group-hover:text-[#E05638] transition-colors">
+              <h1 className="font-serif font-bold text-xl tracking-tight text-ink dark:text-parchment">
                 Bookify
               </h1>
-              <span className="text-[10px] font-mono tracking-widest text-[#C5A059] uppercase block font-semibold">
-                Kitob va audio kutubxona
-              </span>
             </div>
           </div>
 
@@ -94,69 +89,38 @@ export default function Sidebar({
           {onCloseMobile && (
             <button
               onClick={onCloseMobile}
-              className="md:hidden p-2 rounded-xl text-stone-400 hover:text-stone-700 dark:hover:text-white cursor-pointer"
+              className="md:hidden p-2 text-ink/50 hover:text-ink dark:text-parchment/50 dark:hover:text-parchment cursor-pointer"
             >
               <X size={20} />
             </button>
           )}
         </div>
 
-        {/* 👑 VIP Membership Banner in Sidebar */}
-        <div 
-          onClick={() => {
-            if (onOpenVipModal) onOpenVipModal();
-            if (onCloseMobile) onCloseMobile();
-          }}
-          className="p-3 rounded-2xl cursor-pointer transition-all duration-300 relative overflow-hidden group border border-amber-500/30 hover:border-amber-500/60 shadow-md hover:shadow-lg"
-          style={{
-            background: 'linear-gradient(135deg, rgba(247,151,30,0.15) 0%, rgba(255,210,0,0.08) 100%)',
-          }}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm shadow-sm bg-gradient-to-tr from-[#C5A059] to-amber-500 text-stone-950">
-                👑
-              </div>
-              <div>
-                <div className="text-xs font-bold text-stone-900 dark:text-white flex items-center gap-1 group-hover:text-[#E05638] transition-colors">
-                  VIP Obuna Bo'lish
-                </div>
-                <div className="text-[10px] text-stone-500 dark:text-stone-400">
-                  Barcha pullik kitoblar
-                </div>
-              </div>
-            </div>
-            <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded shadow-xs bg-gradient-to-r from-[#C5A059] to-amber-400 text-stone-950">
-              29 000 so'm/oy
-            </span>
-          </div>
-        </div>
-
         {/* Navigation Links */}
         <nav className="space-y-1">
           {navItems.map((item) => {
-            const Icon = item.icon;
             const isActive = currentPage === item.id;
             return (
               <button
                 key={item.id}
                 onClick={() => handleNav(item.id)}
-                className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-semibold tracking-tight transition-all duration-200 cursor-pointer ${
-                  isActive
-                    ? 'bg-[#E05638] text-white shadow-lg shadow-[#E05638]/25 font-bold translate-x-1'
-                    : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100/80 dark:hover:bg-white/[0.05]'
-                }`}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-md transition-all cursor-pointer group ` + 
+                  (isActive 
+                    ? `bg-black/5 dark:bg-white/10 text-ink dark:text-parchment font-semibold` 
+                    : `text-ink/60 dark:text-parchment/60 hover:bg-black/5 dark:hover:bg-white/5 hover:text-ink dark:hover:text-parchment font-medium`
+                  )
+                }
               >
                 <div className="flex items-center gap-3">
-                  <Icon size={17} className={isActive ? 'text-white' : 'text-stone-500 dark:text-stone-400'} />
-                  <span>{item.label}</span>
+                  <item.icon 
+                    size={18} 
+                    strokeWidth={isActive ? 2.5 : 2} 
+                    className={isActive ? "text-ember" : "text-ink/40 dark:text-parchment/40 group-hover:text-ink dark:group-hover:text-parchment"} 
+                  />
+                  <span className="text-[13px] tracking-wide">{item.label}</span>
                 </div>
                 {item.badge && (
-                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${
-                    isActive 
-                      ? 'bg-white/20 text-white' 
-                      : 'bg-[#E05638]/10 text-[#E05638] dark:bg-amber-400/10 dark:text-amber-300'
-                  }`}>
+                  <span className="px-1.5 py-0.5 rounded-sm text-[9px] font-mono font-bold bg-black/10 dark:bg-white/10 text-ink/70 dark:text-parchment/70 uppercase">
                     {item.badge}
                   </span>
                 )}
@@ -166,87 +130,75 @@ export default function Sidebar({
         </nav>
       </div>
 
-      {/* Footer User Info & Theme */}
-      <div className="pt-4 border-t border-stone-200/90 dark:border-white/10 space-y-3">
-        {currentUser ? (
-          <div className="flex items-center justify-between p-2.5 rounded-2xl bg-stone-50 dark:bg-white/[0.03] border border-stone-100 dark:border-white/5">
-            <div 
-              onClick={() => handleNav('profile')}
-              className="flex items-center gap-2.5 cursor-pointer min-w-0 flex-1"
-            >
-              {currentUser.avatarUrl ? (
-                <img src={currentUser.avatarUrl} alt={currentUser.name} className="w-8 h-8 rounded-xl object-cover shrink-0 shadow-xs border border-white/20" />
-              ) : (
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#E05638] to-[#C5A059] flex items-center justify-center text-white font-serif font-bold text-xs shrink-0 shadow-xs">
-                  {currentUser.name[0]}
-                </div>
-              )}
-              <div className="min-w-0 flex-1">
-                <span className="font-serif font-bold text-xs text-stone-900 dark:text-white truncate block">
-                  {currentUser.name}
-                </span>
-                <span className="text-[10px] font-mono text-stone-400 block truncate">
-                  {currentUser.email}
-                </span>
-              </div>
+      {/* Footer Area */}
+      <div className="space-y-4">
+        {/* Flat VIP Subscription Box */}
+        {(!currentUser?.is_premium) && (
+          <div className="p-4 border border-black/10 dark:border-white/10 rounded-lg bg-parchment-dim dark:bg-ink-soft">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-ink dark:text-parchment">
+                Bookify VIP
+              </span>
+              <span className="text-base">👑</span>
             </div>
-
-            <button
-              onClick={onLogout}
-              className="p-1.5 rounded-lg text-stone-400 hover:text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer shrink-0 ml-1"
-              title="Chiqish"
+            <p className="text-[11px] leading-tight text-ink/70 dark:text-parchment/70 mb-3">
+              Cheksiz audiokitoblar va VIP asarlar uchun obuna bo'ling.
+            </p>
+            <button 
+              onClick={onOpenVipModal}
+              className="w-full py-2 bg-ink dark:bg-parchment text-parchment dark:text-ink text-[11px] font-bold uppercase tracking-wider rounded-sm hover:opacity-90 transition-opacity cursor-pointer"
             >
-              <LogOut size={14} />
+              29 000 so'm/oy
             </button>
           </div>
-        ) : (
-          <button
-            onClick={() => handleNav('auth')}
-            className="w-full py-3 rounded-2xl bg-[#E05638] hover:bg-[#C74326] text-white font-bold text-xs font-mono uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer"
-          >
-            Tizimga Kirish
-          </button>
         )}
 
-        <div className="flex items-center justify-between px-2 pt-1 text-[11px] font-mono text-stone-400">
+        <div className="border-t border-black/10 dark:border-white/10 pt-4 flex flex-col gap-2">
           <button
             onClick={onToggleTheme}
-            className="flex items-center gap-1.5 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer"
+            className="w-full flex items-center gap-3 px-3 py-2 text-[13px] font-medium text-ink/60 dark:text-parchment/60 hover:bg-black/5 dark:hover:bg-white/5 rounded-md transition-colors cursor-pointer"
           >
-            {theme === 'dark' ? (
-              <>
-                <Sun size={13} className="text-amber-400" />
-                <span>Yorug' Mavzu</span>
-              </>
-            ) : (
-              <>
-                <Moon size={13} className="text-amber-600" />
-                <span>Qorong&apos;i mavzu</span>
-              </>
-            )}
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            <span>{theme === 'dark' ? 'Yorug` rejim' : 'Qorong`i rejim'}</span>
           </button>
-          <span className="text-[9px] opacity-60">v2.0.0</span>
+
+          {currentUser ? (
+            <button
+              onClick={onLogout}
+              className="w-full flex items-center gap-3 px-3 py-2 text-[13px] font-medium text-ember/80 hover:text-ember hover:bg-ember/10 rounded-md transition-colors cursor-pointer"
+            >
+              <LogOut size={16} />
+              <span>Tizimdan chiqish</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => handleNav('auth')}
+              className="w-full flex items-center gap-3 px-3 py-2 text-[13px] font-medium text-ink dark:text-parchment hover:bg-black/5 dark:hover:bg-white/5 rounded-md transition-colors cursor-pointer"
+            >
+              <User size={16} />
+              <span>Kirish / Ro'yxatdan o'tish</span>
+            </button>
+          )}
         </div>
       </div>
-
     </div>
   );
 
   return (
     <>
-      {/* Desktop Persistent Sidebar (Hidden on Mobile) */}
-      <aside className="hidden md:flex shrink-0 h-screen z-40">
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:block h-full z-30 shrink-0">
         {content}
       </aside>
 
-      {/* Mobile Drawer Overlay */}
+      {/* Mobile Drawer */}
       {isMobileOpen && (
-        <div className="fixed inset-0 z-50 md:hidden flex animate-in fade-in">
+        <div className="md:hidden fixed inset-0 z-50 flex">
           <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs"
+            className="fixed inset-0 bg-ink/50 backdrop-blur-sm"
             onClick={onCloseMobile}
           />
-          <div className="relative z-10 animate-in slide-in-from-left duration-300 h-full">
+          <div className="relative z-50 h-full w-60 transform transition-transform duration-300">
             {content}
           </div>
         </div>
