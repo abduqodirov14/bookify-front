@@ -75,26 +75,26 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout, on
   return (
     <div className="max-w-6xl mx-auto space-y-10 pb-24 animate-in fade-in duration-300">
       
-      {/* ── Ex Libris / Reader Passport Header ── */}
-      <div className="relative rounded-3xl p-8 sm:p-12 bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-[#C5A059]/10 rounded-full blur-3xl pointer-events-none" />
+      {/* ── Ex Libris / Shaxsiy Profil Header ── */}
+      <div className="relative rounded-sm p-8 sm:p-12 bg-parchment dark:bg-ink border border-black/10 dark:border-white/10 shadow-sm overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-[#C5A059]/10 rounded-full blur-none pointer-events-none" />
         
         <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
           
           <div className="flex flex-col sm:flex-row items-center gap-6">
             <div 
               onClick={() => setShowAvatarModal(true)}
-              className="relative w-24 h-24 rounded-3xl overflow-hidden shadow-xl ring-4 ring-[#C5A059]/20 cursor-pointer group shrink-0"
+              className="relative w-24 h-24 rounded-sm overflow-hidden shadow-sm border border-ink dark:border-parchment p-1 cursor-pointer group shrink-0"
               title="Profil rasmini almashtirish"
             >
               {currentAvatar ? (
                 <img src={currentAvatar} alt={user.name} className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full bg-gradient-to-tr from-[#E05638] to-[#C5A059] flex items-center justify-center text-white font-serif font-bold text-3xl">
+                <div className="w-full h-full bg-ink dark:bg-parchment  flex items-center justify-center text-parchment dark:text-ink font-serif font-bold text-ink dark:text-parchmentxl">
                   {user.name[0]}
                 </div>
               )}
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[10px] font-mono font-bold gap-1">
+              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-parchment dark:text-ink text-[10px] font-mono font-bold gap-1">
                 <Camera size={18} />
                 <span>Rasm qo'yish</span>
               </div>
@@ -103,7 +103,7 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout, on
             <div className="space-y-2 text-center sm:text-left">
               <div className="flex items-center justify-center sm:justify-start gap-2">
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#C5A059]/15 text-[#C5A059] border border-[#C5A059]/30">
-                  EX LIBRIS • NO. 042-UZ
+                  SHAXSIY MUTOLAA DAFTARI
                 </span>
                 <button
                   onClick={async () => {
@@ -119,18 +119,18 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout, on
                   className={`px-3 py-1 rounded-full text-[10px] font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                     is2FA 
                       ? 'bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 hover:bg-emerald-500/25' 
-                      : 'bg-stone-100 dark:bg-white/10 text-stone-500 hover:bg-stone-200'
+                      : 'bg-black/5 dark:bg-white/10 text-ink/60 dark:text-parchment/60 hover:bg-stone-200'
                   }`}
                   title="2FA xavfsizlikni yoqish / o'chirish"
                 >
-                  <ShieldCheck size={13} className={is2FA ? "text-emerald-500" : "text-stone-400"} />
+                  <ShieldCheck size={13} className={is2FA ? "text-emerald-500" : "text-ink/60 dark:text-parchment/60"} />
                   <span>2FA Himoya: {is2FA ? "YOQILGAN" : "O'CHIRILGAN"}</span>
                 </button>
               </div>
-              <h1 className="font-serif text-3xl sm:text-4xl font-bold text-stone-950 dark:text-white">
+              <h1 className="font-serif text-ink dark:text-parchmentxl sm:text-4xl font-bold text-ink dark:text-parchment">
                 {user.name}
               </h1>
-              <p className="font-serif italic text-xs sm:text-sm text-stone-500 max-w-lg">
+              <p className="font-serif italic text-xs sm:text-sm text-ink/60 dark:text-parchment/60 max-w-lg">
                 "Kitob — insoniyat aql-zakovati va qalbining asrlar oshib kelayotgan eng buyuk xazinasi..."
               </p>
             </div>
@@ -138,7 +138,7 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout, on
 
           <button
             onClick={onLogout}
-            className="px-4 py-2.5 rounded-xl bg-rose-500/10 text-rose-600 hover:bg-rose-500/20 font-mono font-bold text-xs transition-colors cursor-pointer flex items-center gap-2"
+            className="px-4 py-2.5 rounded-xl bg-black/5 dark:bg-white/5 text-rose-600 hover:bg-rose-500/20 font-mono font-bold text-xs transition-colors cursor-pointer flex items-center gap-2"
           >
             <LogOut size={15} />
             <span>Tizimdan Chiqish</span>
@@ -150,37 +150,37 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout, on
       {/* ── Key Reading Habits Dials ── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         
-        <div className="p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+        <div className="p-6 rounded-sm bg-parchment dark:bg-ink border border-black/10 dark:border-white/10 shadow-sm flex items-center gap-4">
+          <div className="w-14 h-14 rounded-sm bg-black/5 dark:bg-white/5 text-amber-500 flex items-center justify-center shrink-0">
             <Clock size={28} />
           </div>
           <div>
-            <span className="text-[11px] font-mono text-stone-400 block uppercase">Jami Mutolaa</span>
-            <span className="font-serif font-bold text-2xl text-stone-950 dark:text-white">
+            <span className="text-[11px] font-mono text-ink/60 dark:text-parchment/60 block uppercase">Jami Mutolaa</span>
+            <span className="font-serif font-bold text-2xl text-ink dark:text-parchment">
               {user.totalHours || 12} soat
             </span>
           </div>
         </div>
 
-        <div className="p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+        <div className="p-6 rounded-sm bg-parchment dark:bg-ink border border-black/10 dark:border-white/10 shadow-sm flex items-center gap-4">
+          <div className="w-14 h-14 rounded-sm bg-black/5 dark:bg-white/5 text-emerald-500 flex items-center justify-center shrink-0">
             <BookOpen size={28} />
           </div>
           <div>
-            <span className="text-[11px] font-mono text-stone-400 block uppercase">Tugatilgan Asarlar</span>
-            <span className="font-serif font-bold text-2xl text-stone-950 dark:text-white">
+            <span className="text-[11px] font-mono text-ink/60 dark:text-parchment/60 block uppercase">Tugatilgan Asarlar</span>
+            <span className="font-serif font-bold text-2xl text-ink dark:text-parchment">
               {user.finishedBooksCount ?? 0} ta kitob
             </span>
           </div>
         </div>
 
-        <div className="p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-violet-500/10 text-violet-500 flex items-center justify-center shrink-0">
+        <div className="p-6 rounded-sm bg-parchment dark:bg-ink border border-black/10 dark:border-white/10 shadow-sm flex items-center gap-4">
+          <div className="w-14 h-14 rounded-sm bg-black/5 dark:bg-white/5 text-violet-500 flex items-center justify-center shrink-0">
             <Trophy size={28} />
           </div>
           <div>
-            <span className="text-[11px] font-mono text-stone-400 block uppercase">Mutolaa Davomiyligi</span>
-            <span className="font-serif font-bold text-2xl text-stone-950 dark:text-white">
+            <span className="text-[11px] font-mono text-ink/60 dark:text-parchment/60 block uppercase">Mutolaa Davomiyligi</span>
+            <span className="font-serif font-bold text-2xl text-ink dark:text-parchment">
               {user.readingStreakDays ? `${user.readingStreakDays} kun` : '1 kun'}
             </span>
           </div>
@@ -192,10 +192,10 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout, on
       <div className="space-y-6">
         <div className="flex items-center justify-between border-b border-stone-200 dark:border-white/10 pb-4">
           <div>
-            <h3 className="font-serif text-2xl font-bold text-stone-950 dark:text-white">
+            <h3 className="font-serif text-2xl font-bold text-ink dark:text-parchment">
               Rasmiy Diplomlar & Sertifikatlar
             </h3>
-            <p className="text-xs text-stone-500">Adabiy chempionatlarda qo'lga kiritilgan rasmiy sertifikatlar</p>
+            <p className="text-xs text-ink/60 dark:text-parchment/60">Adabiy chempionatlarda qo'lga kiritilgan rasmiy sertifikatlar</p>
           </div>
         </div>
 
@@ -204,34 +204,34 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout, on
             {userCertificates.map(cert => (
               <div
                 key={cert.id}
-                className="relative p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#121620] border-2 border-stone-200/90 dark:border-white/10 hover:border-[#C5A059] transition-all duration-300 shadow-xs hover:shadow-2xl space-y-6 group overflow-hidden"
+                className="relative p-6 sm:p-8 rounded-sm bg-parchment dark:bg-ink border-2 border-black/10 dark:border-white/10 hover:border-[#C5A059] transition-all duration-300 shadow-sm hover:shadow-sm space-y-6 group overflow-hidden"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400/20 to-amber-600/30 border border-amber-500/40 text-amber-500 flex items-center justify-center text-2xl shadow-inner shrink-0">
+                    <div className="w-14 h-14 rounded-sm bg-ink dark:bg-parchment  border border-amber-500/40 text-amber-500 flex items-center justify-center text-2xl  shrink-0">
                       {cert.rankBadge}
                     </div>
                     <div>
                       <span className="text-[10px] font-mono uppercase tracking-widest text-[#C5A059] font-bold block">
                         {cert.season}
                       </span>
-                      <h4 className="font-serif font-bold text-lg text-stone-950 dark:text-white group-hover:text-[#C5A059] transition-colors">
+                      <h4 className="font-serif font-bold text-lg text-ink dark:text-parchment group-hover:text-[#C5A059] transition-colors">
                         {cert.title}
                       </h4>
                     </div>
                   </div>
 
-                  <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-stone-100 dark:bg-white/10 text-stone-600 dark:text-stone-300 shrink-0">
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-black/5 dark:bg-white/10 text-stone-600 dark:text-ink/60 dark:text-parchment/60 shrink-0">
                     {cert.rank}
                   </span>
                 </div>
 
-                <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed font-serif">
+                <p className="text-xs text-stone-600 dark:text-ink/60 dark:text-parchment/60 leading-relaxed font-serif">
                   "{cert.description}"
                 </p>
 
                 <div className="flex items-center justify-between pt-2 border-t border-stone-100 dark:border-white/5">
-                  <span className="text-[10px] font-mono text-stone-400">
+                  <span className="text-[10px] font-mono text-ink/60 dark:text-parchment/60">
                     ID: {cert.certNumber}
                   </span>
 
@@ -240,7 +240,7 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout, on
                       setModalCertData(cert);
                       setShowCertModal(true);
                     }}
-                    className="px-4 py-2 rounded-xl bg-[#0A0E1A] hover:bg-stone-800 text-white text-xs font-mono font-bold transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-1.5"
+                    className="px-4 py-2 rounded-xl bg-[#0A0E1A] hover:bg-stone-800 text-parchment dark:text-ink text-xs font-mono font-bold transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-1.5"
                   >
                     <Scroll size={14} />
                     <span>Sertifikatni Ochish</span>
@@ -250,15 +250,15 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout, on
             ))}
           </div>
         ) : (
-          <div className="p-8 sm:p-12 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 text-center space-y-4 max-w-2xl mx-auto shadow-xs">
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-[#C5A059]/15 text-[#C5A059] flex items-center justify-center text-3xl">
+          <div className="p-8 sm:p-12 rounded-sm bg-parchment dark:bg-ink border border-black/10 dark:border-white/10 text-center space-y-4 max-w-2xl mx-auto shadow-sm">
+            <div className="w-16 h-16 mx-auto rounded-sm bg-[#C5A059]/15 text-[#C5A059] flex items-center justify-center text-ink dark:text-parchmentxl">
               📜
             </div>
             <div className="space-y-1.5">
-              <h3 className="font-serif text-xl sm:text-2xl font-bold text-stone-900 dark:text-white">
+              <h3 className="font-serif text-xl sm:text-2xl font-bold text-stone-900 dark:text-parchment">
                 Hozircha Rasmiy Sertifikatlar Mavjud Emas
               </h3>
-              <p className="text-xs sm:text-sm text-stone-500 leading-relaxed max-w-md mx-auto">
+              <p className="text-xs sm:text-sm text-ink/60 dark:text-parchment/60 leading-relaxed max-w-md mx-auto">
                 Yangi ro'yxatdan o'tgan kitobxonlarda dastlab sertifikat bo'lmaydi. Rasmiy diplomlar faqat Adabiy Chempionatda ishtirok etib, 1, 2 yoki 3-o'rinni olgan kitobxonlarga topshiriladi.
               </p>
             </div>
@@ -273,7 +273,7 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout, on
                   });
                   setShowCertModal(true);
                 }}
-                className="px-5 py-2.5 rounded-xl bg-[#0A0E1A] hover:bg-stone-800 text-white text-xs font-mono font-bold transition-all shadow-md cursor-pointer flex items-center gap-2"
+                className="px-5 py-2.5 rounded-xl bg-[#0A0E1A] hover:bg-stone-800 text-parchment dark:text-ink text-xs font-mono font-bold transition-all shadow-md cursor-pointer flex items-center gap-2"
               >
                 <Award size={14} className="text-[#C5A059]" />
                 <span>O'z Nomimga Sertifikat Generatsiya Qilish</span>
@@ -287,17 +287,17 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout, on
       <div className="space-y-6">
         <div className="flex items-center justify-between border-b border-stone-200 dark:border-white/10 pb-4">
           <div>
-            <h3 className="font-serif text-2xl font-bold text-stone-950 dark:text-white">
+            <h3 className="font-serif text-2xl font-bold text-ink dark:text-parchment">
               Shaxsiy Kitob Javoni
             </h3>
-            <p className="text-xs text-stone-500">Mutolaa qilinayotgan va tugatilgan durdona kitoblar</p>
+            <p className="text-xs text-ink/60 dark:text-parchment/60">Mutolaa qilinayotgan va tugatilgan durdona kitoblar</p>
           </div>
 
-          <div className="flex items-center gap-1 p-1 rounded-xl bg-stone-100 dark:bg-white/10">
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-black/5 dark:bg-white/10">
             <button
               onClick={() => setShelfMode('cover')}
               className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all cursor-pointer ${
-                shelfMode === 'cover' ? 'bg-white dark:bg-stone-800 text-[#E05638] font-bold shadow-xs' : 'text-stone-500'
+                shelfMode === 'cover' ? 'bg-white dark:bg-stone-800 text-[#E05638] font-bold shadow-sm' : 'text-ink/60 dark:text-parchment/60'
               }`}
             >
               Muqova Ko'rinishi
@@ -305,7 +305,7 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout, on
             <button
               onClick={() => setShelfMode('spine')}
               className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all cursor-pointer ${
-                shelfMode === 'spine' ? 'bg-white dark:bg-stone-800 text-[#E05638] font-bold shadow-xs' : 'text-stone-500'
+                shelfMode === 'spine' ? 'bg-white dark:bg-stone-800 text-[#E05638] font-bold shadow-sm' : 'text-ink/60 dark:text-parchment/60'
               }`}
             >
               Jild Ko'rinishi (Spine)
@@ -322,27 +322,27 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout, on
                 className="group cursor-pointer space-y-2.5"
               >
                 <div className="book-card-3d">
-                  <div className="book-card-inner relative aspect-[2/3] rounded-2xl overflow-hidden shadow-book border border-black/10">
+                  <div className="book-card-inner relative aspect-[2/3] rounded-sm overflow-hidden shadow-book border border-black/10">
                     <img src={b.coverImage} alt={b.title} className="w-full h-full object-cover" />
                     <div className="book-spine-hinge" />
                   </div>
                 </div>
                 <div>
-                  <h4 className="font-serif font-bold text-xs text-stone-900 dark:text-white truncate group-hover:text-[#E05638]">
+                  <h4 className="font-serif font-bold text-xs text-stone-900 dark:text-parchment truncate group-hover:text-[#E05638]">
                     {b.title}
                   </h4>
-                  <span className="text-[10px] text-stone-400 truncate block">{b.authorName}</span>
+                  <span className="text-[10px] text-ink/60 dark:text-parchment/60 truncate block">{b.authorName}</span>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="p-8 rounded-3xl bg-gradient-to-r from-[#2A1E14] via-[#3E2D1F] to-[#2A1E14] border-8 border-[#1A120B] shadow-2xl flex items-end justify-center gap-3 h-72 overflow-x-auto">
+          <div className="p-8 rounded-sm bg-ink dark:bg-parchment from-[#2A1E14] via-[#3E2D1F] to-[#2A1E14] border-ink dark:border-parchment border-[#1A120B] shadow-sm flex items-end justify-center gap-3 h-72 overflow-x-auto">
             {books.slice(0, 8).map((b, idx) => (
               <div
                 key={b.id}
                 onClick={() => onOpenReader(b.id)}
-                className="w-12 sm:w-14 rounded-t-md cursor-pointer hover:-translate-y-4 transition-transform duration-300 shadow-xl flex flex-col justify-between p-2 text-center text-white border-l border-white/20 select-none group"
+                className="w-12 sm:w-14 rounded-t-md cursor-pointer hover:-translate-y-4 transition-transform duration-300 shadow-sm flex flex-col justify-between p-2 text-center text-parchment dark:text-ink border-l border-white/20 select-none group"
                 style={{
                   height: `${200 + (idx % 3) * 20}px`,
                   backgroundColor: b.spineColor
@@ -363,17 +363,17 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout, on
       {/* ── Profile Avatar Change Modal ── */}
       {showAvatarModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
-          <div className="relative w-full max-w-md bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5 animate-in zoom-in-95">
+          <div className="relative w-full max-w-md bg-parchment dark:bg-ink border border-black/10 dark:border-white/10 rounded-sm p-6 sm:p-8 shadow-sm space-y-5 animate-in zoom-in-95">
             <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-white/5">
               <div className="flex items-center gap-2">
                 <Camera size={18} className="text-[#E05638]" />
-                <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-white">
+                <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-parchment">
                   Profil Rasmini Tanlash
                 </h3>
               </div>
               <button
                 onClick={() => setShowAvatarModal(false)}
-                className="p-1.5 rounded-xl bg-stone-100 dark:bg-white/10 hover:bg-stone-200 text-stone-500 cursor-pointer"
+                className="p-1.5 rounded-xl bg-black/5 dark:bg-white/10 hover:bg-stone-200 text-ink/60 dark:text-parchment/60 cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -381,11 +381,11 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout, on
 
             {/* Current preview */}
             <div className="flex justify-center py-2">
-              <div className="w-24 h-24 rounded-3xl overflow-hidden border-4 border-[#C5A059] shadow-lg">
+              <div className="w-24 h-24 rounded-sm overflow-hidden border-4 border-[#C5A059] shadow-sm">
                 {(avatarInputUrl || currentAvatar) ? (
                   <img src={avatarInputUrl || currentAvatar} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full bg-[#E05638] flex items-center justify-center text-white text-3xl font-bold">
+                  <div className="w-full h-full bg-[#E05638] flex items-center justify-center text-parchment dark:text-ink text-ink dark:text-parchmentxl font-bold">
                     {user.name[0]}
                   </div>
                 )}
@@ -395,7 +395,7 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout, on
             {/* File Upload / Image Link */}
             <div className="space-y-3">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block">
+                <label className="text-xs font-semibold text-stone-700 dark:text-ink/60 dark:text-parchment/60 block">
                   Qurilmadan rasm tanlash:
                 </label>
                 <input
@@ -413,12 +413,12 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout, on
                       reader.readAsDataURL(file);
                     }
                   }}
-                  className="w-full text-xs text-stone-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#E05638]/10 file:text-[#E05638] hover:file:bg-[#E05638]/20 cursor-pointer"
+                  className="w-full text-xs text-ink/60 dark:text-parchment/60 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-ink dark:border-parchment file:text-xs file:font-semibold file:bg-[#E05638]/10 file:text-[#E05638] hover:file:bg-[#E05638]/20 cursor-pointer"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block">
+                <label className="text-xs font-semibold text-stone-700 dark:text-ink/60 dark:text-parchment/60 block">
                   Yoki rasm havolasini (URL) kiriting:
                 </label>
                 <input
@@ -426,7 +426,7 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout, on
                   placeholder="https://images.unsplash.com/... yoki Google rasm URL"
                   value={avatarInputUrl}
                   onChange={(e) => setAvatarInputUrl(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-stone-50 dark:bg-[#0E1218] border border-stone-200 dark:border-white/10 text-xs text-stone-900 dark:text-white outline-none focus:border-[#E05638]"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-black/5 dark:bg-[#0E1218] border border-stone-200 dark:border-white/10 text-xs text-stone-900 dark:text-parchment outline-none focus:border-[#E05638]"
                 />
               </div>
             </div>
@@ -435,7 +435,7 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout, on
               <button
                 type="button"
                 onClick={() => setShowAvatarModal(false)}
-                className="flex-1 py-2.5 rounded-xl bg-stone-100 dark:bg-white/10 text-stone-600 dark:text-stone-300 text-xs font-mono font-semibold"
+                className="flex-1 py-2.5 rounded-xl bg-black/5 dark:bg-white/10 text-stone-600 dark:text-ink/60 dark:text-parchment/60 text-xs font-mono font-semibold"
               >
                 Bekor Qilish
               </button>
@@ -458,7 +458,7 @@ export default function ReaderPassport({ user, books, onOpenReader, onLogout, on
                     setIsSavingAvatar(false);
                   }
                 }}
-                className="flex-1 py-2.5 rounded-xl bg-[#E05638] hover:bg-[#c94529] text-white text-xs font-mono font-bold uppercase transition-all shadow-md cursor-pointer disabled:opacity-50"
+                className="flex-1 py-2.5 rounded-xl bg-[#E05638] hover:bg-[#c94529] text-parchment dark:text-ink text-xs font-mono font-bold uppercase transition-all shadow-md cursor-pointer disabled:opacity-50"
               >
                 {isSavingAvatar ? "Saqlanmoqda..." : "Saqlash"}
               </button>

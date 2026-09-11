@@ -54,7 +54,7 @@ export default function Sidebar({
     ...(isVolunteer || isAdmin ? [{ id: 'volunteer' as Page, label: 'Volontyorlik', icon: HeartHandshake, badge: 'VIP' }] : []),
     { id: 'time', label: 'Sokin Mutolaa', icon: Clock },
     { id: 'challenge', label: 'Adabiy Chempionat', icon: Trophy },
-    { id: 'profile', label: 'Kitobxon Pasporti', icon: User },
+    { id: 'profile', label: 'Shaxsiy Profil', icon: User },
     ...(isAdmin ? [{ id: 'admin' as Page, label: 'Boshqaruv & 2FA', icon: ShieldCheck, badge: 'Admin' }] : [])
   ];
 
