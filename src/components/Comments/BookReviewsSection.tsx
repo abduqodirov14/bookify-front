@@ -20,27 +20,8 @@ interface Comment {
   created_at: string;
 }
 
-const DEFAULT_SAMPLE_COMMENTS: Comment[] = [
-  {
-    id: 'sample-1',
-    book_id: 'default',
-    user_name: 'Dilshodbek Abduqodirov',
-    content: "Chingiz Aytmatovning 'Qiyomat' asari inson qalbini larzaga soluvchi buyuk asar! Avdiy va Boston fojiasi har bir o'quvchini chuqur o'yga toldiradi.",
-    rating: 5,
-    created_at: 'Bugun, 18:30'
-  },
-  {
-    id: 'sample-2',
-    book_id: 'default',
-    user_name: 'Madina Karimova',
-    content: "Adabiyotimizning eng teran falsafiy romani. Audio teatr formati bilan mutolaa qilish o'zgacha zavq beradi.",
-    rating: 5,
-    created_at: 'Kecha, 21:15'
-  }
-];
-
 export default function BookReviewsSection({ bookId, bookTitle, currentUser }: Props) {
-  const [comments, setComments] = useState<Comment[]>(DEFAULT_SAMPLE_COMMENTS);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [content, setContent] = useState('');
   const [userName, setUserName] = useState(currentUser?.name || '');
   const [rating, setRating] = useState(5);
@@ -55,7 +36,7 @@ export default function BookReviewsSection({ bookId, bookTitle, currentUser }: P
         setComments(list);
       }
     } catch {
-      // Keep default sample comments on network cold start
+      // Network error — leave comments as empty, show empty state
     }
   };
 
@@ -213,7 +194,15 @@ export default function BookReviewsSection({ bookId, bookTitle, currentUser }: P
 
       {/* Reviews Stream */}
       <div className="space-y-4">
-        {comments.map((c) => {
+        {comments.length === 0 ? (
+          <div className="py-10 text-center text-stone-400 dark:text-stone-600">
+            <MessageSquare size={32} className="mx-auto mb-3 opacity-40" />
+            <p className="text-sm font-serif text-stone-500 dark:text-stone-400">
+              Hali sharhlar yo'q — birinchi bo'lib fikr qoldiring.
+            </p>
+          </div>
+        ) : (
+          comments.map((c) => {
           const isOwner = currentUser?.id && c.user_id === currentUser.id;
           const isAdmin = currentUser?.role === 'ADMIN';
 
@@ -267,7 +256,8 @@ export default function BookReviewsSection({ bookId, bookTitle, currentUser }: P
               </p>
             </div>
           );
-        })}
+        })
+        )}
       </div>
 
     </div>

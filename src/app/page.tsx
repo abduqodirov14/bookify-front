@@ -738,7 +738,7 @@ export default function HomeApp() {
                   { id: 'audio', label: '🎧 Audio Spektakllar' },
                   { id: 'uzbek', label: "📜 O'zbek Mumtoz Merosi" },
                   { id: 'world', label: '🌍 Jahon Adabiyoti' },
-                  { id: 'vip', label: '💎 VIP Durdonalar' },
+                  { id: 'vip', label: '💎 VIP' },
                 ].map(pill => (
                   <button
                     key={pill.id}
@@ -758,8 +758,8 @@ export default function HomeApp() {
               {(() => {
                 const filteredShelfBooks = publishedBooks.filter(b => {
                   if (activeHomeShelf === 'audio') return Boolean(b.audioDuration || (b as any).audio_url || b.narrator || (b as any).audio_files?.length > 0);
-                  if (activeHomeShelf === 'uzbek') return b.category === 'Mumtoz Meros' || b.authorName.includes('Qodiriy') || b.authorName.includes("Cho'lpon") || b.authorName.includes('Navoiy') || b.authorName.includes('Muhammad Sodiq') || b.authorName.includes('Sindarov');
-                  if (activeHomeShelf === 'world') return b.category === 'Jahon Adabiyoti' || b.authorName.includes('Dostoyevskiy') || b.authorName.includes('Yu Xua') || b.authorName.includes('Aytmatov') || b.authorName.includes('Clear');
+                  if (activeHomeShelf === 'uzbek') return b.category === "O'zbek Adabiyoti" || b.authorName.includes('Qodiriy') || b.authorName.includes("Cho'lpon");
+                  if (activeHomeShelf === 'world') return b.category === 'Rus Adabiyoti' || b.category === 'Frantsuz Adabiyoti' || b.category === 'Amerika Adabiyoti' || b.category === 'Nemis Adabiyoti' || b.category === 'Lotin Amerika Adabiyoti';
                   if (activeHomeShelf === 'vip') return Boolean(b.is_premium || (b as any).is_premium);
                   return true;
                 });
@@ -771,7 +771,7 @@ export default function HomeApp() {
                     <div className="flex items-center justify-between">
                       <div>
                         <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-950 dark:text-white tracking-tight flex items-center gap-2.5">
-                          <span>Trenddagi Durdona Asarlar</span>
+                          <span>Ommabop Kitoblar</span>
                           <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-[#E05638]/10 text-[#E05638] dark:text-amber-400 font-bold">
                             {displayBooks.length} ta asar
                           </span>
@@ -1186,7 +1186,7 @@ export default function HomeApp() {
                       </li>
                       <li>
                         <button onClick={() => navigate('discover')} className="hover:text-[#E05638] transition-colors cursor-pointer">
-                          Durdona Asarlar Katalogi
+                          Kitoblar Katalogi
                         </button>
                       </li>
                       <li>
@@ -1207,18 +1207,12 @@ export default function HomeApp() {
                     </ul>
                   </div>
 
-                  {/* Trust & Community Column */}
+                  {/* Community Column */}
                   <div className="space-y-3">
                     <h5 className="font-serif font-bold text-sm text-stone-900 dark:text-white">
-                      Jamiyat & Xavfsizlik
+                      Jamiyat
                     </h5>
                     <ul className="space-y-2 text-xs text-stone-600 dark:text-stone-400 font-medium">
-                      <li className="flex items-center gap-1.5 text-[#E05638]">
-                        <span>✓ 256-bit SSL Shifrlash</span>
-                      </li>
-                      <li className="flex items-center gap-1.5 text-[#C5A059]">
-                        <span>✓ 48 kHz Professional Audio</span>
-                      </li>
                       <li className="flex items-center gap-1.5 text-emerald-600">
                         <span>✓ Bepul Mutolaa Imkoniyati</span>
                       </li>

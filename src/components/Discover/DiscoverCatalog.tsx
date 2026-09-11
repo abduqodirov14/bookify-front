@@ -71,13 +71,13 @@ export default function DiscoverCatalog({ books, onOpenReader, onPlayAudio, curr
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200 dark:border-white/10 pb-6">
         <div>
           <span className="text-xs font-mono uppercase tracking-widest text-[#E05638] font-bold">
-            Kutubxona Xazinasi
+            Bookify Katalog
           </span>
           <h1 className="font-serif text-3xl sm:text-4xl font-bold text-stone-950 dark:text-white mt-1">
-            Durdona Asarlar Katalogi
+            Kitoblar
           </h1>
           <p className="text-xs text-stone-500 mt-1">
-            PostgreSQL bazasidagi sara milliy asarlar va audio spektakllar
+            Xorijiy asarlar o'zbekcha tarjimada va o'zbek adabiyoti
           </p>
         </div>
 

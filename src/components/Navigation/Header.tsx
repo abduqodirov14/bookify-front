@@ -141,7 +141,7 @@ export default function Header({
         >
           <Search size={15} className="text-stone-400 group-hover:text-[#E05638] transition-colors shrink-0" />
           <span className="flex-1 text-xs text-stone-500 dark:text-stone-400 truncate whitespace-nowrap">
-            Durdona asarlar, allomalar yoki audio...
+            Kitob yoki muallif nomi...
           </span>
           <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white dark:bg-white/10 border border-stone-200 dark:border-white/10 text-[10px] font-mono text-stone-500 shrink-0">
             <Command size={10} />
@@ -185,7 +185,7 @@ export default function Header({
           <span>{currentUser?.is_premium ? "👑" : "💎"}</span>
           <span className="hidden sm:inline font-bold">{currentUser?.is_premium ? "VIP A'zo" : "VIP Obuna"}</span>
           {!currentUser?.is_premium && (
-            <span className="px-1.5 py-0.5 rounded bg-black/15 text-[10px] hidden md:inline font-bold">29k/oy</span>
+            <span className="px-1.5 py-0.5 rounded bg-black/15 text-[10px] hidden md:inline font-bold">29 000/oy</span>
           )}
         </button>
         

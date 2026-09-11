@@ -11,7 +11,6 @@ import {
   LogOut, 
   Sun, 
   Moon,
-  Layers,
   X,
   HeartHandshake
 } from 'lucide-react';
@@ -49,13 +48,12 @@ export default function Sidebar({
 
   const navItems: { id: Page; label: string; icon: any; badge?: string }[] = [
     { id: 'home', label: 'Bosh Sahifa', icon: Home },
-    { id: 'discover', label: 'Xazina & Katalog', icon: Compass },
+    { id: 'discover', label: 'Katalog', icon: Compass },
     { id: 'author', label: 'Buyuk Allomalar', icon: Users2 },
     { id: 'library', label: 'Mening Javonim', icon: Library },
     ...(isVolunteer || isAdmin ? [{ id: 'volunteer' as Page, label: 'Volontyorlik', icon: HeartHandshake, badge: 'VIP' }] : []),
     { id: 'time', label: 'Sokin Mutolaa', icon: Clock },
     { id: 'challenge', label: 'Adabiy Chempionat', icon: Trophy },
-    { id: 'vision' as Page, label: 'Kelajak & Rejalar', icon: Layers },
     { id: 'profile', label: 'Kitobxon Pasporti', icon: User },
     ...(isAdmin ? [{ id: 'admin' as Page, label: 'Boshqaruv & 2FA', icon: ShieldCheck, badge: 'Admin' }] : [])
   ];
@@ -87,7 +85,7 @@ export default function Sidebar({
                 Bookify
               </h1>
               <span className="text-[10px] font-mono tracking-widest text-[#C5A059] uppercase block font-semibold">
-                Elektron Kutubxona
+                Kitob va audio kutubxona
               </span>
             </div>
           </div>
@@ -129,7 +127,7 @@ export default function Sidebar({
               </div>
             </div>
             <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded shadow-xs bg-gradient-to-r from-[#C5A059] to-amber-400 text-stone-950">
-              29k/oy
+              29 000 so'm/oy
             </span>
           </div>
         </div>
@@ -223,7 +221,7 @@ export default function Sidebar({
             ) : (
               <>
                 <Moon size={13} className="text-amber-600" />
-                <span>Tungi Obsidiyan</span>
+                <span>Qorong&apos;i mavzu</span>
               </>
             )}
           </button>
