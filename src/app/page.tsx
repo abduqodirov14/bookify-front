@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Page, Book, Author, AudioTrack, UserProfile } from '../types';
 import { AUTHORS } from '../data/authors';
+import { BOOKS } from '../data/books';
 import { api, getAuthToken, clearAuthToken, getCachedUser, setCachedUser } from '../services/api';
 
 import Sidebar from '../components/Navigation/Sidebar';
@@ -38,7 +39,7 @@ export default function HomeApp() {
   const [activeAudioTrack, setActiveAudioTrack] = useState<AudioTrack | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [booksList, setBooksList] = useState<Book[]>([]);
+  const [booksList, setBooksList] = useState<Book[]>(BOOKS);
   const [isLoadingBooks, setIsLoadingBooks] = useState(true);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [pendingBookToOpen, setPendingBookToOpen] = useState<string | null>(null);
