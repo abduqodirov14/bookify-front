@@ -52,6 +52,15 @@ export default function BookSpread({ book, onBack, onPlayAudio, isAudioActive = 
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const [selectedText, setSelectedText] = useState<{ text: string; x: number; y: number } | null>(null);
   const [dbPages, setDbPages] = useState<any[]>([]);
+  const [flipState, setFlipState] = useState<'idle' | 'next' | 'prev'>('idle');
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  const playFlipSound = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {});
+    }
+  };
 
   // Fetch real physical pages if available in database
   useEffect(() => {
@@ -216,22 +225,32 @@ export default function BookSpread({ book, onBack, onPlayAudio, isAudioActive = 
   const remainingMinutes = Math.max(1, Math.ceil((totalSpreads - currentPageSpread) * 1.5));
 
   const nextPage = () => {
-    if (currentPageSpread < totalSpreads - 1) {
-      setCurrentPageSpread(prev => prev + 1);
-    } else if (currentChapterIdx < book.chapters.length - 1) {
-      setCurrentChapterIdx(prev => prev + 1);
-      setCurrentPageSpread(0);
-      toast.success(`${currentChapterIdx + 2}-Bobga o'tildi!`, { icon: '📖' });
-    }
+    setFlipState('next');
+    playFlipSound();
+    setTimeout(() => {
+      setFlipState('idle');
+      if (currentPageSpread < totalSpreads - 1) {
+        setCurrentPageSpread(prev => prev + 1);
+      } else if (currentChapterIdx < book.chapters.length - 1) {
+        setCurrentChapterIdx(prev => prev + 1);
+        setCurrentPageSpread(0);
+        toast.success(`${currentChapterIdx + 2}-Bobga o'tildi!`, { icon: '📖' });
+      }
+    }, 300);
   };
 
   const prevPage = () => {
-    if (currentPageSpread > 0) {
-      setCurrentPageSpread(prev => prev - 1);
-    } else if (currentChapterIdx > 0) {
-      setCurrentChapterIdx(prev => prev - 1);
-      setCurrentPageSpread(0);
-    }
+    setFlipState('prev');
+    playFlipSound();
+    setTimeout(() => {
+      setFlipState('idle');
+      if (currentPageSpread > 0) {
+        setCurrentPageSpread(prev => prev - 1);
+      } else if (currentChapterIdx > 0) {
+        setCurrentChapterIdx(prev => prev - 1);
+        setCurrentPageSpread(0); // Note: Ideal logic would set it to totalSpreads of prev chapter, but keep original behavior
+      }
+    }, 300);
   };
 
   // Real progress sync with backend database + Continuous Active Reading Heartbeat for Leaderboard
@@ -652,7 +671,7 @@ export default function BookSpread({ book, onBack, onPlayAudio, isAudioActive = 
                   if ((e.clientX - rect.left) / rect.width < 0.5) prevPage();
                 }}
                 className={`flex-1 flex flex-col justify-between overflow-y-auto border-b md:border-b-0 md:border-r select-none relative ${
-                  leftPage.imagePath ? 'p-2 sm:p-3 md:p-4' : 'p-6 sm:p-10 md:p-12 lg:p-14'
+                  leftPage.imagePath ? 'p-0' : 'p-6 sm:p-10 md:p-12 lg:p-14'
                 }`}
                 style={{ borderColor: themeStyles.border }}
               >
@@ -708,7 +727,7 @@ export default function BookSpread({ book, onBack, onPlayAudio, isAudioActive = 
                   if ((e.clientX - rect.left) / rect.width > 0.5) nextPage();
                 }}
                 className={`hidden md:flex flex-1 flex-col justify-between overflow-y-auto select-none relative ${
-                  rightPage?.imagePath ? 'p-2 sm:p-3 md:p-4' : 'p-6 sm:p-10 md:p-12 lg:p-14'
+                  rightPage?.imagePath ? 'p-0' : 'p-6 sm:p-10 md:p-12 lg:p-14'
                 }`}
               >
                 {rightPage ? (
