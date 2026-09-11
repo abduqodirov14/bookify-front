@@ -1,4 +1,4 @@
-﻿import { Book } from '../types';
+import { Book } from '../types';
 
 // ALL books below are confirmed public-domain works from Project Gutenberg.
 // Gutenberg IDs are listed in comments for verification.
@@ -234,33 +234,4 @@ export const BOOKS: Book[] = [
     ]
   },
 
-  // ── O'ZBEK ADABIYOTI (alohida bo'lim, tarjima emas) ──────────────────────
-
-  {
-    // Published 1925; author Qodiriy died 1938. US public domain (95 yr rule).
-    id: "otkan-kunlar",
-    title: "O'tkan Kunlar",
-    authorId: "abdulla-qodiriy",
-    authorName: "Abdulla Qodiriy",
-    category: "O'zbek Adabiyoti",
-    // Open Library OLID OL28471897M
-    coverImage: "https://covers.openlibrary.org/b/olid/OL28471897M-L.jpg",
-    spineColor: "#8B2500",
-    description: "O'zbek adabiyotining birinchi milliy romani. XIX asr Qo'qon xonligi davrida Otabek va Kumushbibining muhabbat fojiasi orqali jamiyat dardi ko'rsatiladi.",
-    publishedYear: 1925,
-    pages: 412,
-    audioDuration: "14 soat 20 daqiqa",
-    rating: 4.9,
-    reviewsCount: 0,
-    narrator: "Afzal Rafiqov",
-    featuredQuote: "Moziyga qaytib ish ko'rmak xayrlidir, deydilar...",
-    chapters: [
-      {
-        id: "ok1",
-        number: 1,
-        title: "1-Bob: 1264-hijriy yil",
-        content: `1264-nchi hijriy, dalv oyining 17-nchi kuni, qishki quyosh botishga yovuqlashgan bir vaqtda Toshkentning Samarqand darvozasiga yaqin bir saroyga Otabek ismli yosh yigit kirib keldi.`
-      }
-    ]
-  }
 ];
