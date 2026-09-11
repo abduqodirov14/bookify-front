@@ -14,6 +14,14 @@ export const resolveAudioUrl = (url?: string): string => {
   return `${baseDomain}${cleanPath}`;
 };
 
+export const resolveFileUrl = (url?: string): string => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  const baseDomain = API_BASE_URL.replace(/\/api\/v1\/?$/, '');
+  const cleanPath = url.startsWith('/') ? url : `/${url}`;
+  return `${baseDomain}${cleanPath}`;
+};
+
 export const getAuthToken = () => {
   if (typeof window !== 'undefined') {
     return localStorage.getItem('fianny_token');
@@ -254,9 +262,13 @@ export const api = {
   },
 
   async getBookReader(id: string) {
-    const res = await fetchWithRetry(`${API_BASE_URL}/books/${id}/reader`);
-    if (!res.ok) throw new Error("Kitob topilmadi");
-    return res.json();
+    try {
+      const res = await fetchWithRetry(`${API_BASE_URL}/books/${id}/reader`);
+      if (!res.ok) return null;
+      return res.json();
+    } catch {
+      return null;
+    }
   },
 
   async getBookById(id: string) {
@@ -744,6 +756,7 @@ export const api = {
       return [];
     }
   },
+
 
   async publishBook(bookId: string) {
     const token = getAuthToken();

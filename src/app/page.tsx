@@ -23,7 +23,10 @@ import VerifyCertificatePage from '../components/Certificate/VerifyCertificatePa
 import VolunteerPortal from '../components/Volunteer/VolunteerPortal';
 import BookPaywallModal from '../components/Payment/BookPaywallModal';
 
-import { BookOpen, Headphones, ArrowRight, Quote, Search, X, Trophy, UploadCloud } from 'lucide-react';
+import { 
+  BookOpen, Headphones, ArrowRight, Quote, Search, X, Trophy, UploadCloud,
+  Sparkles, ShieldCheck, Bookmark, Flame, Compass, ChevronRight, CheckCircle2, Award, Star, Library, Users, Smartphone, Zap
+} from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 export default function HomeApp() {
@@ -601,18 +604,19 @@ export default function HomeApp() {
           }}
           onNavigatePage={(p) => navigate(p)}
           onOpenVipModal={() => setIsVipModalOpen(true)}
+          currentPage={currentPage}
         />
 
         {/* Scrollable Page Body */}
         <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-12 py-6 sm:py-8 transition-colors pb-24 sm:pb-8">
           
-          {/* 1. HOME VIEW */}
+                    {/* 1. HOME VIEW */}
           {currentPage === 'home' && (
-            <div className="max-w-7xl mx-auto space-y-16 pb-28 animate-in fade-in duration-300">
+            <div className="max-w-7xl mx-auto space-y-20 pb-28 animate-in fade-in duration-300">
               
-              {/* ── Spotlight Hero Showcase (Shows only when a book is published) ── */}
+              {/* ── 1. SPOTLIGHT GRAND HERO SHOWCASE ── */}
               {featuredBook && (
-                <div className="relative rounded-3xl p-8 sm:p-12 lg:p-16 bg-gradient-to-tr from-[#FAF6EE] via-white to-[#F5EFE0] dark:from-[#121620] dark:via-[#0E1218] dark:to-[#0A0D14] border border-stone-200/90 dark:border-white/10 shadow-xs overflow-hidden">
+                <div className="relative rounded-3xl p-8 sm:p-12 lg:p-16 bg-gradient-to-tr from-[#FAF6EE] via-white to-[#F5EFE0] dark:from-[#121620] dark:via-[#0E1218] dark:to-[#0A0D14] border border-stone-200/90 dark:border-white/10 shadow-xl overflow-hidden">
                   <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-[#E05638]/10 via-[#C5A059]/10 to-transparent rounded-full blur-3xl pointer-events-none" />
 
                   <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
@@ -630,20 +634,29 @@ export default function HomeApp() {
                                   <span>VIP ASAR • {new Intl.NumberFormat('uz-UZ').format(featPrice)} SO'M</span>
                                 </span>
                               ) : (
-                                <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#E05638]/10 text-[#E05638] dark:text-amber-400 border border-[#E05638]/20">
-                                  ✦ Bosh Muharrir Tanlovi
+                                <span className="px-3.5 py-1 rounded-full text-xs font-mono font-bold bg-[#E05638]/10 text-[#E05638] dark:text-amber-400 border border-[#E05638]/20 flex items-center gap-1">
+                                  <Sparkles size={12} />
+                                  <span>Bosh Muharrir Tanlovi</span>
                                 </span>
                               )}
                               <span className="px-3 py-1 rounded-full text-xs font-mono bg-stone-100 dark:bg-white/10 text-stone-600 dark:text-stone-300">
-                                {featuredBook.pages} sahifa {featuredBook.audioDuration ? `• 🎧 ${featuredBook.audioDuration}` : `• ⏱ ~${Math.max(1, Math.round((featuredBook.pages || 100) * 1.5 / 60))} soat`}
+                                📖 {featuredBook.pages} sahifa {featuredBook.audioDuration ? `• 🎧 ${featuredBook.audioDuration}` : `• ⏱ ~${Math.max(1, Math.round((featuredBook.pages || 100) * 1.5 / 60))} soat`}
                               </span>
                             </div>
 
-                            <h1 className="font-serif text-4xl sm:text-6xl font-bold text-stone-950 dark:text-white tracking-tight leading-[1.1]">
-                              {featuredBook.title}
-                            </h1>
+                            <div className="space-y-2">
+                              <span className="text-xs font-mono text-[#E05638] uppercase font-bold tracking-widest block">
+                                {featuredBook.category || 'Mumtoz Meros'}
+                              </span>
+                              <h1 className="font-serif text-4xl sm:text-6xl font-bold text-stone-950 dark:text-white tracking-tight leading-[1.1]">
+                                {featuredBook.title}
+                              </h1>
+                              <p className="text-sm sm:text-base text-stone-600 dark:text-stone-300 font-medium">
+                                Muallif: <span className="text-stone-900 dark:text-white font-bold">{featuredBook.authorName}</span>
+                              </p>
+                            </div>
 
-                            <p className="font-serif italic text-stone-600 dark:text-stone-300 text-base sm:text-lg max-w-xl leading-relaxed">
+                            <p className="font-serif italic text-stone-600 dark:text-stone-300 text-base sm:text-lg max-w-xl leading-relaxed border-l-2 border-[#E05638]/40 pl-4">
                               "{featuredBook.featuredQuote}"
                             </p>
 
@@ -673,13 +686,21 @@ export default function HomeApp() {
                                 <Headphones size={16} className="text-[#C5A059]" />
                                 <span>Audio Tinglash</span>
                               </button>
+
+                              <button
+                                onClick={() => navigate('discover')}
+                                className="px-6 py-4 rounded-2xl text-stone-600 dark:text-stone-300 hover:text-stone-950 dark:hover:text-white font-bold text-xs font-mono uppercase tracking-wider transition-colors cursor-pointer flex items-center gap-1.5"
+                              >
+                                <span>Barcha Asarlar</span>
+                                <ArrowRight size={14} />
+                              </button>
                             </div>
                           </>
                         );
                       })()}
                     </div>
 
-                    <div className="relative group cursor-pointer" onClick={() => handleOpenReader(featuredBook.id)}>
+                    <div className="relative group cursor-pointer shrink-0" onClick={() => handleOpenReader(featuredBook.id)}>
                       <div className="book-card-3d w-56 sm:w-68 aspect-[2/3] scale-100 group-hover:scale-105 transition-transform duration-500">
                         <div className="book-card-inner relative w-full h-full rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20">
                           <img 
@@ -702,61 +723,164 @@ export default function HomeApp() {
                 </div>
               )}
 
-              {/* ── Buyuk Adiblar Merosi ── */}
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
+              {/* ── 2. NEGA AYNAN BOOKIFY? (PLATFORMA IMTIYOZLARI & NEGA LOGIN QILISH KERAK) ── */}
+              <section className="space-y-8">
+                <div className="text-center max-w-2xl mx-auto space-y-2">
+                  <span className="px-3.5 py-1 rounded-full text-xs font-mono font-bold bg-[#E05638]/10 text-[#E05638] uppercase tracking-wider inline-block">
+                    ✦ Yangi Avlod Kutubxonasi
+                  </span>
+                  <h2 className="font-serif text-3xl sm:text-4xl font-bold text-stone-950 dark:text-white tracking-tight">
+                    Nega Aynan Bookify?
+                  </h2>
+                  <p className="text-xs sm:text-sm text-stone-500 font-medium leading-relaxed">
+                    Oddiy elektron kitoblar emas — to'laqonli madaniy ekotizim, professional audio spektakllar va shaxsiy rivojlanish maydoni.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {/* Perk 1 */}
+                  <div className="p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 hover:border-[#E05638]/40 hover:shadow-xl transition-all duration-300 space-y-4 group">
+                    <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Library size={24} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-white">
+                        Oltin Meros & Mumtoz Fond
+                      </h3>
+                      <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+                        Qodiriy, Cho'lpon, Navoiy va jahon adabiyoti durdonalarining asl, tekshirilgan matnlari to'liq jamlanmasi.
+                      </p>
+                    </div>
+                    <div className="text-[11px] font-mono text-[#E05638] font-semibold flex items-center gap-1">
+                      <span>✓ 100% Rasmiy va Tekshirilgan</span>
+                    </div>
+                  </div>
+
+                  {/* Perk 2 */}
+                  <div className="p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 hover:border-[#E05638]/40 hover:shadow-xl transition-all duration-300 space-y-4 group">
+                    <div className="w-12 h-12 rounded-2xl bg-[#E05638]/10 text-[#E05638] flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Headphones size={24} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-white">
+                        48 kHz Audio Spektakllar
+                      </h3>
+                      <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+                        Sun'iy robot ovozi emas — Afzal Rafiqov va O'zbekiston xalq artistlari ijrosidagi mahoratli jonli audio spektakllar.
+                      </p>
+                    </div>
+                    <div className="text-[11px] font-mono text-[#E05638] font-semibold flex items-center gap-1">
+                      <span>✓ Studiyaviy Master Sifat</span>
+                    </div>
+                  </div>
+
+                  {/* Perk 3 */}
+                  <div className="p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 hover:border-[#E05638]/40 hover:shadow-xl transition-all duration-300 space-y-4 group">
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <BookOpen size={24} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-white">
+                        Haqiqiy 3D Varaqlash
+                      </h3>
+                      <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+                        Ko'zni charchatmaydigan pergament va sepiya qog'ozlari, qulay shriftlar, xatcho'plar va so'nggi sahifani eslab qolish.
+                      </p>
+                    </div>
+                    <div className="text-[11px] font-mono text-[#E05638] font-semibold flex items-center gap-1">
+                      <span>✓ Ergonomik Mutolaa</span>
+                    </div>
+                  </div>
+
+                  {/* Perk 4 */}
+                  <div className="p-6 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 hover:border-[#E05638]/40 hover:shadow-xl transition-all duration-300 space-y-4 group">
+                    <div className="w-12 h-12 rounded-2xl bg-[#C5A059]/15 text-[#C5A059] flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Trophy size={24} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-white">
+                        Adabiy Chempionat & Sovg'alar
+                      </h3>
+                      <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+                        Har haftalik kitobxonlik musobaqalari, 15 000 000 so'm mukofot jamg'armasi va rasmiy akkreditatsiyalangan sertifikatlar.
+                      </p>
+                    </div>
+                    <div className="text-[11px] font-mono text-[#E05638] font-semibold flex items-center gap-1">
+                      <span>✓ 15,000,000 UZS Mukofot</span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* ── 3. MAVZULAR & JANRLAR BO'YICHA SAYOHAT ── */}
+              <section className="space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
-                    <h3 className="font-serif text-2xl font-bold text-stone-950 dark:text-white">
-                      Buyuk Adiblar Merosi
+                    <h3 className="font-serif text-2xl sm:text-3xl font-bold text-stone-950 dark:text-white">
+                      Janrlar & Mavzular Sayohati
                     </h3>
                     <p className="text-xs text-stone-500 font-mono mt-0.5">
-                      O'zbek adabiyoti klassiklarining hayoti va asarlari xazinasi
+                      Qiziqishingizga mos durdona asarni bir teginishda kashf eting
                     </p>
                   </div>
-                  <button 
-                    onClick={() => navigate('author', 'abdulla-qodiriy')}
+                  <button
+                    onClick={() => navigate('discover')}
                     className="text-xs font-mono text-[#E05638] font-bold flex items-center gap-1 hover:underline cursor-pointer"
                   >
-                    <span>Barcha Allomalar</span>
+                    <span>To'liq Katalog</span>
                     <ArrowRight size={14} />
                   </button>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                  {AUTHORS.map((a) => (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+                  {[
+                    { title: "Mumtoz Adabiyot", emoji: "📜", count: "40+ asar", color: "from-amber-500/20 to-amber-700/20" },
+                    { title: "Jahon Durdonalari", emoji: "🌍", count: "35+ asar", color: "from-rose-500/20 to-red-700/20" },
+                    { title: "Tarixiy Romanlar", emoji: "⏳", count: "25+ asar", color: "from-stone-500/20 to-stone-800/20" },
+                    { title: "Psixologiya & Rivoj", emoji: "🧠", count: "20+ asar", color: "from-emerald-500/20 to-teal-700/20" },
+                    { title: "Audio Spektakllar", emoji: "🎭", count: "15+ asar", color: "from-indigo-500/20 to-purple-700/20" },
+                    { title: "Bolalar Adabiyoti", emoji: "🧒", count: "30+ asar", color: "from-sky-500/20 to-blue-700/20" }
+                  ].map((genre, idx) => (
                     <div
-                      key={a.id}
-                      onClick={() => navigate('author', a.id)}
-                      className="p-4 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 hover:border-[#E05638]/50 hover:shadow-xl transition-all duration-300 cursor-pointer text-center space-y-3 group"
+                      key={idx}
+                      onClick={() => navigate('discover')}
+                      className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 hover:border-[#E05638]/50 hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col justify-between space-y-3 group"
                     >
-                      <div className="w-20 h-20 mx-auto rounded-2xl overflow-hidden ring-2 ring-stone-200 dark:ring-white/10 group-hover:ring-[#E05638] transition-all">
-                        <img src={a.portrait} alt={a.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      </div>
+                      <span className="text-3xl sm:text-4xl block group-hover:scale-110 transition-transform">
+                        {genre.emoji}
+                      </span>
                       <div>
                         <h4 className="font-serif font-bold text-sm text-stone-900 dark:text-white group-hover:text-[#E05638] transition-colors">
-                          {a.name}
+                          {genre.title}
                         </h4>
                         <span className="text-[10px] font-mono text-stone-400 block mt-0.5">
-                          {a.lifetime}
+                          {genre.count}
                         </span>
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
+              </section>
 
-              {/* ── Durdona Asarlar & Audio Spektakllar ── */}
+              {/* ── 4. SARA DURDONALAR & AUDIO SPEKTAKLLAR (KITOB KARTALARI) ── */}
               {publishedBooks.length > 0 && (
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
+                <section className="space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
-                      <h3 className="font-serif text-2xl font-bold text-stone-950 dark:text-white">
-                        Durdona Asarlar & Audio Spektakllar
+                      <h3 className="font-serif text-2xl sm:text-3xl font-bold text-stone-950 dark:text-white">
+                        Sara Durdonalar & Audio Spektakllar
                       </h3>
                       <p className="text-xs text-stone-500 font-mono mt-0.5">
-                        O'zbek va jahon mumtoz adabiyotining sara durdona asarlari
+                        O'zbek va jahon mumtoz adabiyotining eng sara durdona asarlari
                       </p>
                     </div>
+                    <button
+                      onClick={() => navigate('discover')}
+                      className="text-xs font-mono text-[#E05638] font-bold flex items-center gap-1 hover:underline cursor-pointer"
+                    >
+                      <span>Barchasini Ko'rish ({publishedBooks.length})</span>
+                      <ArrowRight size={14} />
+                    </button>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -849,10 +973,103 @@ export default function HomeApp() {
                       );
                     })}
                   </div>
-                </div>
+                </section>
               )}
 
-              {/* ── Kitobxonlar Fikrlari & Taqrizlar ── */}
+              {/* ── 5. PLATFORMA IMKONIYATLARI SHOWCASE ── */}
+              <section className="relative rounded-3xl p-8 sm:p-12 bg-gradient-to-br from-stone-900 via-[#181B22] to-black text-white overflow-hidden shadow-2xl">
+                <div className="absolute top-0 right-0 w-96 h-96 bg-[#E05638]/15 rounded-full blur-3xl pointer-events-none" />
+                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+                  <div className="space-y-4 lg:col-span-2">
+                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#E05638]/20 text-[#E05638] uppercase tracking-wider inline-block">
+                      ✦ Texnologik Mutolaa Tajribasi
+                    </span>
+                    <h3 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-white">
+                      Raqamli Mutolaa Yangi Bosqichda
+                    </h3>
+                    <p className="text-stone-400 text-sm max-w-xl leading-relaxed">
+                      Oddiy PDF fayllarni o'qishdan charchadingizmi? Bookify sizga haqiqiy kitob varaqlash zavqi, professional diktor ovozi va ko'zni toliqtirmaydigan xalqaro standartdagi o'qish interfeysini taqdim etadi.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
+                      <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
+                        <span className="text-[#E05638] font-bold text-sm block">⚡ Matn & Audio</span>
+                        <p className="text-[11px] text-stone-400">Audio eshitib, matndan ko'z uzmasdan birgalikda kuzatib boring.</p>
+                      </div>
+                      <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
+                        <span className="text-amber-400 font-bold text-sm block">🌙 Ergonomik Fon</span>
+                        <p className="text-[11px] text-stone-400">Sepiya, pergament va qora tungi rejimlar ko'zni asraydi.</p>
+                      </div>
+                      <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
+                        <span className="text-emerald-400 font-bold text-sm block">🔖 Bulutli Xatcho'p</span>
+                        <p className="text-[11px] text-stone-400">To'xtagan joyingiz barcha qurilmalarda avtomatik saqlanadi.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl bg-white/[0.03] border border-white/10 text-center">
+                    <BookOpen size={48} className="text-[#E05638] animate-pulse" />
+                    <h4 className="font-serif font-bold text-lg">Hozir Bepul Sinab Ko'ring</h4>
+                    <p className="text-xs text-stone-400 max-w-xs">
+                      Ro'yxatdan o'ting va shaxsiy javoningizni bugunoq to'ldirishni boshlang.
+                    </p>
+                    <button
+                      onClick={() => {
+                        if (featuredBook) handleOpenReader(featuredBook.id);
+                        else navigate('discover');
+                      }}
+                      className="mt-2 w-full py-3.5 rounded-xl bg-[#E05638] hover:bg-[#c94529] text-white font-bold text-xs font-mono uppercase tracking-wider transition-all shadow-lg shadow-[#E05638]/25 cursor-pointer"
+                    >
+                      3D Readerda Ochish ➔
+                    </button>
+                  </div>
+                </div>
+              </section>
+
+              {/* ── 6. BUYUK ADIBLAR MEROSI ── */}
+              <section className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-serif text-2xl sm:text-3xl font-bold text-stone-950 dark:text-white">
+                      Buyuk Adiblar Merosi
+                    </h3>
+                    <p className="text-xs text-stone-500 font-mono mt-0.5">
+                      O'zbek adabiyoti klassiklarining hayoti va asarlari xazinasi
+                    </p>
+                  </div>
+                  <button 
+                    onClick={() => navigate('author', 'abdulla-qodiriy')}
+                    className="text-xs font-mono text-[#E05638] font-bold flex items-center gap-1 hover:underline cursor-pointer"
+                  >
+                    <span>Barcha Allomalar</span>
+                    <ArrowRight size={14} />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                  {AUTHORS.map((a) => (
+                    <div
+                      key={a.id}
+                      onClick={() => navigate('author', a.id)}
+                      className="p-4 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 hover:border-[#E05638]/50 hover:shadow-xl transition-all duration-300 cursor-pointer text-center space-y-3 group"
+                    >
+                      <div className="w-20 h-20 mx-auto rounded-2xl overflow-hidden ring-2 ring-stone-200 dark:ring-white/10 group-hover:ring-[#E05638] transition-all">
+                        <img src={a.portrait} alt={a.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      </div>
+                      <div>
+                        <h4 className="font-serif font-bold text-sm text-stone-900 dark:text-white group-hover:text-[#E05638] transition-colors">
+                          {a.name}
+                        </h4>
+                        <span className="text-[10px] font-mono text-stone-400 block mt-0.5">
+                          {a.lifetime}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              {/* ── 7. KITOBXONLAR FIKRLARI & TAQRIZLAR ── */}
               {featuredBook && (
                 <BookReviewsSection
                   bookId={featuredBook.id}
@@ -861,10 +1078,150 @@ export default function HomeApp() {
                 />
               )}
 
-              {/* End of Home feed */}
+              {/* ── 8. A'ZO BO'LISH & RO'YXATDAN O'TISH KUCHLI CHAQIRUVI (CONVERSION BANNER) ── */}
+              <section className="relative rounded-3xl p-8 sm:p-14 bg-gradient-to-r from-[#C74326] via-[#E05638] to-[#C5A059] text-white shadow-2xl overflow-hidden text-center sm:text-left">
+                <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-white/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-8">
+                  <div className="space-y-3 max-w-xl">
+                    <span className="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-black/20 text-white uppercase tracking-wider inline-block">
+                      ✦ Bepul A'zolik
+                    </span>
+                    <h3 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight">
+                      {currentUser 
+                        ? `Mutolaani davom ettiring, ${currentUser.name}!`
+                        : "O'zbekistonning Eng Katta Kitobxonlar Jamiyatiga Qo'shiling"
+                      }
+                    </h3>
+                    <p className="text-white/90 text-sm leading-relaxed">
+                      {currentUser 
+                        ? "Shaxsiy javoningizdagi asarlarni o'qishda davom eting va haftalik chempionatda sovrinli o'rinlarni egallang."
+                        : "Ro'yxatdan o'tish mutlaqo bepul. Ilk daqiqalardanoq yuzlab sara asarlar, audio spektakllar va shaxsiy kitob javonidan bahramand bo'ling."
+                      }
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0 w-full sm:w-auto">
+                    {currentUser ? (
+                      <button
+                        onClick={() => navigate('library')}
+                        className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-stone-950 hover:bg-black text-white font-bold text-xs font-mono uppercase tracking-wider transition-all shadow-xl hover:scale-105 active:scale-95 cursor-pointer"
+                      >
+                        Mening Javonim ➔
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => navigate('auth')}
+                          className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-stone-950 hover:bg-black text-white font-bold text-xs font-mono uppercase tracking-wider transition-all shadow-xl hover:scale-105 active:scale-95 cursor-pointer"
+                        >
+                          Bepul Ro'yxatdan O'tish ➔
+                        </button>
+                        <button
+                          onClick={() => navigate('discover')}
+                          className="w-full sm:w-auto px-6 py-4 rounded-2xl bg-white/20 hover:bg-white/30 text-white font-bold text-xs font-mono uppercase tracking-wider transition-all border border-white/25 cursor-pointer"
+                        >
+                          Katalog
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </section>
+
+              {/* ── 9. GRAND PROFESSIONAL FOOTER ── */}
+              <footer className="pt-12 border-t border-stone-200 dark:border-white/10 space-y-12">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                  {/* Brand Column */}
+                  <div className="space-y-4 md:col-span-2">
+                    <div className="flex items-center gap-3">
+                      <img 
+                        src="/icon.png" 
+                        alt="Bookify Logo" 
+                        className="w-10 h-10 rounded-2xl object-cover shadow-md ring-2 ring-[#C5A059]/20" 
+                      />
+                      <div>
+                        <h4 className="font-serif font-bold text-lg text-stone-950 dark:text-white">
+                          Bookify
+                        </h4>
+                        <span className="text-[10px] font-mono tracking-widest text-[#C5A059] uppercase block font-semibold">
+                          Milliy Raqamli Kutubxona
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-stone-500 dark:text-stone-400 max-w-md leading-relaxed">
+                      O'zbek mumtoz va zamonaviy adabiy merosini asrab-avaylash, yuqori sifatli audio spektakllar yaratish va kitobxonlik madaniyatini yuksaltirishga qaratilgan milliy raqamli platforma.
+                    </p>
+                  </div>
+
+                  {/* Navigation Column */}
+                  <div className="space-y-3">
+                    <h5 className="font-serif font-bold text-sm text-stone-900 dark:text-white">
+                      Bo'limlar
+                    </h5>
+                    <ul className="space-y-2 text-xs text-stone-600 dark:text-stone-400 font-medium">
+                      <li>
+                        <button onClick={() => navigate('home')} className="hover:text-[#E05638] transition-colors cursor-pointer">
+                          Bosh Sahifa
+                        </button>
+                      </li>
+                      <li>
+                        <button onClick={() => navigate('discover')} className="hover:text-[#E05638] transition-colors cursor-pointer">
+                          Durdona Asarlar Xazinasi
+                        </button>
+                      </li>
+                      <li>
+                        <button onClick={() => navigate('author', 'abdulla-qodiriy')} className="hover:text-[#E05638] transition-colors cursor-pointer">
+                          Buyuk Allomalar
+                        </button>
+                      </li>
+                      <li>
+                        <button onClick={() => navigate('challenge')} className="hover:text-[#E05638] transition-colors cursor-pointer">
+                          Adabiy Chempionat 2026
+                        </button>
+                      </li>
+                      <li>
+                        <button onClick={() => navigate('library')} className="hover:text-[#E05638] transition-colors cursor-pointer">
+                          Mening Shaxsiy Javonim
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* Trust & Community Column */}
+                  <div className="space-y-3">
+                    <h5 className="font-serif font-bold text-sm text-stone-900 dark:text-white">
+                      Jamiyat & Xavfsizlik
+                    </h5>
+                    <ul className="space-y-2 text-xs text-stone-600 dark:text-stone-400 font-medium">
+                      <li className="flex items-center gap-1.5 text-[#E05638]">
+                        <span>✓ 256-bit SSL Shifrlash</span>
+                      </li>
+                      <li className="flex items-center gap-1.5 text-[#C5A059]">
+                        <span>✓ 48 kHz Professional Audio</span>
+                      </li>
+                      <li className="flex items-center gap-1.5 text-emerald-600">
+                        <span>✓ Bepul O'qish Imkoniyati</span>
+                      </li>
+                      <li>
+                        <button onClick={() => navigate('volunteer')} className="hover:text-[#E05638] transition-colors cursor-pointer">
+                          🤝 Volontyorlik Dasturi
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="pt-6 border-t border-stone-100 dark:border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-400 font-mono">
+                  <span>© 2026 Bookify. Barcha huquqlar himoyalangan.</span>
+                  <div className="flex items-center gap-4">
+                    <span>O'zbekistonda mehr bilan yaratildi 🇺🇿</span>
+                  </div>
+                </div>
+              </footer>
 
             </div>
           )}
+
 
           {/* 2. LIBRARY VIEW */}
           {currentPage === 'library' && (

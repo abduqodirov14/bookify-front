@@ -23,7 +23,7 @@ import {
   Quote
 } from 'lucide-react';
 import { Book, ReaderTheme, ReaderFont } from '../../types';
-import { api, API_BASE_URL } from '../../services/api';
+import { api, API_BASE_URL, resolveFileUrl } from '../../services/api';
 import { toast } from 'react-hot-toast';
 
 interface Props {
@@ -35,6 +35,7 @@ interface Props {
 
 export default function BookSpread({ book, onBack, onPlayAudio, isAudioActive = false }: Props) {
   // Reading States
+  const [activeBook, setActiveBook] = useState<Book>(book);
   const [currentChapterIdx, setCurrentChapterIdx] = useState(0);
   const [currentPageSpread, setCurrentPageSpread] = useState(0);
   const [readingMode, setReadingMode] = useState<'spread' | 'vertical'>('spread');
@@ -63,6 +64,20 @@ export default function BookSpread({ book, onBack, onPlayAudio, isAudioActive = 
     return () => { isMounted = false; };
   }, [book.id]);
 
+  // Fetch full book reader data (authentic chapters and sentences)
+  useEffect(() => {
+    let isMounted = true;
+    api.getBookReader(book.id).then(readerData => {
+      if (isMounted && readerData && Array.isArray(readerData.chapters) && readerData.chapters.length > 0) {
+        setActiveBook(prev => ({
+          ...prev,
+          chapters: readerData.chapters
+        }));
+      }
+    }).catch(() => {});
+    return () => { isMounted = false; };
+  }, [book.id]);
+
   // Restore saved reading progress on mount
   useEffect(() => {
     let isMounted = true;
@@ -79,7 +94,12 @@ export default function BookSpread({ book, onBack, onPlayAudio, isAudioActive = 
   }, [book.id, book.chapters?.length]);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const chapter = book.chapters[currentChapterIdx] || book.chapters[0];
+  const chapter = activeBook.chapters[currentChapterIdx] || activeBook.chapters[0] || book.chapters[0] || {
+    id: `c1-${book.id}`,
+    number: 1,
+    title: `1-Bob: ${book.title}`,
+    content: book.description || `${book.title} asari mutolaaga tayyor.`
+  };
 
   const paragraphs = useMemo(() => {
     return chapter.content.split('\n\n').filter(p => p.trim().length > 0);
@@ -107,22 +127,22 @@ export default function BookSpread({ book, onBack, onPlayAudio, isAudioActive = 
         for (let i = 0; i < dbPages.length; i += 2) {
           const pLeft = dbPages[i];
           const pRight = dbPages[i + 1];
-          const leftText = pLeft?.text?.trim() 
-            ? pLeft.text.split('\n\n').filter(Boolean) 
-            : (paragraphs.length > 0 ? paragraphs.slice(0, 2) : [chapter.content || `${book.title} — ${pLeft?.page_number || 1}-sahifa.`]);
-          const rightText = pRight?.text?.trim() 
-            ? pRight.text.split('\n\n').filter(Boolean) 
-            : [];
+          const leftText = pLeft?.image_path 
+            ? [] 
+            : (pLeft?.text?.trim() ? pLeft.text.split('\n\n').filter(Boolean) : []);
+          const rightText = pRight?.image_path 
+            ? [] 
+            : (pRight?.text?.trim() ? pRight.text.split('\n\n').filter(Boolean) : []);
           result.push({
             left: {
               pageNumber: pLeft?.page_number || (i + 1),
               text: leftText,
-              imagePath: pLeft?.image_path || null
+              imagePath: pLeft?.image_path ? resolveFileUrl(pLeft.image_path) : null
             },
             right: pRight ? {
               pageNumber: pRight.page_number || (i + 2),
               text: rightText,
-              imagePath: pRight.image_path || null
+              imagePath: pRight.image_path ? resolveFileUrl(pRight.image_path) : null
             } : null
           });
         }
@@ -631,7 +651,9 @@ export default function BookSpread({ book, onBack, onPlayAudio, isAudioActive = 
                   const rect = e.currentTarget.getBoundingClientRect();
                   if ((e.clientX - rect.left) / rect.width < 0.5) prevPage();
                 }}
-                className="flex-1 p-6 sm:p-10 md:p-12 lg:p-14 flex flex-col justify-between overflow-y-auto border-b md:border-b-0 md:border-r select-none relative"
+                className={`flex-1 flex flex-col justify-between overflow-y-auto border-b md:border-b-0 md:border-r select-none relative ${
+                  leftPage.imagePath ? 'p-2 sm:p-3 md:p-4' : 'p-6 sm:p-10 md:p-12 lg:p-14'
+                }`}
                 style={{ borderColor: themeStyles.border }}
               >
                 {leftPage.imagePath ? (
@@ -685,7 +707,9 @@ export default function BookSpread({ book, onBack, onPlayAudio, isAudioActive = 
                   const rect = e.currentTarget.getBoundingClientRect();
                   if ((e.clientX - rect.left) / rect.width > 0.5) nextPage();
                 }}
-                className="hidden md:flex flex-1 p-6 sm:p-10 md:p-12 lg:p-14 flex-col justify-between overflow-y-auto select-none relative"
+                className={`hidden md:flex flex-1 flex-col justify-between overflow-y-auto select-none relative ${
+                  rightPage?.imagePath ? 'p-2 sm:p-3 md:p-4' : 'p-6 sm:p-10 md:p-12 lg:p-14'
+                }`}
               >
                 {rightPage ? (
                   rightPage.imagePath ? (
@@ -827,7 +851,7 @@ export default function BookSpread({ book, onBack, onPlayAudio, isAudioActive = 
               </div>
 
               <div className="space-y-1">
-                {book.chapters.map((ch, idx) => (
+                {activeBook.chapters.map((ch, idx) => (
                   <button
                     key={ch.id}
                     onClick={() => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Bell, ArrowLeft, Menu, Sun, Moon, LogOut, Command, BookOpen, Trophy, CheckCheck, X } from 'lucide-react';
-import { UserProfile, Book } from '../../types';
+import { UserProfile, Book, Page } from '../../types';
 
 export interface AppNotification {
   id: string;
@@ -26,6 +26,7 @@ interface Props {
   onOpenBookReader: (bookId: string) => void;
   onNavigatePage: (page: any) => void;
   onOpenVipModal?: () => void;
+  currentPage?: Page;
 }
 
 export default function Header({
@@ -41,7 +42,8 @@ export default function Header({
   books,
   onOpenBookReader,
   onNavigatePage,
-  onOpenVipModal
+  onOpenVipModal,
+  currentPage
 }: Props) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
@@ -146,6 +148,29 @@ export default function Header({
             <span>K</span>
           </div>
         </div>
+
+        {/* Public Desktop Navigation Links */}
+        <nav className="hidden lg:flex items-center gap-1 ml-1">
+          {[
+            { id: 'home' as Page, label: 'Bosh Sahifa' },
+            { id: 'discover' as Page, label: 'Katalog' },
+            { id: 'author' as Page, label: 'Allomalar' },
+            { id: 'challenge' as Page, label: 'Chempionat' },
+            { id: 'library' as Page, label: 'Javonim' }
+          ].map((item) => (
+            <button
+              key={item.id}
+              onClick={() => onNavigatePage(item.id)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                currentPage === item.id
+                  ? 'bg-[#E05638]/10 text-[#E05638] dark:text-amber-400 font-bold shadow-2xs'
+                  : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/5'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
       </div>
 
       {/* Right Controls */}
@@ -292,12 +317,20 @@ export default function Header({
             </button>
           </>
         ) : (
-          <button
-            onClick={() => onNavigatePage('auth')}
-            className="px-4 py-1.5 rounded-full bg-[#E05638] hover:bg-[#c94529] text-white text-xs font-mono font-bold uppercase transition-all shadow-xs cursor-pointer"
-          >
-            Kirish
-          </button>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <button
+              onClick={() => onNavigatePage('auth')}
+              className="px-3 py-1.5 rounded-full text-xs font-semibold text-stone-700 dark:text-stone-300 hover:text-[#E05638] dark:hover:text-white transition-colors cursor-pointer"
+            >
+              Kirish
+            </button>
+            <button
+              onClick={() => onNavigatePage('auth')}
+              className="px-3.5 sm:px-4 py-1.5 rounded-full bg-[#E05638] hover:bg-[#c94529] text-white text-xs font-bold transition-all shadow-sm hover:shadow-md cursor-pointer active:scale-95 whitespace-nowrap"
+            >
+              Ro'yxatdan O'tish
+            </button>
+          </div>
         )}
 
       </div>
