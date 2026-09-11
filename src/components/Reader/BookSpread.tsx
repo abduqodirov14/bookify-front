@@ -22,6 +22,7 @@ import {
   Pause,
   Quote
 } from 'lucide-react';
+import { FlipBook } from './FlipBook';
 import { Book, ReaderTheme, ReaderFont } from '../../types';
 import { api, API_BASE_URL, resolveFileUrl } from '../../services/api';
 import { toast } from 'react-hot-toast';
@@ -212,6 +213,22 @@ export default function BookSpread({ book, onBack, onPlayAudio, isAudioActive = 
   }, [chapter, dbPages, paragraphs, book.title]);
 
   const totalSpreads = Math.max(1, spreads.length);
+
+  const flatPages = useMemo(() => {
+    const list: any[] = [];
+    spreads.forEach(s => {
+      list.push(s.left);
+      if (s.right) list.push(s.right);
+      else list.push({ pageNumber: s.left.pageNumber + 1, text: [], imagePath: null });
+    });
+    return list;
+  }, [spreads]);
+
+  const flipBookRef = useRef<any>(null);
+
+  const onPageFlip = (e: any) => {
+    setCurrentPageSpread(Math.floor(e.data / 2));
+  };
   const currentSpread = spreads[currentPageSpread] || spreads[0] || {
     left: { pageNumber: 1, text: [] },
     right: null
@@ -240,17 +257,13 @@ export default function BookSpread({ book, onBack, onPlayAudio, isAudioActive = 
   };
 
   const prevPage = () => {
-    setFlipState('prev');
     playFlipSound();
-    setTimeout(() => {
-      setFlipState('idle');
-      if (currentPageSpread > 0) {
-        setCurrentPageSpread(prev => prev - 1);
-      } else if (currentChapterIdx > 0) {
-        setCurrentChapterIdx(prev => prev - 1);
-        setCurrentPageSpread(0); // Note: Ideal logic would set it to totalSpreads of prev chapter, but keep original behavior
-      }
-    }, 300);
+    if (currentPageSpread > 0) {
+      flipBookRef.current?.pageFlip()?.flipPrev();
+    } else if (currentChapterIdx > 0) {
+      setCurrentChapterIdx(prev => prev - 1);
+      setCurrentPageSpread(0);
+    }
   };
 
   // Real progress sync with backend database + Continuous Active Reading Heartbeat for Leaderboard
@@ -651,142 +664,57 @@ export default function BookSpread({ book, onBack, onPlayAudio, isAudioActive = 
         {readingMode === 'spread' ? (
           /* Mode A: Widescreen Grand 2-Page Physical Spread (Matching exact user screenshot) */
           <div className="relative w-full max-w-[97vw] 2xl:max-w-[1600px] flex items-center justify-center my-auto">
-            <div 
-              className="w-full h-[85vh] 2xl:h-[87vh] rounded-2xl md:rounded-3xl border-[6px] sm:border-[8px] border-[#383330] dark:border-[#221F1D] shadow-[0_25px_65px_rgba(0,0,0,0.45)] relative flex flex-col md:flex-row overflow-hidden transition-all duration-300"
-              style={{ backgroundColor: themeStyles.pageBg, borderColor: '#383330' }}
-            >
-              {/* Center Spine Crease (Realistic Book Fold) */}
-              <div 
-                className="hidden md:block absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-10 sm:w-14 pointer-events-none z-20"
-                style={{
-                  background: 'linear-gradient(to right, rgba(0,0,0,0.13) 0%, rgba(0,0,0,0.04) 30%, rgba(0,0,0,0.01) 50%, rgba(0,0,0,0.04) 70%, rgba(0,0,0,0.13) 100%)',
-                  boxShadow: 'inset 0 0 10px rgba(0,0,0,0.05)'
-                }}
-              />
-
-              {/* Left Page (Click left zone to turn prev) */}
-              <div 
-                onClick={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  if ((e.clientX - rect.left) / rect.width < 0.5) prevPage();
-                }}
-                className={`flex-1 flex flex-col justify-between overflow-y-auto border-b md:border-b-0 md:border-r select-none relative ${
-                  leftPage.imagePath ? 'p-0' : 'p-6 sm:p-10 md:p-12 lg:p-14'
-                }`}
-                style={{ borderColor: themeStyles.border }}
+            
+            {/* FlipBook 3D Implementation */}
+            <div className="w-full max-w-5xl mx-auto h-[85vh] 2xl:h-[87vh] flex items-center justify-center relative shadow-sm rounded-sm overflow-hidden" style={{ backgroundColor: themeStyles.pageBg }}>
+              <FlipBook
+                ref={flipBookRef}
+                width={450}
+                height={700}
+                onFlip={onPageFlip}
               >
-                {leftPage.imagePath ? (
-                  <div className="w-full h-full flex items-center justify-center p-1 overflow-hidden my-auto">
-                    <img 
-                      src={leftPage.imagePath.startsWith('http') ? leftPage.imagePath : `${API_BASE_URL.replace(/\/api\/v1\/?$/, '')}${leftPage.imagePath}`} 
-                      alt={`Sahifa ${leftPage.pageNumber}`} 
-                      className="max-h-full max-w-full object-contain rounded-md shadow-xs select-none" 
-                    />
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {currentPageSpread === 0 && (
-                      <div className="pb-4 border-b border-black/10 dark:border-white/10">
-                        <span className="text-[10px] font-mono uppercase tracking-widest text-[#E05638] font-bold">
-                          {book.title}
-                        </span>
-                        <h2 className="font-serif text-xl sm:text-2xl font-bold mt-1" style={{ color: themeStyles.text }}>
-                          {chapter.title}
-                        </h2>
-                      </div>
+                {flatPages.map((page, i) => (
+                  <div key={i} className="demoPage relative overflow-hidden bg-white border-r border-black/5" style={{ backgroundColor: themeStyles.pageBg }}>
+                    
+                    {/* Click zones for mobile / mouse tapping without dragging */}
+                    <div className="absolute inset-0 z-10 cursor-pointer pointer-events-auto" onClick={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      if ((e.clientX - rect.left) / rect.width > 0.5) nextPage();
+                      else prevPage();
+                    }} />
+
+                    {page.imagePath ? (
+                       <div className="w-full h-full flex items-center justify-center overflow-hidden pointer-events-none p-0">
+                         <img 
+                          src={page.imagePath.startsWith('http') ? page.imagePath : `${API_BASE_URL.replace(/\/api\/v1\/?$/, '')}${page.imagePath}`} 
+                          alt={`Sahifa ${page.pageNumber}`} 
+                          className="w-full h-full object-fill mix-blend-multiply opacity-95 select-none grayscale" 
+                        />
+                       </div>
+                    ) : (
+                       <div className="p-6 sm:p-10 lg:p-14 h-full overflow-hidden flex flex-col pointer-events-none">
+                         <div className="space-y-4 sm:space-y-6 flex-1">
+                           {(page.text || []).map((p: string, pIdx: number) => (
+                              <p 
+                                key={pIdx} 
+                                className="text-justify transition-colors"
+                                style={{ 
+                                  fontSize: `${fontSize}px`, 
+                                  lineHeight: lineHeight, 
+                                  color: themeStyles.text
+                                }}
+                              >
+                                {p}
+                              </p>
+                           ))}
+                         </div>
+                       </div>
                     )}
-
-                    <div 
-                      className={`${fontClass} leading-relaxed text-justify transition-all`}
-                      style={{ fontSize: `${fontSize}px`, lineHeight: lineHeight, color: themeStyles.text }}
-                    >
-                      {leftPageParagraphs.map((p, idx) => (
-                        <p 
-                          key={idx} 
-                          className={`mb-4 text-indent-8 transition-colors p-1 rounded-md ${
-                            activeSentenceIdx === idx ? 'bg-[#E05638]/15 ring-2 ring-[#E05638]/40' : ''
-                          }`}
-                        >
-                          {p}
-                        </p>
-                      ))}
-                    </div>
                   </div>
-                )}
-
-                <div className="flex items-center justify-between pt-3 border-t text-[11px] font-mono opacity-50 shrink-0 mt-2" style={{ borderColor: themeStyles.border, color: themeStyles.text }}>
-                  <span>Sahifa {leftPage.pageNumber}</span>
-                  <span>{book.authorName}</span>
-                </div>
-              </div>
-
-              {/* Right Page (Click right zone to turn next) */}
-              <div 
-                onClick={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  if ((e.clientX - rect.left) / rect.width > 0.5) nextPage();
-                }}
-                className={`hidden md:flex flex-1 flex-col justify-between overflow-y-auto select-none relative ${
-                  rightPage?.imagePath ? 'p-0' : 'p-6 sm:p-10 md:p-12 lg:p-14'
-                }`}
-              >
-                {rightPage ? (
-                  rightPage.imagePath ? (
-                    <div className="w-full h-full flex items-center justify-center p-1 overflow-hidden my-auto">
-                      <img 
-                        src={rightPage.imagePath.startsWith('http') ? rightPage.imagePath : `${API_BASE_URL.replace(/\/api\/v1\/?$/, '')}${rightPage.imagePath}`} 
-                        alt={`Sahifa ${rightPage.pageNumber}`} 
-                        className="max-h-full max-w-full object-contain rounded-md shadow-xs select-none" 
-                      />
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div 
-                        className={`${fontClass} leading-relaxed text-justify transition-all`}
-                        style={{ fontSize: `${fontSize}px`, lineHeight: lineHeight, color: themeStyles.text }}
-                      >
-                        {rightPageParagraphs.length > 0 ? (
-                          rightPageParagraphs.map((p, idx) => (
-                            <p 
-                              key={idx} 
-                              className={`mb-4 text-indent-8 transition-colors p-1 rounded-md ${
-                                activeSentenceIdx === (idx + 2) ? 'bg-[#E05638]/15 ring-2 ring-[#E05638]/40' : ''
-                              }`}
-                            >
-                              {p}
-                            </p>
-                          ))
-                        ) : (
-                          <div className="py-20 text-center space-y-4 opacity-70">
-                            <Sparkles size={24} className="mx-auto text-[#E05638]" />
-                            <p className="font-serif italic text-sm">
-                              "{book.featuredQuote}"
-                            </p>
-                            <span className="text-xs font-mono block">— {book.title}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )
-                ) : (
-                  <div className="py-20 text-center space-y-4 opacity-70">
-                    <Sparkles size={24} className="mx-auto text-[#E05638]" />
-                    <p className="font-serif italic text-sm">
-                      "{book.featuredQuote}"
-                    </p>
-                    <span className="text-xs font-mono block">— {book.title}</span>
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between pt-3 border-t text-[11px] font-mono opacity-50 shrink-0 mt-2" style={{ borderColor: themeStyles.border, color: themeStyles.text }}>
-                  <span>{chapter.title}</span>
-                  <span>Sahifa {rightPage ? rightPage.pageNumber : leftPage.pageNumber + 1}</span>
-                </div>
-              </div>
-
+                ))}
+              </FlipBook>
             </div>
-
-            {/* Exact Bottom Capsule Indicator from screenshot */}
+            
             <div className="absolute -bottom-3 sm:-bottom-4 left-1/2 -translate-x-1/2 z-30 px-4 py-1 rounded-full bg-[#262626] border border-white/10 text-white/95 text-xs font-mono font-medium shadow-xl pointer-events-none select-none tracking-wider">
               {dbPages.length > 0 
                 ? `${leftPage.pageNumber} / ${dbPages.length} sahifa`

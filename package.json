@@ -17,6 +17,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.4.1",
+    "react-pageflip": "^2.0.3",
     "tailwind-merge": "^2.5.5"
   },
   "devDependencies": {
