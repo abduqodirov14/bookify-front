@@ -1,50 +1,64 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ── Brand design tokens (app_ui_prompt.md §2) ─────────────────────────── */
+/* ── Human-Made Brand Tokens ────────────────────────────────────────────── */
 :root {
   --color-ink:           #0B0F1A;
   --color-ink-soft:      #131828;
-  --color-parchment:     #EDE6D3;
-  --color-parchment-dim: #A9A38C;
+  --color-parchment:     #FDFBF7;
+  --color-parchment-dim: #F5EFE0;
   --color-gold:          #C9A24B;
   --color-gold-dim:      rgba(201, 162, 75, 0.22);
-  --color-ember:         #B5442E;
-  --color-ember-soft:    rgba(181, 68, 46, 0.12);
+  --color-ember:         #E05638;
+  --color-ember-soft:    rgba(224, 86, 56, 0.12);
 }
 
 @layer base {
   body {
-    /* Public Sans for all UI text — Fraunces via .font-serif on headings */
     font-family: var(--font-sans), system-ui, sans-serif;
-    @apply antialiased selection:bg-[#B5442E]/15 selection:text-[#B5442E];
+    /* Qat'iy fon ranglari - Light Mode (Parchment), Dark Mode (Ink) */
+    background-color: var(--color-parchment);
+    color: var(--color-ink);
+    @apply antialiased selection:bg-[#E05638]/15 selection:text-[#E05638];
   }
 
-  /* Fraunces for h1–h4 by default */
+  /* Dark mode background enforce */
+  .dark body {
+    background-color: var(--color-ink);
+    color: var(--color-parchment);
+  }
+
+  /* Fraunces for editorial headings */
   h1, h2, h3, h4 {
     font-family: var(--font-fraunces), Georgia, serif;
+    letter-spacing: -0.02em;
   }
 }
 
-/* ── Scrollbar — thin gold hairline style ──────────────────────────────── */
+/* ── Ultra-Minimalist Scrollbar ───────────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-gold-dim);
+  background: rgba(0,0,0,0.1);
   border-radius: 9999px;
 }
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+}
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-gold);
+  background: rgba(0,0,0,0.2);
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.2);
 }
 
-/* ── Typographic book cover placeholder (§3 spec) ─────────────────────── */
-/* Used when cover image 404s — renders title + author as flat colored card */
+/* ── Authentic Book Cover Placeholder ─────────────────────────────────── */
 .book-cover-placeholder {
   display: flex;
   flex-direction: column;
@@ -52,10 +66,10 @@
   justify-content: center;
   padding: 1rem;
   text-align: center;
-  border: 1px solid var(--color-gold-dim);
+  border: 1px solid rgba(0,0,0,0.1);
   border-radius: 4px;
   font-family: var(--font-fraunces), Georgia, serif;
-  color: var(--color-parchment);
+  color: rgba(255,255,255,0.9);
   user-select: none;
   overflow: hidden;
 }
@@ -76,63 +90,6 @@
 .book-cover-placeholder .bcp-line {
   width: 24px;
   height: 1px;
-  background: var(--color-gold-dim);
+  background: rgba(255,255,255,0.3);
   margin: 0.4rem auto;
-}
-
-/* Google Play Books & Apple Books 3D Hardcover & Spine Physics */
-.book-card-3d {
-  perspective: 1200px;
-  transform-style: preserve-3d;
-}
-
-.book-card-inner {
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease;
-  transform-style: preserve-3d;
-}
-
-.book-card-3d:hover .book-card-inner {
-  transform: rotateY(-14deg) translateY(-8px) scale(1.02);
-  box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.35), 0 0 25px rgba(224, 86, 56, 0.15);
-}
-
-/* Physical Book Spine & Page Lighting */
-.book-spine-hinge {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 14px;
-  background: linear-gradient(to right, rgba(0,0,0,0.45) 0%, rgba(255,255,255,0.2) 25%, rgba(0,0,0,0.15) 60%, transparent 100%);
-  border-top-left-radius: 4px;
-  border-bottom-left-radius: 4px;
-  pointer-events: none;
-  z-index: 10;
-}
-
-.book-spread-center-crease {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  bottom: 0;
-  width: 32px;
-  transform: translateX(-50%);
-  background: linear-gradient(to right, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.02) 40%, rgba(0,0,0,0.02) 60%, rgba(0,0,0,0.12) 100%);
-  pointer-events: none;
-  z-index: 20;
-}
-
-.dark .book-spread-center-crease {
-  background: linear-gradient(to right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0.6) 100%);
-}
-
-/* Animated SVG Waveform */
-@keyframes wavePulse {
-  0%, 100% { transform: scaleY(0.3); }
-  50% { transform: scaleY(1); }
-}
-
-.waveform-bar {
-  animation: wavePulse 1.2s ease-in-out infinite;
-  transform-origin: bottom;
 }
