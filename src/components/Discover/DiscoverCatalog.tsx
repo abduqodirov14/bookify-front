@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { Book, UserProfile } from '../../types';
@@ -46,9 +46,9 @@ export default function DiscoverCatalog({ books, onOpenReader, onPlayAudio, curr
   const handleSaveToLibrary = async (book: Book) => {
     try {
       await api.addToLibrary(book.id);
-      toast.success(`"${book.title}" shaxsiy javoningizga saqlandi!`, { icon: '🔖' });
+      toast.success(`"${book.title}" javonga saqlandi`, { icon: '🔖' });
     } catch {
-      toast.error("Javonga saqlashda xatolik yuz berdi");
+      toast.error("Xatolik yuz berdi");
     }
   };
 
@@ -66,88 +66,77 @@ export default function DiscoverCatalog({ books, onOpenReader, onPlayAudio, curr
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 pb-24 animate-in fade-in duration-300">
+    <div className="max-w-6xl mx-auto space-y-12 pb-24 animate-in fade-in duration-300">
       
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200 dark:border-white/10 pb-6">
+      {/* Editorial Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 border-b border-black/10 dark:border-white/10 pb-6 pt-4">
         <div>
-          <span className="text-xs font-mono uppercase tracking-widest text-[#E05638] font-bold">
-            Bookify Katalog
+          <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-ink/50 dark:text-parchment/50 border border-black/10 dark:border-white/10 px-2 py-1 rounded-sm">
+            Katalog
           </span>
-          <h1 className="font-serif text-3xl sm:text-4xl font-bold text-stone-950 dark:text-white mt-1">
-            Kitoblar
+          <h1 className="font-serif text-4xl sm:text-5xl font-bold text-ink dark:text-parchment mt-4 tracking-tight">
+            Jahon adabiyoti xazinasi
           </h1>
-          <p className="text-xs text-stone-500 mt-1">
-            Xorijiy asarlar o'zbekcha tarjimada va o'zbek adabiyoti
-          </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
-          {/* Pricing Filter Buttons */}
-          <div className="flex items-center gap-1 p-1 rounded-2xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs">
+        <div className="flex items-center gap-3 self-start sm:self-auto">
+          <div className="flex p-1 bg-black/5 dark:bg-white/5 rounded-sm">
             <button
               onClick={() => setPricingFilter('all')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
+              className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-colors ${
                 pricingFilter === 'all'
-                  ? 'bg-stone-900 dark:bg-white text-white dark:text-stone-900 shadow-xs'
-                  : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+                  ? 'bg-ink dark:bg-parchment text-parchment dark:text-ink'
+                  : 'text-ink/60 dark:text-parchment/60 hover:text-ink dark:hover:text-parchment cursor-pointer'
               }`}
             >
-              Barchasi ({books.length})
+              Barchasi
             </button>
             <button
               onClick={() => setPricingFilter('premium')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1 cursor-pointer ${
+              className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-colors ${
                 pricingFilter === 'premium'
-                  ? 'bg-gradient-to-r from-[#C5A059] to-amber-500 text-stone-950 font-bold shadow-sm border border-amber-400/40'
-                  : 'text-amber-600 dark:text-amber-400 hover:text-amber-700'
+                  ? 'bg-ink dark:bg-parchment text-parchment dark:text-ink'
+                  : 'text-ink/60 dark:text-parchment/60 hover:text-ink dark:hover:text-parchment cursor-pointer'
               }`}
             >
-              <span>💎</span>
-              <span>VIP Asarlar ({books.filter(b => (b as any).is_premium).length})</span>
+              VIP
             </button>
             <button
               onClick={() => setPricingFilter('free')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
+              className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-colors ${
                 pricingFilter === 'free'
-                  ? 'bg-stone-900 dark:bg-white text-white dark:text-stone-900 shadow-xs'
-                  : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+                  ? 'bg-ink dark:bg-parchment text-parchment dark:text-ink'
+                  : 'text-ink/60 dark:text-parchment/60 hover:text-ink dark:hover:text-parchment cursor-pointer'
               }`}
             >
-              Bepul ({books.filter(b => !(b as any).is_premium).length})
+              Bepul
             </button>
           </div>
-
-          <span className="px-3.5 py-2 rounded-2xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 text-xs font-mono font-bold text-stone-700 dark:text-stone-300 shadow-xs">
-            Natija: {filteredBooks.length} ta asar
-          </span>
         </div>
       </div>
 
-      {/* Search & Category Pills */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-        
-        {/* Search */}
-        <div className="relative flex-1 max-w-md">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
+      {/* Strict Search & Filters Area */}
+      <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
+        <div className="flex-1 relative">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink/40 dark:text-parchment/40" />
           <input
             type="text"
-            placeholder="Asar nomi yoki muallif..."
+            placeholder="Asar, muallif yoki janr..."
             value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white dark:bg-[#121620] border border-stone-200 dark:border-white/10 text-xs text-stone-900 dark:text-white outline-none focus:border-[#E05638]"
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 bg-transparent border border-black/10 dark:border-white/10 text-sm focus:outline-none focus:border-ink dark:focus:border-parchment transition-colors placeholder:text-ink/40 dark:placeholder:text-parchment/40"
           />
         </div>
-
-        {/* Category Tabs */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 max-w-full scrollbar-thin">
+        
+        <div className="flex flex-wrap items-center gap-2 md:max-w-xl">
           {categories.map(c => (
             <button
               key={c}
               onClick={() => setSelectedCategory(c)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold whitespace-nowrap transition-all cursor-pointer ${
+              className={`px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors cursor-pointer border ${
                 selectedCategory === c
-                  ? 'bg-[#E05638] text-white shadow-xs'
-                  : 'bg-white dark:bg-[#121620] text-stone-600 dark:text-stone-400 border border-stone-200 dark:border-white/10 hover:border-[#E05638]/50'
+                  ? 'bg-ink dark:bg-parchment border-ink dark:border-parchment text-parchment dark:text-ink'
+                  : 'bg-transparent border-black/10 dark:border-white/10 text-ink/60 dark:text-parchment/60 hover:border-ink dark:hover:border-parchment'
               }`}
             >
               {c}
@@ -156,124 +145,124 @@ export default function DiscoverCatalog({ books, onOpenReader, onPlayAudio, curr
         </div>
       </div>
 
-      {/* Books Grid or Empty State */}
+      {/* Books Grid */}
       {filteredBooks.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-12">
           {filteredBooks.map(b => {
             const isPremium = !!(b as any).is_premium;
             const bookPrice = (b as any).price || 0;
             return (
-              <div
-                key={b.id}
-                className="p-5 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between space-y-4 group"
-                style={isPremium ? { borderColor: 'rgba(247,151,30,0.3)' } : {}}
-              >
-                <div className="space-y-3">
-                  {/* Cover */}
-                  <div className="book-card-3d">
-                    <div 
-                      onClick={() => onOpenReader(b.id)}
-                      className="book-card-inner relative w-full aspect-[2/3] rounded-2xl overflow-hidden shadow-book border border-black/10 cursor-pointer"
-                      title="Mutolaani boshlash"
-                    >
-                      <img src={b.coverImage} alt={b.title} className="w-full h-full object-cover" />
-                      <div className="book-spine-hinge" />
-                      {/* 💎 PREMIUM overlay badge */}
-                      {isPremium && (
-                        <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-lg text-[9px] font-bold font-mono tracking-wider shadow-md bg-stone-950/85 dark:bg-black/85 backdrop-blur-md text-amber-300 border border-amber-500/35">
-                          💎 PREMIUM
-                        </div>
-                      )}
+              <div key={b.id} className="flex flex-col group relative">
+                
+                {/* Cover Image Container */}
+                <div 
+                  onClick={() => onOpenReader(b.id)}
+                  className="aspect-[2/3] mb-4 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 relative overflow-hidden cursor-pointer"
+                >
+                  {isPremium && (
+                    <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-ink dark:bg-parchment text-parchment dark:text-ink text-[9px] font-bold font-mono tracking-widest z-10">
+                      VIP
                     </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[10px] font-mono font-bold text-[#E05638] uppercase tracking-wider">
-                        {b.category}
-                      </span>
-                      {isPremium && bookPrice > 0 && (
-                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/25">
-                          {new Intl.NumberFormat('uz-UZ').format(bookPrice)} so'm
-                        </span>
-                      )}
+                  )}
+                  {b.coverImage ? (
+                    <img src={b.coverImage} alt={b.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
+                  ) : (
+                    <div className="w-full h-full book-cover-placeholder" style={{ backgroundColor: b.spineColor }}>
+                      <div className="bcp-title">{b.title}</div>
+                      <div className="bcp-line"></div>
+                      <div className="bcp-author">{b.authorName}</div>
                     </div>
-                    <h3 className="font-serif text-base font-bold text-stone-950 dark:text-white truncate group-hover:text-[#E05638] transition-colors">
-                      {b.title}
-                    </h3>
-                    <p className="text-xs text-stone-500 truncate">{b.authorName}</p>
-                  </div>
+                  )}
+                  {/* Subtle Hover Overlay */}
+                  <div className="absolute inset-0 bg-ink/0 group-hover:bg-ink/5 dark:group-hover:bg-parchment/5 transition-colors duration-300"></div>
                 </div>
 
-                <div className="space-y-2 pt-2 border-t border-stone-100 dark:border-white/5">
-                  <div className="grid grid-cols-2 gap-2">
+                {/* Info Text */}
+                <div className="flex-1 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9px] font-mono font-bold text-ink/50 dark:text-parchment/50 uppercase tracking-[0.15em]">
+                      {b.category}
+                    </span>
+                    {isPremium && bookPrice > 0 && (
+                      <span className="text-[9px] font-mono text-ink/50 dark:text-parchment/50">
+                        {new Intl.NumberFormat('uz-UZ').format(bookPrice)} so'm
+                      </span>
+                    )}
+                  </div>
+                  <h3 
+                    onClick={() => onOpenReader(b.id)}
+                    className="font-serif text-sm font-bold leading-tight group-hover:underline cursor-pointer line-clamp-2"
+                  >
+                    {b.title}
+                  </h3>
+                  <p className="text-[11px] font-mono text-ink/60 dark:text-parchment/60 uppercase tracking-widest mt-1">
+                    {b.authorName}
+                  </p>
+                </div>
+
+                {/* Minimal Actions Block */}
+                <div className="mt-4 pt-3 border-t border-black/10 dark:border-white/10 flex flex-col gap-2">
+                  <div className="flex gap-2">
                     <button
                       onClick={() => handleOpenBook(b)}
-                      className={`py-2.5 rounded-xl font-semibold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-widest transition-colors cursor-pointer border flex items-center justify-center gap-2 ${
                         isPremium && !currentUser?.is_premium
-                          ? 'bg-gradient-to-r from-[#E05638] to-[#C74326] hover:brightness-110 text-white font-bold shadow-sm'
-                          : 'bg-stone-900 dark:bg-white text-white dark:text-stone-900 hover:bg-[#E05638] dark:hover:bg-[#E05638] dark:hover:text-white'
+                          ? 'bg-parchment dark:bg-ink border-ink dark:border-parchment text-ink dark:text-parchment'
+                          : 'bg-ink dark:bg-parchment border-ink dark:border-parchment text-parchment dark:text-ink'
                       }`}
                     >
-                      {isPremium && !currentUser?.is_premium ? <span>💎</span> : <BookOpen size={14} />}
-                      <span>{isPremium && !currentUser?.is_premium ? "Sotib Olish (Tez kunda)" : "Mutolaa"}</span>
+                      {isPremium && !currentUser?.is_premium ? 'VIP olish' : 'O\'qish'}
                     </button>
-
                     <button
                       onClick={() => onPlayAudio(b)}
-                      className="py-2.5 rounded-xl bg-[#E05638]/10 text-[#E05638] hover:bg-[#E05638] hover:text-white font-semibold text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                      className="px-3 py-2 border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 transition-colors flex items-center justify-center cursor-pointer"
                     >
-                      <Headphones size={14} />
-                      <span>Tinglash</span>
+                      <Headphones size={14} className="text-ink/70 dark:text-parchment/70" />
                     </button>
                   </div>
-
                   <button
                     onClick={() => handleSaveToLibrary(b)}
-                    className="w-full py-2 rounded-xl bg-stone-50 dark:bg-white/5 hover:bg-stone-100 dark:hover:bg-white/10 text-stone-600 dark:text-stone-300 font-medium text-[11px] transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                    className="w-full py-1.5 text-[10px] font-mono text-ink/60 dark:text-parchment/60 hover:text-ink dark:hover:text-parchment transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                   >
-                    <BookmarkPlus size={13} className="text-[#E05638]" />
-                    <span>Javonga Saqlash</span>
+                    <BookmarkPlus size={12} /> Javonga saqlash
                   </button>
                 </div>
+
               </div>
             );
           })}
         </div>
       ) : (
-        <div className="p-16 rounded-3xl bg-white dark:bg-[#121620] border border-stone-200/90 dark:border-white/10 text-center space-y-4 shadow-xs max-w-lg mx-auto">
-          <div className="w-14 h-14 rounded-2xl bg-[#E05638]/10 text-[#E05638] flex items-center justify-center mx-auto shadow-xs">
-            <BookOpen size={24} />
-          </div>
-          <h3 className="font-serif text-xl font-bold text-stone-950 dark:text-white">
-            Katalogda Kitoblar Topilmadi
-          </h3>
-          <p className="text-xs text-stone-500">
-            Qidiruv so'rovi bo'yicha mos keladigan asarlar topilmadi yoki filtrlar o'zgartirilishi lozim.
+        <div className="p-16 border border-black/10 dark:border-white/10 text-center space-y-4 max-w-lg mx-auto">
+          <BookOpen size={24} className="mx-auto text-ink/40 dark:text-parchment/40" />
+          <h3 className="font-serif text-xl font-bold">Katalogda natija yo'q</h3>
+          <p className="text-sm font-mono text-ink/60 dark:text-parchment/60">
+            Qidiruv so'rovini o'zgartirib qayta urinib ko'ring.
           </p>
         </div>
       )}
 
-      {/* Paywall Modal */}
       {paywallBook && (
         <BookPaywallModal
           book={{
             id: paywallBook.id,
             title: paywallBook.title,
-            author: paywallBook.authorName,
-            cover_url: paywallBook.coverImage,
+            author: paywallBook.authorName || (paywallBook as any).author,
+            cover_url: paywallBook.coverImage || (paywallBook as any).cover_image,
             price: (paywallBook as any).price || 15000,
-            is_premium: (paywallBook as any).is_premium,
+            is_premium: true,
           }}
-          onClose={() => setPaywallBook(null)}
+          initialTab="book"
           isAdmin={currentUser?.role === 'ADMIN'}
+          onClose={() => setPaywallBook(null)}
+          onRequireAuth={() => toast.error("To'lov qilish uchun avval profilingizga kiring")}
           onAccessGranted={() => {
+            const bId = paywallBook.id;
             setPaywallBook(null);
-            onOpenReader(paywallBook.id);
+            onOpenReader(bId);
           }}
         />
       )}
-
     </div>
   );
 }
