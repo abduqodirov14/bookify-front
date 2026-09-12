@@ -614,198 +614,170 @@ export default function HomeApp() {
           
           {/* 1. HOME VIEW - EDITORIAL / MINIMALIST REDESIGN */}
           {currentPage === 'home' && (
-            <div className="max-w-6xl mx-auto space-y-24 pb-32 animate-in fade-in duration-500">
-              
-              {/* --- HERO / SPOTLIGHT (Editorial Style) --- */}
-              {featuredBook && (
-                <section className="relative pt-10 pb-16 sm:pt-20 sm:pb-24 border-b border-black/10 dark:border-white/10">
-                  <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
-                    <div className="flex-1 space-y-8 text-center lg:text-left">
-                      <div className="flex items-center justify-center lg:justify-start gap-3">
-                        <span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-ink/50 dark:text-parchment/50 border border-black/10 dark:border-white/10 px-3 py-1 rounded-sm">
-                          {featuredBook.is_premium ? 'VIP Asar' : 'Hafta Tanlovi'}
-                        </span>
-                        <span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.1em] text-ink/40 dark:text-parchment/40">
-                          {featuredBook.category}
-                        </span>
+              <div className="max-w-7xl mx-auto px-4 sm:px-8 animate-fade-in relative">
+                
+                {/* HUGE EDITORIAL HERO */}
+                <section className="relative pt-12 pb-16 sm:pt-24 sm:pb-32 border-b border-ink/10 dark:border-parchment/10">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+                    <div className="lg:col-span-7 space-y-8 sm:space-y-10">
+                      <div className="inline-flex items-center gap-3 px-3 py-1.5 border border-ink/20 dark:border-parchment/20 rounded-sm">
+                        <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
+                        <span className="text-[10px] font-mono uppercase tracking-widest text-ink/70 dark:text-parchment/70">Hafta Tanlovi</span>
                       </div>
                       
-                      <h1 className="font-serif text-5xl sm:text-7xl lg:text-[5.5rem] font-bold tracking-tight text-ink dark:text-parchment leading-[1.05]">
-                        {featuredBook.title}
+                      <h1 className="font-serif text-6xl sm:text-7xl lg:text-8xl font-bold tracking-tighter leading-[0.95] text-ink dark:text-parchment">
+                        Qiyomat.
                       </h1>
                       
-                      <p className="text-lg sm:text-xl text-ink/70 dark:text-parchment/70 max-w-2xl font-serif italic mx-auto lg:mx-0 leading-relaxed">
-                        "{featuredBook.featuredQuote || featuredBook.description.slice(0, 120) + '...'}"
+                      <div className="w-16 h-[2px] bg-ink dark:bg-parchment"></div>
+                      
+                      <p className="text-lg sm:text-xl font-serif italic text-ink/70 dark:text-parchment/70 leading-relaxed max-w-xl">
+                        "Kishi o'ziga ma'lum bo'lmagan narsalardan doim qo'rqadi. Agar bilsa, qo'rqmasdi. Afsuski, insoniyat hamisha o'zi bilmagan tomonga qarab ketmoqda."
                       </p>
                       
-                      <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-4">
                         <button 
-                          onClick={() => handleOpenReader(featuredBook.id)} 
-                          className="w-full sm:w-auto px-10 py-4 bg-ink dark:bg-parchment text-parchment dark:text-ink text-[11px] font-bold uppercase tracking-[0.15em] hover:opacity-90 transition-opacity cursor-pointer"
+                          onClick={() => navigate('discover')} 
+                          className="px-8 py-4 bg-ink dark:bg-parchment text-parchment dark:text-ink font-mono text-xs uppercase tracking-widest hover:opacity-90 transition-all rounded-sm w-full sm:w-auto text-center"
                         >
-                          Mutolaani boshlash
+                          Asarni o'qish
                         </button>
-                        {featuredBook.audioDuration && (
-                          <button 
-                            onClick={() => handlePlayAudio(featuredBook)} 
-                            className="w-full sm:w-auto px-10 py-4 border border-black/10 dark:border-white/10 text-ink dark:text-parchment text-[11px] font-bold uppercase tracking-[0.15em] hover:bg-black/5 dark:hover:bg-white/5 transition-colors flex items-center justify-center gap-3 cursor-pointer"
-                          >
-                            <Headphones size={16} /> Audio tinglash
-                          </button>
-                        )}
+                        <button 
+                          onClick={() => navigate('author')}
+                          className="px-8 py-4 border border-ink/20 dark:border-parchment/20 text-ink dark:text-parchment font-mono text-xs uppercase tracking-widest hover:bg-ink/5 dark:hover:bg-parchment/5 transition-all rounded-sm w-full sm:w-auto text-center"
+                        >
+                          Chingiz Aytmatov
+                        </button>
                       </div>
                     </div>
                     
-                    <div className="w-64 sm:w-80 lg:w-[400px] shrink-0 mx-auto lg:mx-0">
-                      <div className="aspect-[2/3] border border-black/10 dark:border-white/10 shadow-book bg-black/5 dark:bg-white/5 overflow-hidden">
-                        {featuredBook.coverImage ? (
-                          <img src={featuredBook.coverImage} alt={featuredBook.title} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full book-cover-placeholder" style={{ backgroundColor: featuredBook.spineColor }}>
-                            <div className="bcp-title">{featuredBook.title}</div>
-                            <div className="bcp-line"></div>
-                            <div className="bcp-author">{featuredBook.authorName}</div>
-                          </div>
-                        )}
+                    <div className="lg:col-span-5 relative flex justify-center">
+                      <div className="relative z-10 w-full max-w-[320px] aspect-[2/3] shadow-2xl rounded-sm transform lg:rotate-2 hover:rotate-0 transition-transform duration-700 ease-out border border-ink/10">
+                        <img src="/images/books/ref2.png" alt="Qiyomat" className="w-full h-full object-cover rounded-sm" />
+                        <div className="absolute inset-0 ring-1 ring-inset ring-black/10 rounded-sm"></div>
+                      </div>
+                      <div className="absolute inset-0 bg-[#A63A29]/10 dark:bg-[#A63A29]/20 blur-[100px] -z-10 rounded-full transform translate-y-20 scale-90"></div>
+                    </div>
+                  </div>
+                </section>
+
+                {/* EDITORIAL GRID: OLTIN MEROS */}
+                <section className="py-20 sm:py-28 border-b border-ink/10 dark:border-parchment/10">
+                  <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-16">
+                    <div>
+                      <h2 className="font-serif text-4xl sm:text-5xl font-bold tracking-tight text-ink dark:text-parchment">Oltin Meros</h2>
+                      <p className="font-serif text-ink/60 dark:text-parchment/60 mt-4 max-w-md italic">
+                        Insoniyat tafakkurini o'zgartirgan, vaqt sinovidan o'tgan mumtoz asarlar to'plami.
+                      </p>
+                    </div>
+                    <button onClick={() => navigate('discover')} className="text-[10px] font-mono uppercase tracking-[0.2em] text-ink/50 dark:text-parchment/50 hover:text-ink dark:hover:text-parchment transition-colors border-b border-transparent hover:border-ink pb-1">
+                      Katalogga o'tish &rarr;
+                    </button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 sm:gap-20">
+                    {/* Book 1 */}
+                    <div onClick={() => navigate('discover')} className="group cursor-pointer flex flex-col sm:flex-row gap-8 items-start">
+                      <div className="w-full sm:w-56 shrink-0 aspect-[2/3] overflow-hidden rounded-sm border border-ink/10 dark:border-parchment/10 shadow-lg">
+                        <img src="/images/books/ref1.png" alt="O'tkan Kunlar" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700" />
+                      </div>
+                      <div className="space-y-4 pt-2">
+                        <span className="inline-block px-2.5 py-1 bg-ink/5 dark:bg-parchment/5 text-ink/70 dark:text-parchment/70 font-mono text-[9px] uppercase tracking-widest rounded-sm">Tarixiy Roman</span>
+                        <h3 className="font-serif text-3xl sm:text-4xl font-bold leading-none group-hover:text-[#8C3A3A] transition-colors">O'tkan<br/>Kunlar.</h3>
+                        <p className="font-mono text-[10px] uppercase tracking-widest text-ink/50 dark:text-parchment/50">Abdulla Qodiriy</p>
+                        <p className="font-serif text-sm text-ink/70 dark:text-parchment/70 leading-relaxed pt-2">
+                          Tariximizning eng qonli, eng qora kunlaridan biri... Millatning ko'z o'ngida yuz bergan fojialar va o'lmas muhabbat qissasi.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Book 2 */}
+                    <div onClick={() => navigate('discover')} className="group cursor-pointer flex flex-col sm:flex-row gap-8 items-start">
+                      <div className="w-full sm:w-56 shrink-0 aspect-[2/3] overflow-hidden rounded-sm border border-ink/10 dark:border-parchment/10 shadow-lg">
+                        <img src="/images/books/ref3.png" alt="Jinoyat va Jazo" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700" />
+                      </div>
+                      <div className="space-y-4 pt-2">
+                        <span className="inline-block px-2.5 py-1 bg-ink/5 dark:bg-parchment/5 text-ink/70 dark:text-parchment/70 font-mono text-[9px] uppercase tracking-widest rounded-sm">Psixologik Roman</span>
+                        <h3 className="font-serif text-3xl sm:text-4xl font-bold leading-none group-hover:text-[#4A5D4E] transition-colors">Jinoyat<br/>va Jazo.</h3>
+                        <p className="font-mono text-[10px] uppercase tracking-widest text-ink/50 dark:text-parchment/50">Fyodor Dostoyevskiy</p>
+                        <p className="font-serif text-sm text-ink/70 dark:text-parchment/70 leading-relaxed pt-2">
+                          Inson ruhiyatining eng tubsiz jarliklari, vijdon azobi va mudhish jinoyatning beqiyos psixologik tahlili.
+                        </p>
                       </div>
                     </div>
                   </div>
                 </section>
-              )}
 
-              {/* --- SHELF 1: NEW & TRENDING --- */}
-              <section className="space-y-10">
-                 <div className="flex items-end justify-between border-b border-black/10 dark:border-white/10 pb-4">
-                    <h2 className="font-serif text-3xl font-bold text-ink dark:text-parchment tracking-tight">Katalog</h2>
-                    <button onClick={() => navigate('discover')} className="text-[11px] font-mono uppercase tracking-[0.15em] text-ink/50 dark:text-parchment/50 hover:text-ink dark:hover:text-parchment transition-colors cursor-pointer">
-                      Barchasi &rarr;
-                    </button>
-                 </div>
-                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-12">
-                   {publishedBooks.slice(0, 5).map(b => (
-                     <div key={b.id} onClick={() => handleOpenReader(b.id)} className="group cursor-pointer">
-                       <div className="aspect-[2/3] border border-black/10 dark:border-white/10 shadow-sm overflow-hidden mb-4 bg-black/5 dark:bg-white/5">
-                         {b.coverImage ? (
-                           <img src={b.coverImage} alt={b.title} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-out" />
-                         ) : (
-                           <div className="w-full h-full book-cover-placeholder" style={{ backgroundColor: b.spineColor }}>
-                              <div className="bcp-title">{b.title}</div>
-                              <div className="bcp-line"></div>
-                              <div className="bcp-author">{b.authorName}</div>
-                           </div>
-                         )}
-                       </div>
-                       <h3 className="font-serif font-bold text-sm leading-snug group-hover:text-ember transition-colors line-clamp-2">{b.title}</h3>
-                       <p className="font-mono text-[10px] text-ink/50 dark:text-parchment/50 uppercase mt-2 tracking-wider">{b.authorName}</p>
-                     </div>
-                   ))}
-                 </div>
-              </section>
-
-              {/* --- AUTHORS GALLERY --- */}
-              <section className="space-y-10">
-                 <div className="flex items-end justify-between border-b border-black/10 dark:border-white/10 pb-4">
-                    <h2 className="font-serif text-3xl font-bold text-ink dark:text-parchment tracking-tight">Allomalar</h2>
-                    <button onClick={() => navigate('author')} className="text-[11px] font-mono uppercase tracking-[0.15em] text-ink/50 dark:text-parchment/50 hover:text-ink dark:hover:text-parchment transition-colors cursor-pointer">
-                      Tanishish &rarr;
-                    </button>
-                 </div>
-                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
-                   {AUTHORS.slice(0, 4).map(a => (
-                     <div key={a.id} onClick={() => { setSelectedAuthorId(a.id); navigate('author'); }} className="group cursor-pointer text-center space-y-4">
-                       <div className="w-32 h-32 mx-auto rounded-full overflow-hidden border border-black/10 dark:border-white/10 grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 ease-out bg-black/5 dark:bg-white/5">
-                         <img src={a.portrait} alt={a.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                       </div>
-                       <div>
-                         <h4 className="font-serif font-bold text-base group-hover:text-ember transition-colors">{a.name}</h4>
-                         <span className="text-[10px] font-mono text-ink/50 dark:text-parchment/50 tracking-wider block mt-1">{a.lifetime}</span>
-                       </div>
-                     </div>
-                   ))}
-                 </div>
-              </section>
-
-              {/* --- ADABIY CHEMPIONAT (Minimalist Podium) --- */}
-              <section className="border border-black/10 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] p-8 sm:p-16 text-center">
-                <div className="max-w-3xl mx-auto space-y-8">
-                  <div className="inline-flex items-center gap-3">
-                    <Trophy size={14} className="text-ink/40 dark:text-parchment/40" />
-                    <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink/50 dark:text-parchment/50">Adabiy Chempionat</span>
-                  </div>
-                  
-                  <h2 className="font-serif text-4xl sm:text-5xl font-bold tracking-tight">Jonli Reyting</h2>
-                  
-                  <p className="text-base sm:text-lg font-serif italic text-ink/60 dark:text-parchment/60 pb-4">
-                    "Kitob o'qish musobaqa emas, lekin birgalikda o'qish вЂ” katta ilhom."
-                  </p>
-                  
-                  {/* Strict Minimalist Podium */}
-                  <div className="grid grid-cols-3 gap-2 sm:gap-6 items-end pt-4 max-w-2xl mx-auto">
-                    {/* 2nd Place */}
-                    <div className="p-4 sm:p-6 border-t border-black/10 dark:border-white/10 bg-parchment dark:bg-ink">
-                      <div className="text-xl sm:text-2xl mb-3 grayscale opacity-60">рџҐ€</div>
-                      <div className="font-serif font-bold text-xs sm:text-sm truncate">Sardorbek O.</div>
-                      <div className="font-mono text-[10px] text-ink/50 mt-1">720 daq</div>
+                {/* ADABIY CHEMPIONAT (Minimalist Podium) */}
+                <section className="border-b border-ink/10 dark:border-parchment/10 py-20 sm:py-32">
+                  <div className="max-w-3xl mx-auto text-center space-y-10">
+                    <div className="inline-flex items-center gap-3">
+                      <Trophy size={14} className="text-ink/40 dark:text-parchment/40" />
+                      <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink/50 dark:text-parchment/50">Mutolaa Musobaqasi</span>
                     </div>
                     
-                    {/* 1st Place */}
-                    <div className="p-5 sm:p-8 border border-ink dark:border-parchment bg-parchment dark:bg-ink shadow-sm -translate-y-4 relative">
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-ink dark:bg-parchment text-parchment dark:text-ink text-[9px] font-mono font-bold uppercase tracking-widest whitespace-nowrap">
-                        Hafta G'olibi
+                    <h2 className="font-serif text-5xl sm:text-6xl font-bold tracking-tight text-ink dark:text-parchment">Kitobxonlar Ligasi</h2>
+                    
+                    <p className="text-base sm:text-lg font-serif italic text-ink/60 dark:text-parchment/60 pb-8">
+                      "Kitob o'qish musobaqa emas, lekin birgalikda o'qish — ulkan ilhom."
+                    </p>
+                    
+                    {/* Strict Minimalist Podium */}
+                    <div className="grid grid-cols-3 gap-3 sm:gap-8 items-end pt-4 max-w-2xl mx-auto">
+                      {/* 2nd Place */}
+                      <div className="p-4 sm:p-8 border-t-2 border-ink/20 dark:border-parchment/20">
+                        <div className="text-2xl sm:text-3xl mb-4 grayscale opacity-60">???</div>
+                        <div className="font-serif font-bold text-sm sm:text-base truncate text-ink dark:text-parchment">Sardorbek O.</div>
+                        <div className="font-mono text-[10px] text-ink/50 mt-2">720 daq</div>
                       </div>
-                      <div className="text-2xl sm:text-3xl mb-3 mt-1">рџҐ‡</div>
-                      <div className="font-serif font-bold text-sm sm:text-base truncate">Kamola R.</div>
-                      <div className="font-mono text-[11px] font-bold mt-1">840 daq</div>
+                      
+                      {/* 1st Place */}
+                      <div className="p-6 sm:p-10 border border-ink dark:border-parchment shadow-xl -translate-y-6 relative bg-white dark:bg-[#0A0D14]">
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-ink dark:bg-parchment text-parchment dark:text-ink text-[9px] font-mono font-bold uppercase tracking-widest whitespace-nowrap rounded-sm">
+                          Hafta G'olibi
+                        </div>
+                        <div className="text-3xl sm:text-4xl mb-4 mt-2">??</div>
+                        <div className="font-serif font-bold text-base sm:text-xl truncate text-ink dark:text-parchment">Kamola R.</div>
+                        <div className="font-mono text-[11px] font-bold mt-2 text-ink/70 dark:text-parchment/70">840 daq</div>
+                      </div>
+                      
+                      {/* 3rd Place */}
+                      <div className="p-4 sm:p-8 border-t-2 border-ink/20 dark:border-parchment/20">
+                        <div className="text-2xl sm:text-3xl mb-4 grayscale opacity-40">??%</div>
+                        <div className="font-serif font-bold text-sm sm:text-base truncate text-ink dark:text-parchment">Dilnoza T.</div>
+                        <div className="font-mono text-[10px] text-ink/50 mt-2">680 daq</div>
+                      </div>
                     </div>
                     
-                    {/* 3rd Place */}
-                    <div className="p-4 sm:p-6 border-t border-black/10 dark:border-white/10 bg-parchment dark:bg-ink">
-                      <div className="text-xl sm:text-2xl mb-3 grayscale opacity-40">рџҐ‰</div>
-                      <div className="font-serif font-bold text-xs sm:text-sm truncate">Dilnoza T.</div>
-                      <div className="font-mono text-[10px] text-ink/50 mt-1">680 daq</div>
+                    <div className="pt-12">
+                      <button 
+                        onClick={() => navigate('challenge')} 
+                        className="px-10 py-4 border border-ink/20 dark:border-parchment/20 text-[11px] font-mono font-bold uppercase tracking-[0.15em] hover:bg-ink/5 dark:hover:bg-parchment/5 transition-colors cursor-pointer rounded-sm text-ink dark:text-parchment"
+                      >
+                        To'liq reyting
+                      </button>
                     </div>
                   </div>
-                  
-                  <div className="pt-8">
-                    <button 
-                      onClick={() => navigate('challenge')} 
-                      className="px-8 py-3 border border-black/10 dark:border-white/10 text-[11px] font-bold uppercase tracking-[0.15em] hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
-                    >
-                      To'liq reytingni ko'rish
-                    </button>
+                </section>
+
+                {/* Minimal Footer */}
+                <footer className="pt-24 pb-12 flex flex-col sm:flex-row items-center justify-between gap-8">
+                  <div className="flex items-center gap-3 grayscale opacity-60">
+                     <div className="w-6 h-6 bg-ink dark:bg-parchment rounded-sm flex items-center justify-center">
+                       <span className="font-serif font-bold text-parchment dark:text-ink text-sm leading-none pt-0.5">B</span>
+                     </div>
+                     <span className="font-serif font-bold text-base tracking-tight text-ink dark:text-parchment">Bookify</span>
                   </div>
-                </div>
-              </section>
+                  <div className="text-[10px] font-mono text-ink/40 dark:text-parchment/40 uppercase tracking-widest text-center sm:text-right leading-relaxed">
+                    © 2026. Xalqaro kutubxona loyihasi.<br/>
+                    <span className="lowercase">v2.0.0 — Editorial Edition</span>
+                  </div>
+                </footer>
 
-              {/* --- REVIEWS --- */}
-              {featuredBook && (
-                <div className="border-t border-black/10 dark:border-white/10 pt-16">
-                  <BookReviewsSection
-                    bookId={featuredBook.id}
-                    bookTitle={featuredBook.title}
-                    currentUser={currentUser}
-                  />
-                </div>
-              )}
+              </div>
+            )}
 
-              {/* Minimal Footer */}
-              <footer className="pt-20 pb-10 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-black/10 dark:border-white/10">
-                <div className="flex items-center gap-2 grayscale opacity-50">
-                   <div className="w-5 h-5 bg-ink dark:bg-parchment rounded-sm flex items-center justify-center">
-                     <span className="font-serif font-bold text-parchment dark:text-ink text-xs leading-none pt-0.5">B</span>
-                   </div>
-                   <span className="font-serif font-bold text-sm">Bookify</span>
-                </div>
-                <div className="text-[10px] font-mono text-ink/40 dark:text-parchment/40 uppercase tracking-widest text-center sm:text-right">
-                  В© 2026. Xalqaro kutubxona loyihasi.<br/>
-                  <span className="lowercase">v2.0.0 вЂ” Minimalist Edition</span>
-                </div>
-              </footer>
-
-            </div>
-          )}
-
-          {/* 2. LIBRARY VIEW */}
+            {/* 2. LIBRARY VIEW */}
           {currentPage === 'library' && (
             <LibraryView
               allBooks={publishedBooks}

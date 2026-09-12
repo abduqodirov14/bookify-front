@@ -48,12 +48,12 @@ export default function Sidebar({
 
   const navItems: { id: Page; label: string; icon: any; badge?: string }[] = [
     { id: 'home', label: 'Bosh Sahifa', icon: Home },
-    { id: 'discover', label: 'Katalog', icon: Compass },
-    { id: 'author', label: 'Buyuk Allomalar', icon: Users2 },
-    { id: 'library', label: 'Mening Javonim', icon: Library },
+    { id: 'discover', label: 'Kutubxona', icon: Compass },
+    { id: 'author', label: 'Mualliflar Minbari', icon: Users2 },
+    { id: 'library', label: 'Shaxsiy Mutolaa', icon: Library },
     ...(isVolunteer || isAdmin ? [{ id: 'volunteer' as Page, label: 'Volontyorlik', icon: HeartHandshake, badge: 'VIP' }] : []),
-    { id: 'time', label: 'Sokin Mutolaa', icon: Clock },
-    { id: 'challenge', label: 'Adabiy Chempionat', icon: Trophy },
+    { id: 'time', label: 'Zen Mutolaa', icon: Clock },
+    { id: 'challenge', label: 'Kitobxonlar Ligasi', icon: Trophy },
     { id: 'profile', label: 'Shaxsiy Profil', icon: User },
     ...(isAdmin ? [{ id: 'admin' as Page, label: 'Boshqaruv & 2FA', icon: ShieldCheck, badge: 'Admin' }] : [])
   ];
