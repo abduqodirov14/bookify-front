@@ -1,12 +1,31 @@
-﻿"use client";
+"use client";
 
 import React from "react";
 import Link from "next/link";
-import { BOOKS } from "@/data/books";
-import { ArrowLeft, Heart, BookOpen, Clock, MoreVertical, User } from "lucide-react";
+import { api, resolveFileUrl } from "@/services/api";
+import { ArrowLeft, Heart, BookOpen, Clock, MoreVertical, User, Loader2 } from "lucide-react";
 
 export default function SavedPage() {
-  const savedBooks = BOOKS.slice(0, 3); // Just show a few for now
+  const [savedBooks, setSavedBooks] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    api.getLibrary()
+      .then(items => {
+        if (Array.isArray(items) && items.length > 0) {
+          const list = items.map((item: any) => item.book || item);
+          setSavedBooks(list);
+        } else {
+          api.getBooks().then(books => {
+            if (Array.isArray(books)) {
+              setSavedBooks(books.slice(0, 4));
+            }
+          }).catch(() => {});
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] pb-32">
@@ -20,15 +39,15 @@ export default function SavedPage() {
         {savedBooks.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {savedBooks.map((book, i) => (
-              <div key={book.id} className="bg-white p-4 rounded-[24px] shadow-sm border border-gray-100 flex gap-4 items-center group relative overflow-hidden transition-all hover:shadow-md cursor-pointer">
+              <div key={book.id || i} className="bg-white p-4 rounded-[24px] shadow-sm border border-gray-100 flex gap-4 items-center group relative overflow-hidden transition-all hover:shadow-md cursor-pointer">
                 <Link href={`/book/${book.id}`} className="absolute inset-0 z-10"></Link>
                 <div className="w-20 h-28 shrink-0 rounded-xl overflow-hidden shadow-sm bg-gray-100">
-                  <img src={book.coverImage || (i%2==0 ? "/images/books/ref2.png" : "/images/books/ref3.png")} alt={book.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <img src={resolveFileUrl(book.cover_image) || "/images/books/ref2.png"} alt={book.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 </div>
                 <div className="flex-1 min-w-0 py-1">
                   <div className="inline-block px-2 py-0.5 bg-orange-50 text-orange-600 font-bold text-[10px] rounded-full mb-2 uppercase tracking-wide">Audio & Matn</div>
                   <h3 className="font-bold text-gray-900 text-sm mb-1 truncate">{book.title}</h3>
-                  <p className="text-xs text-gray-500 font-medium mb-3 truncate">{book.authorName}</p>
+                  <p className="text-xs text-gray-500 font-medium mb-3 truncate">{book.author || book.authorName || "Muallif noma'lum"}</p>
                   
                   <div className="flex items-center gap-3">
                     <button className="relative z-20 w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors">

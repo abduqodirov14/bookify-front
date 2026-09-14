@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useParams } from "next/navigation";
 import React, { useState } from "react";
 import Link from "next/link";
@@ -9,6 +9,7 @@ import {
   Play, Pause, SkipBack, SkipForward, ListMusic, Gauge, Moon
 } from "lucide-react";
 import { BOOKS } from "@/data/books";
+import { api, resolveFileUrl } from "@/services/api";
 
 export default function BookDetailPage() {
   const params = useParams();
@@ -21,8 +22,32 @@ export default function BookDetailPage() {
   const [isZenModalOpen, setIsZenModalOpen] = useState(false);
   const [zenTime, setZenTime] = useState(30);
 
-  const book = BOOKS.find(b => b.id === id) || BOOKS[0]; 
-  const coverImage = book.id === "1" ? "/images/books/ref2.png" : (book.id === "2" ? "/images/books/ref3.png" : book.coverImage || "/images/books/ref2.png");
+  const [liveBook, setLiveBook] = useState<any>(null);
+
+  React.useEffect(() => {
+    if (!id) return;
+    api.getBookById(id)
+      .then(b => setLiveBook(b))
+      .catch(() => {
+        api.getBooks().then(books => {
+          const found = books.find((b: any) => b.id === id);
+          if (found) setLiveBook(found);
+        }).catch(() => {});
+      });
+  }, [id]);
+
+  const fallbackBook = BOOKS.find(b => b.id === id) || BOOKS[0];
+  const book = liveBook ? {
+    ...fallbackBook,
+    ...liveBook,
+    authorName: liveBook.author || fallbackBook.authorName,
+    title: liveBook.title || fallbackBook.title,
+    description: liveBook.description || fallbackBook.description,
+  } : fallbackBook;
+
+  const coverImage = liveBook?.cover_image 
+    ? resolveFileUrl(liveBook.cover_image) 
+    : (book.id === "1" ? "/images/books/ref2.png" : (book.id === "2" ? "/images/books/ref3.png" : book.coverImage || "/images/books/ref2.png"));
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
