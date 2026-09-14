@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useRef, Suspense } from "react";
 import Link from "next/link";
@@ -205,35 +205,6 @@ function AuthForm() {
             </p>
           </div>
 
-          {/* Quick Access Roles for Testing */}
-          <div className="mt-10 pt-6 border-t border-gray-200/80">
-            <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
-              <ShieldCheck size={14} /> Tezkor Sinov Rolllari
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('ADMIN')}
-                className="p-2.5 bg-white border border-gray-200 hover:border-black rounded-xl text-xs font-bold text-gray-900 transition-all text-center"
-              >
-                Super Admin
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('SCHOOL_DIRECTOR')}
-                className="p-2.5 bg-blue-50 border border-blue-200 hover:border-blue-400 rounded-xl text-xs font-bold text-blue-700 transition-all text-center"
-              >
-                Direktor
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('LIBRARIAN')}
-                className="p-2.5 bg-emerald-50 border border-emerald-200 hover:border-emerald-400 rounded-xl text-xs font-bold text-emerald-700 transition-all text-center"
-              >
-                Kutubxonachi
-              </button>
-            </div>
-          </div>
         </div>
       )}
 
