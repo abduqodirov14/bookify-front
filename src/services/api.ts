@@ -1,4 +1,4 @@
-﻿const getBaseApiUrl = () => {
+export const getBaseApiUrl = () => {
   const raw = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_UR || 'https://3-68-191-39.sslip.io/api/v1';
   const clean = raw.trim().replace(/\/+$/, '');
   return clean.endsWith('/api/v1') ? clean : `${clean}/api/v1`;
@@ -61,7 +61,7 @@ export const setCachedUser = (user: any) => {
 };
 
 
-// Resilient Fetch with Auto-Retry (absorbs Render cold-start wake-up delays up to 25 seconds)
+// Resilient Fetch with Auto-Retry (absorbs Render/AWS cold-start delays)
 export async function fetchWithRetry(url: string, options: RequestInit = {}, retries = 5, delay = 1500): Promise<Response> {
   try {
     const res = await fetch(url, options);
@@ -616,7 +616,7 @@ export const api = {
         const ping = await fetch(`${baseUrl}/health`, { signal: AbortSignal.timeout(8000) });
         if (ping.ok) break;
       } catch {
-        // Server still waking up вЂ” wait and retry
+        // Server still waking up — wait and retry
       }
       if (attempt < 7) {
         onProgress?.(0); // Keep UI alive
@@ -671,7 +671,7 @@ export const api = {
 
           xhr.send(formData);
         });
-        return result; // success вЂ” exit retry loop
+        return result; // success — exit retry loop
       } catch (err: any) {
         lastError = err;
         const isRetryable = err.message?.includes('ERR_CONNECTION_CLOSED') ||
@@ -934,9 +934,9 @@ export const api = {
     return res.json();
   },
 
-  // в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
-  // рџЋ“ RASMIY VOLONTYORLIK VA SERTIFIKAT API METODLARI
-  // в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
+  // ═══════════════════════════════════════════════════════════
+  // 🎓 RASMIY VOLONTYORLIK VA SERTIFIKAT API METODLARI
+  // ═══════════════════════════════════════════════════════════
   async issueCertificate(data: {
     user_id: string;
     recipient_name?: string;
@@ -991,9 +991,9 @@ export const api = {
     return res.json();
   },
 
-  // в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
-  // рџ¤ќ VOLONTYORLIK MAQOMI VA KOD BOSHQARUVI
-  // в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
+  // ═══════════════════════════════════════════════════════════
+  // 🤝 VOLONTYORLIK MAQOMI VA KOD BOSHQARUVI
+  // ═══════════════════════════════════════════════════════════
   async assignVolunteer(userId: string, data: {
     volunteer_code?: string;
     volunteer_title?: string;
@@ -1140,7 +1140,7 @@ export const api = {
     return res.json();
   },
 
-  // в”Ђв”Ђв”Ђ Volunteer Audio Moderation в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+  // ─── Volunteer Audio Moderation ────────────────────────────────────────────
 
   async getAudioModerationQueue(status: string = "PENDING"): Promise<any[]> {
     const token = getAuthToken();
@@ -1184,7 +1184,7 @@ export const api = {
     return await res.json();
   },
 
-  // в”Ђв”Ђв”Ђ Payment / InPay в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+  // ─── Payment / InPay ───────────────────────────────────────────────────────
 
   async getPaymentPlans(): Promise<any> {
     try {
