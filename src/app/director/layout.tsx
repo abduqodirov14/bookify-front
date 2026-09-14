@@ -1,9 +1,10 @@
-﻿"use client";
+"use client";
 
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Users, BookOpen, GraduationCap, FileText, ChevronLeft, LogOut } from "lucide-react";
+import AuthGuard from "@/components/AuthGuard";
 
 export default function DirectorLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -18,7 +19,8 @@ export default function DirectorLayout({ children }: { children: React.ReactNode
   ];
 
   return (
-    <div className="min-h-screen bg-[#F5F5F7] font-sans flex flex-col md:flex-row">
+    <AuthGuard panelTitle="Maktab Direktori Paneli" allowedRoles={["ADMIN", "SCHOOL_DIRECTOR"]} themeColor="blue">
+      <div className="min-h-screen bg-[#F5F5F7] font-sans flex flex-col md:flex-row">
       
       {/* Sidebar Desktop */}
       <aside className="hidden md:flex flex-col w-72 bg-white border-r border-gray-100 shadow-[4px_0_24px_rgb(0,0,0,0.02)] z-20">
@@ -93,6 +95,7 @@ export default function DirectorLayout({ children }: { children: React.ReactNode
           {children}
         </div>
       </main>
-    </div>
+      </div>
+    </AuthGuard>
   );
 }

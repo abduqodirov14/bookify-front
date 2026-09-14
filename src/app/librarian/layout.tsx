@@ -1,9 +1,10 @@
-﻿"use client";
+"use client";
 
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BookOpen, QrCode, Library, AlertCircle, LogOut, LayoutDashboard } from "lucide-react";
+import AuthGuard from "@/components/AuthGuard";
 
 export default function LibrarianLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -17,7 +18,8 @@ export default function LibrarianLayout({ children }: { children: React.ReactNod
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] font-sans flex flex-col md:flex-row">
+    <AuthGuard panelTitle="Maktab Kutubxonachisi Paneli" allowedRoles={["ADMIN", "LIBRARIAN"]} themeColor="emerald">
+      <div className="min-h-screen bg-[#F8FAFC] font-sans flex flex-col md:flex-row">
       
       {/* Sidebar Desktop */}
       <aside className="hidden md:flex flex-col w-72 bg-white border-r border-gray-100 shadow-[4px_0_24px_rgb(0,0,0,0.02)] z-20">
@@ -57,6 +59,7 @@ export default function LibrarianLayout({ children }: { children: React.ReactNod
           {children}
         </div>
       </main>
-    </div>
+      </div>
+    </AuthGuard>
   );
 }

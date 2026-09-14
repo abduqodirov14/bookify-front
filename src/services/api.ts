@@ -32,6 +32,9 @@ export const getAuthToken = () => {
 export const setAuthToken = (token: string) => {
   if (typeof window !== 'undefined') {
     localStorage.setItem('fianny_token', token);
+    try {
+      document.cookie = `fianny_token=${token}; path=/; max-age=2592000; SameSite=Lax`;
+    } catch {}
   }
 };
 
@@ -39,6 +42,9 @@ export const clearAuthToken = () => {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('fianny_token');
     localStorage.removeItem('bookify_user');
+    try {
+      document.cookie = 'fianny_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+    } catch {}
   }
 };
 
