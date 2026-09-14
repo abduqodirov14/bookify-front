@@ -24,7 +24,7 @@ export const resolveFileUrl = (url?: string): string => {
 
 export const getAuthToken = () => {
   if (typeof window !== 'undefined') {
-    return localStorage.getItem('fianny_token');
+    return localStorage.getItem('fianny_token') || localStorage.getItem('bookify_token') || null;
   }
   return null;
 };
@@ -32,8 +32,10 @@ export const getAuthToken = () => {
 export const setAuthToken = (token: string) => {
   if (typeof window !== 'undefined') {
     localStorage.setItem('fianny_token', token);
+    localStorage.setItem('bookify_token', token);
     try {
       document.cookie = `fianny_token=${token}; path=/; max-age=2592000; SameSite=Lax`;
+      document.cookie = `bookify_token=${token}; path=/; max-age=2592000; SameSite=Lax`;
     } catch {}
   }
 };
@@ -41,16 +43,19 @@ export const setAuthToken = (token: string) => {
 export const clearAuthToken = () => {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('fianny_token');
+    localStorage.removeItem('bookify_token');
     localStorage.removeItem('bookify_user');
+    localStorage.removeItem('fianny_user');
     try {
       document.cookie = 'fianny_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+      document.cookie = 'bookify_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
     } catch {}
   }
 };
 
 export const getCachedUser = () => {
   if (typeof window !== 'undefined') {
-    const raw = localStorage.getItem('bookify_user');
+    const raw = localStorage.getItem('bookify_user') || localStorage.getItem('fianny_user');
     if (raw) {
       try { return JSON.parse(raw); } catch {}
     }
