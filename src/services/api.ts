@@ -24,7 +24,11 @@ export const resolveFileUrl = (url?: string): string => {
 
 export const getAuthToken = () => {
   if (typeof window !== 'undefined') {
-    return localStorage.getItem('fianny_token') || localStorage.getItem('bookify_token') || null;
+    const token = localStorage.getItem('fianny_token') || localStorage.getItem('bookify_token');
+    if (!token || token === 'null' || token === 'undefined' || token.trim() === '') {
+      return null;
+    }
+    return token;
   }
   return null;
 };
@@ -55,6 +59,8 @@ export const clearAuthToken = () => {
 
 export const getCachedUser = () => {
   if (typeof window !== 'undefined') {
+    const token = getAuthToken();
+    if (!token) return null;
     const raw = localStorage.getItem('bookify_user') || localStorage.getItem('fianny_user');
     if (raw) {
       try { return JSON.parse(raw); } catch {}
@@ -185,17 +191,20 @@ export const api = {
 
   async getMe() {
     const token = getAuthToken();
-    if (!token) return null;
+    if (!token) {
+      clearAuthToken();
+      return null;
+    }
     try {
       const res = await fetchWithRetry(`${API_BASE_URL}/auth/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.status === 401) {
-        // Keep cached user and do not prematurely clear token during active reading session
-        return getCachedUser();
+        clearAuthToken();
+        return null;
       }
       if (!res.ok) {
-        return getCachedUser();
+        return null;
       }
       const data = await res.json();
       setCachedUser(data);
