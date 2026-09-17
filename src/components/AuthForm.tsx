@@ -564,3 +564,5 @@ export default function AuthForm() {
     </div>
   );
 }
+
+// Trigger Vercel Build for pure white design
