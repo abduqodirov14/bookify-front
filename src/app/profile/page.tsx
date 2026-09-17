@@ -3,21 +3,14 @@
 import React from "react";
 import Link from "next/link";
 import { User, Settings, Bell, BookOpen, Clock, Trophy, ChevronRight, Heart, Crown, LogOut, ChevronLeft } from "lucide-react";
+import Navbar from "@/components/Navbar";
 
 export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-[#F5F5F7] font-sans pb-32">
       
       {/* iOS Style Minimal Navbar */}
-      <nav className="sticky top-0 z-50 bg-[#F5F5F7]/80 backdrop-blur-xl border-b border-black/5 px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors -ml-2">
-          <ChevronLeft size={28} className="text-gray-900" />
-        </Link>
-        <span className="font-semibold text-gray-900 text-lg tracking-tight">Profil</span>
-        <button className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors -mr-2">
-          <Settings size={22} className="text-gray-900" />
-        </button>
-      </nav>
+      <Navbar />
 
       <main className="px-4 sm:px-6 mt-6 max-w-2xl mx-auto space-y-6">
         

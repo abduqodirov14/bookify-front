@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, Play, Pause, RotateCcw, Clock } from "lucide-react";
+import Navbar from "@/components/Navbar";
 
 export default function ZenMutolaaPage() {
   const [time, setTime] = useState(30 * 60); // Default 30 mins in seconds
@@ -51,15 +52,7 @@ export default function ZenMutolaaPage() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none"></div>
 
       {/* Navbar */}
-      <nav className="relative z-10 w-full px-6 h-20 flex items-center justify-between">
-        <Link href="/" className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors">
-          <ArrowLeft size={24} />
-        </Link>
-        <div className="font-bold tracking-widest uppercase text-xs text-white/50">
-          Zen Mutolaa
-        </div>
-        <div className="w-12 h-12"></div>
-      </nav>
+      <Navbar />
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center justify-center relative z-10 p-6">

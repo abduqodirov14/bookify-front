@@ -5,6 +5,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 import { ArrowLeft, Clock, Search, List, Play, X } from "lucide-react";
+import Navbar from "@/components/Navbar";
 import { BOOKS } from "@/data/books";
 
 const FlipBook = dynamic(() => import("@/components/FlipBook"), { ssr: false });
@@ -100,30 +101,7 @@ export default function ReadBookPage() {
     <div className="min-h-screen h-screen overflow-hidden flex flex-col font-serif bg-[#D9D9D9] relative">
       
       {/* Top Navbar */}
-      <nav className="fixed top-0 left-0 w-full z-[200] backdrop-blur-xl border-b border-black/10 transition-transform duration-300 bg-[#D9D9D9]/90 text-gray-800">
-        <div className="w-full px-4 sm:px-8 h-16 flex items-center justify-between pointer-events-auto">
-          <Link href={`/book/${id}`} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/10 transition-colors cursor-pointer z-[210]">
-            <ArrowLeft size={24} />
-          </Link>
-          <div className="text-center font-sans hidden sm:block flex-1">
-            <h1 className="text-sm font-bold truncate">{book.title}</h1>
-          </div>
-          <div className="flex items-center gap-6 z-[210]">
-            <button onClick={() => setIsZenModalOpen(true)} className="flex flex-col items-center justify-center gap-1 text-gray-500 hover:text-gray-900 transition-all group cursor-pointer p-1">
-              <div className="p-1.5 rounded-full group-hover:bg-black/10 transition-colors"><Clock size={22} strokeWidth={2.5} /></div>
-              <span className="text-[10px] font-extrabold tracking-wide">Zen Mutolaa</span>
-            </button>
-            <button className="flex flex-col items-center justify-center gap-1 text-gray-500 hover:text-gray-900 transition-all group cursor-pointer p-1 hidden sm:flex">
-              <div className="p-1.5 rounded-full group-hover:bg-black/10 transition-colors"><Search size={22} strokeWidth={2.5} /></div>
-              <span className="text-[10px] font-extrabold tracking-wide">Qidiruv</span>
-            </button>
-            <button className="flex flex-col items-center justify-center gap-1 text-gray-500 hover:text-gray-900 transition-all group cursor-pointer p-1 hidden sm:flex">
-              <div className="p-1.5 rounded-full group-hover:bg-black/10 transition-colors"><List size={22} strokeWidth={2.5} /></div>
-              <span className="text-[10px] font-extrabold tracking-wide">Mundarija</span>
-            </button>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Main Reader Area */}
       <main className="flex-1 w-full pt-24 pb-12 px-4 sm:px-12 relative z-10 flex items-center justify-center">
