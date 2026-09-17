@@ -6,6 +6,8 @@ import Link from "next/link";
 import { ArrowRight, Trophy, BookOpen, Clock, Heart, User, Plus, Loader2, LogOut, Headphones } from "lucide-react";
 import { api, getCachedUser, clearAuthToken, resolveFileUrl } from "@/services/api";
 
+import { BOOKS } from "@/data/books";
+
 export default function Home() {
   const [books, setBooks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,9 +26,16 @@ export default function Home() {
     // Fetch Books
     api.getBooks()
       .then(data => {
-        setBooks(Array.isArray(data) ? data : []);
+        if (Array.isArray(data) && data.length > 0) {
+          setBooks(data);
+        } else {
+          setBooks(BOOKS);
+        }
       })
-      .catch(err => console.error("Failed to fetch books:", err))
+      .catch(err => {
+        console.error("Failed to fetch books:", err);
+        setBooks(BOOKS);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -49,7 +58,7 @@ export default function Home() {
           <div className="w-full h-[400px] bg-white rounded-[32px] animate-pulse flex items-center justify-center">
             <Loader2 className="animate-spin text-orange-400" size={32} />
           </div>
-        ) : heroBook ? (
+        ) : heroBook && (
           <section>
             <div className="flex items-center justify-between mb-4 px-2">
               <h2 className="text-[28px] font-bold text-gray-900 tracking-tight">Tavsiya etamiz</h2>
@@ -87,23 +96,6 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </section>
-        ) : (
-          <section className="bg-white rounded-[32px] p-12 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 space-y-4">
-            <div className="w-16 h-16 rounded-2xl bg-orange-50 text-orange-500 flex items-center justify-center mx-auto">
-              <BookOpen size={32} />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">Kutubxona bo'sh (0 ta kitob)</h2>
-            <p className="text-gray-500 text-sm max-w-md mx-auto">
-              Baza to'liq 0 qilindi. Admin paneldan yangi PDF, EPUB yoki matnli kitob yuklashingiz mumkin.
-            </p>
-            <Link
-              href="/admin/upload"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-black text-white font-bold text-xs rounded-2xl shadow-lg shadow-black/10 transition-transform active:scale-95"
-            >
-              <Plus size={16} />
-              <span>Yangi Kitob Yuklash (Admin)</span>
-            </Link>
           </section>
         )}
 
