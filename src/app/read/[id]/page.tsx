@@ -5,7 +5,6 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 import { ArrowLeft, Clock, Search, List, Play, X } from "lucide-react";
-import Navbar from "@/components/Navbar";
 import { BOOKS } from "@/data/books";
 
 const FlipBook = dynamic(() => import("@/components/FlipBook"), { ssr: false });
@@ -100,9 +99,7 @@ export default function ReadBookPage() {
   return (
     <div className="min-h-screen h-screen overflow-hidden flex flex-col font-serif bg-[#D9D9D9] relative">
       
-      {/* Top Navbar */}
-      <Navbar />
-
+            
       {/* Main Reader Area */}
       <main className="flex-1 w-full pt-24 pb-12 px-4 sm:px-12 relative z-10 flex items-center justify-center">
         

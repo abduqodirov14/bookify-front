@@ -3,15 +3,12 @@
 import React from "react";
 import Link from "next/link";
 import { User, Settings, Bell, BookOpen, Clock, Trophy, ChevronRight, Heart, Crown, LogOut, ChevronLeft } from "lucide-react";
-import Navbar from "@/components/Navbar";
 
 export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-[#F5F5F7] font-sans pb-32">
       
-      {/* iOS Style Minimal Navbar */}
-      <Navbar />
-
+            
       <main className="px-4 sm:px-6 mt-6 max-w-2xl mx-auto space-y-6">
         
         {/* Profile Card */}

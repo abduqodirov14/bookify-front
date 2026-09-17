@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Trophy, BookOpen, Clock, Heart, User, Plus, Loader2, LogOut } from "lucide-react";
-import Navbar from "@/components/Navbar";
 import { api, getCachedUser, clearAuthToken, resolveFileUrl } from "@/services/api";
 
 export default function Home() {
@@ -43,9 +42,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#F5F5F7] font-sans pb-32">
       
-      {/* iOS Style Minimal Navbar */}
-      <Navbar />
-
+            
       <main className="max-w-4xl mx-auto px-4 sm:px-6 mt-8 space-y-12">
         
         {/* Apple-style Hero Card */}
