@@ -51,6 +51,90 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#F5F5F7] font-sans pb-32">
       
+      {/* iOS Style Minimal Top Header */}
+      <header className="sticky top-0 z-40 bg-[#F5F5F7]/85 backdrop-blur-xl border-b border-black/5 px-4 sm:px-8 py-3.5 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="w-8 h-8 bg-[#E05638] rounded-xl flex items-center justify-center shadow-sm shadow-[#E05638]/20">
+            <span className="text-white font-serif font-bold text-lg leading-none">B</span>
+          </div>
+          <span className="font-bold text-gray-900 text-lg tracking-tight">Bookify</span>
+        </Link>
+        
+        {user ? (
+          <div className="relative flex items-center gap-2 sm:gap-3">
+            {String(user.role || '').toLowerCase().includes('admin') && (
+              <Link 
+                href="/admin" 
+                className="flex items-center gap-1.5 px-3.5 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-full text-xs font-bold border border-purple-200 transition-colors shadow-2xs"
+              >
+                <span>👑 Admin Panel</span>
+              </Link>
+            )}
+
+            <button 
+              onClick={() => setIsMenuOpen(!isMenuOpen)} 
+              className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full shadow-2xs hover:shadow-sm transition-all border border-gray-200 cursor-pointer"
+            >
+              <div className="w-7 h-7 bg-orange-100 text-[#E05638] rounded-full flex items-center justify-center font-bold text-xs">
+                {user.name ? user.name.charAt(0).toUpperCase() : (user.email ? user.email.charAt(0).toUpperCase() : 'U')}
+              </div>
+              <span className="text-xs font-bold text-gray-900 pr-1 max-w-[110px] truncate">{user.name || user.email || 'Foydalanuvchi'}</span>
+            </button>
+
+            {isMenuOpen && (
+              <div className="absolute right-0 top-11 w-52 bg-white rounded-2xl shadow-xl border border-gray-100 p-2 z-50 animate-fade-in divide-y divide-gray-50">
+                <div className="px-3 py-2">
+                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{user.role || 'Kitobxon'}</div>
+                  <div className="text-xs font-bold text-gray-900 truncate mt-0.5">{user.name || user.email}</div>
+                </div>
+                
+                <div className="py-1">
+                  {String(user.role || '').toLowerCase().includes('admin') && (
+                    <Link 
+                      href="/admin" 
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-purple-700 hover:bg-purple-50 rounded-xl transition-colors"
+                    >
+                      <span>👑 Admin Panel</span>
+                    </Link>
+                  )}
+                  <Link 
+                    href="/profile" 
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50 rounded-xl transition-colors"
+                  >
+                    <User size={15} /> Profilim
+                  </Link>
+                  <Link 
+                    href="/saved" 
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50 rounded-xl transition-colors"
+                  >
+                    <Heart size={15} /> Saqlanganlar
+                  </Link>
+                </div>
+                
+                <div className="pt-1">
+                  <button 
+                    onClick={handleLogout} 
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-red-500 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
+                  >
+                    <LogOut size={15} /> Chiqish
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <Link 
+            href="/auth" 
+            className="px-5 py-2 bg-gray-900 hover:bg-black text-white rounded-full font-bold text-xs shadow-sm transition-all cursor-pointer"
+          >
+            Kirish
+          </Link>
+        )}
+      </header>
+      
       <main className="max-w-4xl mx-auto px-4 sm:px-6 mt-8 space-y-12">
         
         {/* Apple-style Hero Card */}
