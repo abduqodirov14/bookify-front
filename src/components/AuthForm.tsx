@@ -326,15 +326,15 @@ export default function AuthForm() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F7] dark:bg-[#000000] flex items-center justify-center p-4 sm:p-6 transition-colors w-full">
-      <div className="relative w-full max-w-[420px] bg-white dark:bg-[#1C1C1E] rounded-[32px] p-8 sm:p-10 shadow-[0_8px_40px_rgb(0,0,0,0.04)] dark:shadow-none dark:border dark:border-[#333336] space-y-8 animate-fade-in mx-auto">
+    <div className="min-h-screen bg-white dark:bg-black flex flex-col items-center justify-center px-6 py-12 transition-colors w-full">
+      <div className="relative w-full max-w-[380px] bg-white dark:bg-black space-y-8 animate-fade-in mx-auto">
         
         {/* Brand Header */}
         <div className="text-center space-y-3">
-          <div className="w-14 h-14 rounded-[20px] bg-[#E05638] flex items-center justify-center text-white font-serif font-bold text-3xl shadow-md shadow-[#E05638]/20 mx-auto">
+          <div className="w-14 h-14 rounded-3xl bg-[#E05638] flex items-center justify-center text-white font-serif font-bold text-3xl shadow-sm mx-auto">
             B
           </div>
-          <h2 className="text-[26px] font-bold text-gray-900 dark:text-white tracking-tight">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
             {step === "otp" ? "Tasdiqlash" : isRegister ? "Yangi hisob" : "Xush kelibsiz"}
           </h2>
           <p className="text-[15px] text-gray-500 dark:text-gray-400 font-medium">
@@ -346,14 +346,14 @@ export default function AuthForm() {
 
         {/* Alert Banners */}
         {errorMsg && (
-          <div className="p-4 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 text-red-600 dark:text-red-400 rounded-2xl flex items-start gap-3 text-sm font-medium animate-fade-in">
+          <div className="p-4 bg-red-50 dark:bg-red-500/10 border-l-4 border-red-500 text-red-600 dark:text-red-400 rounded-r-2xl flex items-start gap-3 text-sm font-medium animate-fade-in">
             <AlertCircle size={20} className="shrink-0 mt-0.5" />
             <span className="leading-relaxed">{errorMsg}</span>
           </div>
         )}
 
         {successMsg && (
-          <div className="p-4 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-2xl flex items-start gap-3 text-sm font-medium animate-fade-in">
+          <div className="p-4 bg-emerald-50 dark:bg-emerald-500/10 border-l-4 border-emerald-500 text-emerald-700 dark:text-emerald-400 rounded-r-2xl flex items-start gap-3 text-sm font-medium animate-fade-in">
             <CheckCircle2 size={20} className="shrink-0 mt-0.5" />
             <span className="leading-relaxed">{successMsg}</span>
           </div>
@@ -368,7 +368,7 @@ export default function AuthForm() {
               <button
                 type="button"
                 onClick={handleGoogleLogin}
-                className="w-full h-14 rounded-2xl border border-gray-200 dark:border-[#333336] bg-white dark:bg-[#1C1C1E] hover:bg-gray-50 dark:hover:bg-[#2C2C2E] text-gray-900 dark:text-white font-semibold text-[15px] flex items-center justify-center gap-3 transition-colors active:scale-[0.98]"
+                className="w-full h-14 rounded-2xl border border-gray-200 dark:border-[#333336] bg-white dark:bg-black hover:bg-gray-50 dark:hover:bg-[#1C1C1E] text-gray-900 dark:text-white font-semibold text-[15px] flex items-center justify-center gap-3 transition-colors active:scale-[0.98]"
               >
                 <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -392,9 +392,9 @@ export default function AuthForm() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-gray-200 dark:bg-[#333336]"></div>
+              <div className="flex-1 h-px bg-gray-100 dark:bg-[#333336]"></div>
               <span className="text-[13px] font-medium text-gray-400">yoki pochta</span>
-              <div className="flex-1 h-px bg-gray-200 dark:bg-[#333336]"></div>
+              <div className="flex-1 h-px bg-gray-100 dark:bg-[#333336]"></div>
             </div>
 
             <form onSubmit={handleCredsSubmit} className="space-y-4">
@@ -409,7 +409,7 @@ export default function AuthForm() {
                     placeholder="Ism va familiyangiz"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full h-14 pl-12 pr-4 rounded-2xl bg-gray-50 dark:bg-[#2C2C2E] border border-transparent focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#E05638] dark:focus:border-[#E05638] text-[15px] text-gray-900 dark:text-white placeholder:text-gray-400 outline-none transition-all"
+                    className="w-full h-14 pl-12 pr-4 rounded-2xl bg-gray-50/50 dark:bg-[#1C1C1E] border border-gray-200 dark:border-[#333336] focus:bg-white dark:focus:bg-black focus:border-[#E05638] dark:focus:border-[#E05638] text-[15px] text-gray-900 dark:text-white placeholder:text-gray-400 outline-none transition-all"
                   />
                 </div>
               )}
@@ -424,7 +424,7 @@ export default function AuthForm() {
                   placeholder="Elektron pochta"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full h-14 pl-12 pr-4 rounded-2xl bg-gray-50 dark:bg-[#2C2C2E] border border-transparent focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#E05638] dark:focus:border-[#E05638] text-[15px] text-gray-900 dark:text-white placeholder:text-gray-400 outline-none transition-all"
+                  className="w-full h-14 pl-12 pr-4 rounded-2xl bg-gray-50/50 dark:bg-[#1C1C1E] border border-gray-200 dark:border-[#333336] focus:bg-white dark:focus:bg-black focus:border-[#E05638] dark:focus:border-[#E05638] text-[15px] text-gray-900 dark:text-white placeholder:text-gray-400 outline-none transition-all"
                 />
               </div>
 
@@ -438,14 +438,14 @@ export default function AuthForm() {
                   placeholder="Parolingiz"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-14 pl-12 pr-4 rounded-2xl bg-gray-50 dark:bg-[#2C2C2E] border border-transparent focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#E05638] dark:focus:border-[#E05638] text-[15px] text-gray-900 dark:text-white placeholder:text-gray-400 outline-none transition-all"
+                  className="w-full h-14 pl-12 pr-4 rounded-2xl bg-gray-50/50 dark:bg-[#1C1C1E] border border-gray-200 dark:border-[#333336] focus:bg-white dark:focus:bg-black focus:border-[#E05638] dark:focus:border-[#E05638] text-[15px] text-gray-900 dark:text-white placeholder:text-gray-400 outline-none transition-all"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-14 rounded-2xl bg-[#1C1C1E] dark:bg-white hover:bg-black dark:hover:bg-gray-100 text-white dark:text-black font-semibold text-[15px] transition-transform active:scale-[0.98] flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
+                className="w-full h-14 rounded-2xl bg-[#E05638] hover:bg-[#D04C2E] text-white font-semibold text-[15px] transition-transform active:scale-[0.98] flex items-center justify-center gap-2 mt-4 disabled:opacity-50"
               >
                 {loading ? (
                   <Loader2 size={20} className="animate-spin" />
@@ -457,7 +457,7 @@ export default function AuthForm() {
                 )}
               </button>
 
-              <div className="pt-2 text-center">
+              <div className="pt-4 text-center">
                 <button
                   type="button"
                   onClick={() => {
@@ -477,9 +477,9 @@ export default function AuthForm() {
         {/* STEP 2: 2FA OTP Challenge */}
         {step === "otp" && (
           <div className="space-y-6">
-            <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#2C2C2E] border border-gray-100 dark:border-[#333336] text-center space-y-2">
-              <ShieldCheck size={28} className="text-emerald-500 mx-auto" />
-              <p className="text-[14px] text-gray-600 dark:text-gray-300 leading-relaxed font-medium">
+            <div className="text-center space-y-2">
+              <ShieldCheck size={40} className="text-emerald-500 mx-auto" />
+              <p className="text-[15px] text-gray-600 dark:text-gray-300 leading-relaxed font-medium">
                 Tasdiqlash kodi <strong className="text-gray-900 dark:text-white">{email}</strong> pochtasiga yuborildi.
               </p>
             </div>
@@ -517,7 +517,7 @@ export default function AuthForm() {
                     className={`w-12 h-14 text-center font-bold text-xl rounded-2xl border transition-all outline-none ${
                       digit 
                         ? "bg-white dark:bg-[#1C1C1E] border-[#E05638] text-gray-900 dark:text-white ring-4 ring-[#E05638]/10" 
-                        : "bg-gray-50 dark:bg-[#2C2C2E] border-transparent text-gray-900 dark:text-white focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#E05638]"
+                        : "bg-gray-50 dark:bg-[#2C2C2E] border-gray-200 dark:border-[#333336] text-gray-900 dark:text-white focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#E05638]"
                     }`}
                   />
                 ))}
