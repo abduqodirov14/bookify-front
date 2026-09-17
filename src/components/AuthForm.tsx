@@ -326,18 +326,18 @@ export default function AuthForm() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black flex flex-col items-center justify-center px-6 py-12 transition-colors w-full">
-      <div className="relative w-full max-w-[380px] bg-white dark:bg-black space-y-8 animate-fade-in mx-auto">
+    <div className="min-h-screen bg-white text-gray-900 flex flex-col items-center justify-center px-6 py-12 transition-colors w-full">
+      <div className="relative w-full max-w-[400px] bg-white space-y-8 animate-fade-in mx-auto">
         
         {/* Brand Header */}
         <div className="text-center space-y-3">
-          <div className="w-14 h-14 rounded-3xl bg-[#E05638] flex items-center justify-center text-white font-serif font-bold text-3xl shadow-sm mx-auto">
+          <div className="w-14 h-14 rounded-2xl bg-[#E05638] flex items-center justify-center text-white font-serif font-bold text-3xl shadow-sm mx-auto">
             B
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+          <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
             {step === "otp" ? "Tasdiqlash" : isRegister ? "Yangi hisob" : "Xush kelibsiz"}
           </h2>
-          <p className="text-[15px] text-gray-500 dark:text-gray-400 font-medium">
+          <p className="text-[15px] text-gray-500 font-medium">
             {step === "otp" 
               ? "Xavfsizlik kodini kiriting" 
               : "Durdona asarlar olamiga marhamat"}
@@ -346,14 +346,14 @@ export default function AuthForm() {
 
         {/* Alert Banners */}
         {errorMsg && (
-          <div className="p-4 bg-red-50 dark:bg-red-500/10 border-l-4 border-red-500 text-red-600 dark:text-red-400 rounded-r-2xl flex items-start gap-3 text-sm font-medium animate-fade-in">
+          <div className="p-4 bg-red-50 border-l-4 border-red-500 text-red-600 rounded-r-2xl flex items-start gap-3 text-sm font-medium animate-fade-in shadow-sm">
             <AlertCircle size={20} className="shrink-0 mt-0.5" />
             <span className="leading-relaxed">{errorMsg}</span>
           </div>
         )}
 
         {successMsg && (
-          <div className="p-4 bg-emerald-50 dark:bg-emerald-500/10 border-l-4 border-emerald-500 text-emerald-700 dark:text-emerald-400 rounded-r-2xl flex items-start gap-3 text-sm font-medium animate-fade-in">
+          <div className="p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 rounded-r-2xl flex items-start gap-3 text-sm font-medium animate-fade-in shadow-sm">
             <CheckCircle2 size={20} className="shrink-0 mt-0.5" />
             <span className="leading-relaxed">{successMsg}</span>
           </div>
@@ -368,7 +368,7 @@ export default function AuthForm() {
               <button
                 type="button"
                 onClick={handleGoogleLogin}
-                className="w-full h-14 rounded-2xl border border-gray-200 dark:border-[#333336] bg-white dark:bg-black hover:bg-gray-50 dark:hover:bg-[#1C1C1E] text-gray-900 dark:text-white font-semibold text-[15px] flex items-center justify-center gap-3 transition-colors active:scale-[0.98]"
+                className="w-full h-14 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-900 font-semibold text-[15px] flex items-center justify-center gap-3 transition-colors shadow-sm active:scale-[0.98]"
               >
                 <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -382,7 +382,7 @@ export default function AuthForm() {
               <button
                 type="button"
                 onClick={handleTelegramLogin}
-                className="w-full h-14 rounded-2xl bg-[#24A1DE] hover:bg-[#208fca] active:scale-[0.98] text-white font-semibold text-[15px] flex items-center justify-center gap-3 transition-all"
+                className="w-full h-14 rounded-2xl bg-[#24A1DE] hover:bg-[#208fca] active:scale-[0.98] text-white font-semibold text-[15px] flex items-center justify-center gap-3 transition-all shadow-sm"
               >
                 <svg className="w-5 h-5 fill-current shrink-0" viewBox="0 0 24 24">
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" />
@@ -392,9 +392,9 @@ export default function AuthForm() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-gray-100 dark:bg-[#333336]"></div>
-              <span className="text-[13px] font-medium text-gray-400">yoki pochta</span>
-              <div className="flex-1 h-px bg-gray-100 dark:bg-[#333336]"></div>
+              <div className="flex-1 h-px bg-gray-200"></div>
+              <span className="text-[13px] font-medium text-gray-400">yoki pochta orqali</span>
+              <div className="flex-1 h-px bg-gray-200"></div>
             </div>
 
             <form onSubmit={handleCredsSubmit} className="space-y-4">
@@ -409,7 +409,7 @@ export default function AuthForm() {
                     placeholder="Ism va familiyangiz"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full h-14 pl-12 pr-4 rounded-2xl bg-gray-50/50 dark:bg-[#1C1C1E] border border-gray-200 dark:border-[#333336] focus:bg-white dark:focus:bg-black focus:border-[#E05638] dark:focus:border-[#E05638] text-[15px] text-gray-900 dark:text-white placeholder:text-gray-400 outline-none transition-all"
+                    className="w-full h-14 pl-12 pr-4 rounded-2xl bg-white border border-gray-200 focus:border-[#E05638] focus:ring-4 focus:ring-[#E05638]/10 text-[15px] text-gray-900 placeholder:text-gray-400 outline-none transition-all shadow-sm"
                   />
                 </div>
               )}
@@ -424,7 +424,7 @@ export default function AuthForm() {
                   placeholder="Elektron pochta"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full h-14 pl-12 pr-4 rounded-2xl bg-gray-50/50 dark:bg-[#1C1C1E] border border-gray-200 dark:border-[#333336] focus:bg-white dark:focus:bg-black focus:border-[#E05638] dark:focus:border-[#E05638] text-[15px] text-gray-900 dark:text-white placeholder:text-gray-400 outline-none transition-all"
+                  className="w-full h-14 pl-12 pr-4 rounded-2xl bg-white border border-gray-200 focus:border-[#E05638] focus:ring-4 focus:ring-[#E05638]/10 text-[15px] text-gray-900 placeholder:text-gray-400 outline-none transition-all shadow-sm"
                 />
               </div>
 
@@ -438,14 +438,14 @@ export default function AuthForm() {
                   placeholder="Parolingiz"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-14 pl-12 pr-4 rounded-2xl bg-gray-50/50 dark:bg-[#1C1C1E] border border-gray-200 dark:border-[#333336] focus:bg-white dark:focus:bg-black focus:border-[#E05638] dark:focus:border-[#E05638] text-[15px] text-gray-900 dark:text-white placeholder:text-gray-400 outline-none transition-all"
+                  className="w-full h-14 pl-12 pr-4 rounded-2xl bg-white border border-gray-200 focus:border-[#E05638] focus:ring-4 focus:ring-[#E05638]/10 text-[15px] text-gray-900 placeholder:text-gray-400 outline-none transition-all shadow-sm"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-14 rounded-2xl bg-[#E05638] hover:bg-[#D04C2E] text-white font-semibold text-[15px] transition-transform active:scale-[0.98] flex items-center justify-center gap-2 mt-4 disabled:opacity-50"
+                className="w-full h-14 rounded-2xl bg-[#E05638] hover:bg-[#D04C2E] text-white font-bold text-[15px] shadow-lg shadow-[#E05638]/20 transition-transform active:scale-[0.98] flex items-center justify-center gap-2 mt-4 disabled:opacity-50"
               >
                 {loading ? (
                   <Loader2 size={20} className="animate-spin" />
@@ -465,7 +465,7 @@ export default function AuthForm() {
                     setName(""); setEmail(""); setPassword("");
                     setErrorMsg(""); setSuccessMsg("");
                   }}
-                  className="text-[14px] text-gray-500 hover:text-gray-900 dark:hover:text-white font-medium transition-colors"
+                  className="text-[14px] text-gray-500 hover:text-gray-900 font-medium transition-colors"
                 >
                   {isRegister ? "Hisobingiz bormi? Tizimga kiring" : "Hisobingiz yo'qmi? Yangi ochish"}
                 </button>
@@ -479,13 +479,13 @@ export default function AuthForm() {
           <div className="space-y-6">
             <div className="text-center space-y-2">
               <ShieldCheck size={40} className="text-emerald-500 mx-auto" />
-              <p className="text-[15px] text-gray-600 dark:text-gray-300 leading-relaxed font-medium">
-                Tasdiqlash kodi <strong className="text-gray-900 dark:text-white">{email}</strong> pochtasiga yuborildi.
+              <p className="text-[15px] text-gray-600 leading-relaxed font-medium">
+                Tasdiqlash kodi <strong className="text-gray-900">{email}</strong> pochtasiga yuborildi.
               </p>
             </div>
 
             {otpHint && (
-              <div className="p-3 bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 rounded-xl flex items-center justify-between text-[13px] text-blue-700 dark:text-blue-400 font-semibold">
+              <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl flex items-center justify-between text-[13px] text-blue-700 font-semibold shadow-sm">
                 <span className="flex items-center gap-1.5">
                   <ShieldCheck size={16} />
                   Sinov kodi: {otpHint}
@@ -496,7 +496,7 @@ export default function AuthForm() {
                     const digits = otpHint.split("").slice(0, 6);
                     setOtp(digits);
                   }}
-                  className="px-3 py-1.5 bg-blue-200/50 hover:bg-blue-200 dark:bg-blue-500/20 dark:hover:bg-blue-500/30 rounded-lg transition-colors"
+                  className="px-3 py-1.5 bg-blue-200/50 hover:bg-blue-200 rounded-lg transition-colors"
                 >
                   Kiritish
                 </button>
@@ -514,10 +514,10 @@ export default function AuthForm() {
                     value={digit}
                     onChange={(e) => handleOtpChange(idx, e.target.value)}
                     onKeyDown={(e) => handleOtpKeyDown(idx, e)}
-                    className={`w-12 h-14 text-center font-bold text-xl rounded-2xl border transition-all outline-none ${
+                    className={`w-12 h-14 text-center font-bold text-xl rounded-2xl border transition-all outline-none shadow-sm ${
                       digit 
-                        ? "bg-white dark:bg-[#1C1C1E] border-[#E05638] text-gray-900 dark:text-white ring-4 ring-[#E05638]/10" 
-                        : "bg-gray-50 dark:bg-[#2C2C2E] border-gray-200 dark:border-[#333336] text-gray-900 dark:text-white focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#E05638]"
+                        ? "bg-orange-50/50 border-[#E05638] text-gray-900 ring-4 ring-[#E05638]/10" 
+                        : "bg-white border-gray-200 text-gray-900 focus:border-[#E05638] focus:ring-4 focus:ring-[#E05638]/10"
                     }`}
                   />
                 ))}
@@ -526,7 +526,7 @@ export default function AuthForm() {
               <button
                 type="submit"
                 disabled={loading || otp.some((d) => !d)}
-                className="w-full h-14 rounded-2xl bg-[#E05638] hover:bg-[#D04C2E] text-white font-semibold text-[15px] transition-transform active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full h-14 rounded-2xl bg-[#E05638] hover:bg-[#D04C2E] text-white font-bold text-[15px] shadow-lg shadow-[#E05638]/20 transition-transform active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {loading ? (
                   <Loader2 size={20} className="animate-spin" />
@@ -543,7 +543,7 @@ export default function AuthForm() {
                   type="button"
                   disabled={countdown > 0 || !canResend}
                   onClick={handleResend}
-                  className="text-[14px] text-gray-500 hover:text-gray-900 dark:hover:text-white font-medium disabled:opacity-50 transition-colors"
+                  className="text-[14px] text-gray-500 hover:text-gray-900 font-medium disabled:opacity-50 transition-colors"
                 >
                   {countdown > 0 ? `Qayta yuborish (${countdown}s)` : "Kodni qayta yuborish"}
                 </button>
@@ -553,7 +553,7 @@ export default function AuthForm() {
             <button
               type="button"
               onClick={() => { setStep("creds"); setErrorMsg(""); }}
-              className="w-full text-center text-[14px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors mt-2"
+              className="w-full text-center text-[14px] text-gray-400 hover:text-gray-600 transition-colors mt-2"
             >
               ← Boshqa hisob bilan kirish
             </button>
@@ -564,5 +564,3 @@ export default function AuthForm() {
     </div>
   );
 }
-
-// Trigger Vercel Build for pure white design
