@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -38,6 +38,28 @@ export default function UploadBookPage() {
       })
       .catch((err) => console.warn("Could not load books:", err))
       .finally(() => setLoadingBooks(false));
+  };
+
+  const handleDeleteBook = async (id: string, title: string) => {
+    if (!window.confirm(`Haqiqatan ham "${title}" asarini bazadan o'chirmoqchimisiz?`)) return;
+    try {
+      await api.deleteBook(id);
+      setSuccess(`"${title}" muvaffaqiyatli o'chirildi.`);
+      loadBooks();
+    } catch (err: any) {
+      setError(err.message || "Kitobni o'chirishda xatolik");
+    }
+  };
+
+  const handleClearAllBooks = async () => {
+    if (!window.confirm("DIQQAT! Bazadagi BARCHA kitoblar, boblar, sahifalar va audio treklar o'chiriladi va baza 0 holatiga keltiriladi. Rozimisiz?")) return;
+    try {
+      await api.clearAllBooks();
+      setSuccess("Barcha kitoblar bazadan to'liq o'chirildi (baza 0 qilindi).");
+      loadBooks();
+    } catch (err: any) {
+      setError(err.message || "Bazani tozalashda xatolik");
+    }
   };
 
   useEffect(() => {
@@ -317,14 +339,25 @@ export default function UploadBookPage() {
 
       {/* --- PUBLISHED BOOKS (REAL DATABASE LIST) --- */}
       <div className="bg-white rounded-[32px] p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
-        <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
           <div>
             <h2 className="text-xl font-bold text-gray-900">Yuklangan va Chop Etilgan Asarlar</h2>
             <p className="text-xs font-medium text-gray-400">AWS PostgreSQL bazasidagi jami kitoblar: {publishedBooks.length} ta</p>
           </div>
-          <span className="px-3 py-1 bg-green-50 text-green-700 text-xs font-bold rounded-full border border-green-200">
-            Jonli Baza
-          </span>
+          <div className="flex items-center gap-3">
+            {publishedBooks.length > 0 && (
+              <button
+                onClick={handleClearAllBooks}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-bold border border-red-200 transition-colors"
+              >
+                <Trash2 size={13} />
+                <span>Bazani 0 qilish</span>
+              </button>
+            )}
+            <span className="px-3 py-1 bg-green-50 text-green-700 text-xs font-bold rounded-full border border-green-200">
+              Jonli Baza
+            </span>
+          </div>
         </div>
 
         {loadingBooks ? (
@@ -332,11 +365,11 @@ export default function UploadBookPage() {
             <Loader2 size={32} className="animate-spin text-orange-500" />
           </div>
         ) : publishedBooks.length === 0 ? (
-          <div className="py-12 text-center text-gray-400 text-sm">Hali hech qanday kitob yuklanmagan.</div>
+          <div className="py-12 text-center text-gray-400 text-sm">Hali hech qanday kitob yuklanmagan. Baza toza (0 ta kitob).</div>
         ) : (
           <div className="divide-y divide-gray-100">
             {publishedBooks.map((b, idx) => (
-              <div key={b.id || idx} className="py-4 flex items-center justify-between gap-4 hover:bg-gray-50/50 p-3 rounded-2xl transition-colors">
+              <div key={b.id || idx} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-gray-50/50 p-3 rounded-2xl transition-colors">
                 <div className="flex items-center gap-4 min-w-0">
                   <div className="w-12 h-16 rounded-lg overflow-hidden bg-gray-100 shadow-sm shrink-0">
                     <img 
@@ -360,13 +393,30 @@ export default function UploadBookPage() {
 
                 <div className="flex items-center gap-2 shrink-0">
                   <Link 
+                    href={`/read/${b.id}`}
+                    target="_blank"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 hover:bg-orange-100 rounded-xl text-xs font-bold text-orange-600 transition-colors"
+                  >
+                    <BookOpen size={14} />
+                    <span>Mutolaa</span>
+                  </Link>
+
+                  <Link 
                     href={`/book/${b.id}`}
                     target="_blank"
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-bold text-gray-700 transition-colors"
                   >
                     <ExternalLink size={14} />
-                    <span>Ko'rish</span>
+                    <span>Tafsilot</span>
                   </Link>
+
+                  <button 
+                    onClick={() => handleDeleteBook(b.id, b.title)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-bold transition-colors"
+                  >
+                    <Trash2 size={14} />
+                    <span>O'chirish</span>
+                  </button>
                 </div>
               </div>
             ))}

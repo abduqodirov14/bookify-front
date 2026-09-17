@@ -1,9 +1,9 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Trophy, BookOpen, Clock, Heart, User, Plus, Loader2, LogOut } from "lucide-react";
+import { ArrowRight, Trophy, BookOpen, Clock, Heart, User, Plus, Loader2, LogOut, Headphones } from "lucide-react";
 import { api, getCachedUser, clearAuthToken, resolveFileUrl } from "@/services/api";
 
 export default function Home() {
@@ -37,12 +37,11 @@ export default function Home() {
   };
 
   const heroBook = books.length > 0 ? books[0] : null;
-  const legacyBooks = books.slice(1, 5);
+  const catalogBooks = books.slice(1);
 
   return (
     <div className="min-h-screen bg-[#F5F5F7] font-sans pb-32">
       
-            
       <main className="max-w-4xl mx-auto px-4 sm:px-6 mt-8 space-y-12">
         
         {/* Apple-style Hero Card */}
@@ -50,11 +49,11 @@ export default function Home() {
           <div className="w-full h-[400px] bg-white rounded-[32px] animate-pulse flex items-center justify-center">
             <Loader2 className="animate-spin text-orange-400" size={32} />
           </div>
-        ) : heroBook && (
+        ) : heroBook ? (
           <section>
             <div className="flex items-center justify-between mb-4 px-2">
               <h2 className="text-[28px] font-bold text-gray-900 tracking-tight">Tavsiya etamiz</h2>
-              <button className="text-orange-500 font-semibold text-sm hover:opacity-80 transition-opacity">Barchasi</button>
+              <span className="text-xs font-bold text-orange-600 bg-orange-50 px-3 py-1 rounded-full">Yangi Asar</span>
             </div>
             
             <div className="relative w-full h-auto min-h-[400px] bg-white rounded-[32px] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 flex flex-col sm:flex-row items-center justify-between gap-8">
@@ -70,9 +69,14 @@ export default function Home() {
                   {heroBook.description || "Ushbu asar orqali yangi dunyolarni kashf eting va o'z bilimingizni boyiting."}
                 </p>
                 
-                <div className="flex gap-3 w-full sm:w-auto">
-                  <Link href={`/book/${heroBook.id}`} className="flex-1 sm:flex-none bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 px-8 rounded-full shadow-lg shadow-orange-500/25 transition-transform active:scale-95 text-sm flex items-center justify-center">
-                    Mutolaani boshlash
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                  <Link href={`/read/${heroBook.id}`} className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 px-8 rounded-full shadow-lg shadow-orange-500/25 transition-transform active:scale-95 text-sm flex items-center justify-center gap-2">
+                    <BookOpen size={18} />
+                    Mutolaa qilish
+                  </Link>
+                  <Link href={`/book/${heroBook.id}`} className="bg-white hover:bg-gray-50 text-gray-900 font-bold py-3.5 px-6 rounded-full border border-gray-200 transition-transform active:scale-95 text-sm flex items-center justify-center gap-2">
+                    <Headphones size={18} className="text-orange-500" />
+                    Audio tinglash
                   </Link>
                 </div>
               </div>
@@ -84,38 +88,62 @@ export default function Home() {
               </div>
             </div>
           </section>
+        ) : (
+          <section className="bg-white rounded-[32px] p-12 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 space-y-4">
+            <div className="w-16 h-16 rounded-2xl bg-orange-50 text-orange-500 flex items-center justify-center mx-auto">
+              <BookOpen size={32} />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900">Kutubxona bo'sh (0 ta kitob)</h2>
+            <p className="text-gray-500 text-sm max-w-md mx-auto">
+              Baza to'liq 0 qilindi. Admin paneldan yangi PDF, EPUB yoki matnli kitob yuklashingiz mumkin.
+            </p>
+            <Link
+              href="/admin/upload"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-black text-white font-bold text-xs rounded-2xl shadow-lg shadow-black/10 transition-transform active:scale-95"
+            >
+              <Plus size={16} />
+              <span>Yangi Kitob Yuklash (Admin)</span>
+            </Link>
+          </section>
         )}
 
         {/* Clean Scroll Section */}
-        {legacyBooks.length > 0 && (
+        {catalogBooks.length > 0 && (
           <section>
             <div className="flex items-center justify-between mb-5 px-2">
-              <h2 className="text-[28px] font-bold text-gray-900 tracking-tight">Kutubxona</h2>
+              <h2 className="text-[28px] font-bold text-gray-900 tracking-tight">Kutubxona & Sara Asarlar</h2>
+              <span className="text-xs text-gray-400 font-medium">{catalogBooks.length} ta asar</span>
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-              {legacyBooks.map(book => (
-                <Link key={book.id} href={`/book/${book.id}`} className="group cursor-pointer block">
-                  <div className="bg-white rounded-[28px] p-6 aspect-[4/5] flex items-center justify-center shadow-[0_8px_30px_rgb(0,0,0,0.03)] mb-4 transition-transform duration-300 group-hover:-translate-y-1">
+              {catalogBooks.map(book => (
+                <div key={book.id} className="group cursor-pointer block">
+                  <div className="bg-white rounded-[28px] p-6 aspect-[4/5] flex items-center justify-center shadow-[0_8px_30px_rgb(0,0,0,0.03)] mb-4 transition-transform duration-300 group-hover:-translate-y-1 relative">
                     <div className="w-full max-w-[130px] aspect-[2/3] rounded-lg shadow-md overflow-hidden group-hover:shadow-xl group-hover:scale-105 transition-all duration-300 ring-1 ring-black/5">
                       <img src={resolveFileUrl(book.cover_image) || "/images/books/ref1.png"} alt={book.title} className="w-full h-full object-cover" />
                     </div>
                   </div>
-                  <div className="px-2">
+                  <div className="px-2 space-y-1">
                     <h3 className="text-base font-bold text-gray-900 leading-tight truncate">{book.title}</h3>
-                    <p className="text-[13px] text-gray-500 font-medium mt-1 truncate">{book.author || "Muallif noma'lum"}</p>
+                    <p className="text-[13px] text-gray-500 font-medium truncate">{book.author || "Muallif noma'lum"}</p>
+                    <div className="flex items-center gap-2 pt-1">
+                      <Link 
+                        href={`/read/${book.id}`}
+                        className="text-xs font-bold text-orange-600 hover:underline flex items-center gap-1"
+                      >
+                        <BookOpen size={12} /> O'qish
+                      </Link>
+                      <span className="text-gray-300">•</span>
+                      <Link 
+                        href={`/book/${book.id}`}
+                        className="text-xs font-bold text-gray-600 hover:underline flex items-center gap-1"
+                      >
+                        <Headphones size={12} /> Audio
+                      </Link>
+                    </div>
                   </div>
-                </Link>
-              ))}
-              
-              <div className="group cursor-pointer block">
-                <div className="bg-white/50 border-2 border-dashed border-gray-200 rounded-[28px] p-6 aspect-[4/5] flex flex-col items-center justify-center mb-4 transition-colors group-hover:border-orange-200 group-hover:bg-orange-50/50">
-                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm text-gray-400 group-hover:text-orange-500 transition-colors mb-3">
-                    <Plus size={24} />
-                  </div>
-                  <span className="text-sm font-semibold text-gray-500 group-hover:text-orange-600">Yana kashf etish</span>
                 </div>
-              </div>
+              ))}
             </div>
           </section>
         )}

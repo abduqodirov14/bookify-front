@@ -297,6 +297,53 @@ export const api = {
     return res.json();
   },
 
+
+  async clearAllBooks() {
+    const token = getAuthToken();
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetchWithRetry(`${API_BASE_URL}/admin/books/clear-all`, {
+      method: 'DELETE',
+      headers,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.detail || "Kitoblarni tozalashda xatolik yuz berdi");
+    }
+    return data;
+  },
+
+  async getAdminAudioTracks() {
+    const token = getAuthToken();
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    try {
+      const res = await fetchWithRetry(`${API_BASE_URL}/admin/audio-tracks`, { headers });
+      if (!res.ok) return [];
+      return res.json();
+    } catch {
+      return [];
+    }
+  },
+
+  async deleteAdminAudioTrack(bookId: string, trackId: string) {
+    const token = getAuthToken();
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetchWithRetry(`${API_BASE_URL}/admin/books/${bookId}/audio-tracks/${trackId}`, {
+      method: 'DELETE',
+      headers,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.detail || "Audio trekni o'chirishda xatolik");
+    }
+    return data;
+  },
+
   // Authors
   async getAuthors() {
     try {
