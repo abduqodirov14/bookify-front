@@ -1,0 +1,121 @@
+export type Page = 
+  | 'home'
+  | 'discover'
+  | 'author'
+  | 'book'
+  | 'reader'
+  | 'library'
+  | 'time'
+  | 'challenge'
+  | 'profile'
+  | 'admin'
+  | 'auth'
+  | 'vision'
+  | 'verify'
+  | 'volunteer';
+
+export type ReaderTheme = 'white' | 'sepia' | 'parchment' | 'dark';
+export type ReaderFont = 'literata' | 'georgia' | 'merriweather' | 'sans';
+
+export interface Author {
+  id: string;
+  name: string;
+  lifetime: string;
+  movement: string;
+  portrait: string;
+  quote: string;
+  bio: string;
+  booksCount: number;
+  featuredBookId: string;
+}
+
+export interface Chapter {
+  id: string;
+  number: number;
+  title: string;
+  content: string;
+}
+
+export interface Book {
+  id: string;
+  title: string;
+  authorId: string;
+  authorName: string;
+  category: string;
+  coverImage: string;
+  spineColor: string;
+  description: string;
+  publishedYear: number;
+  pages: number;
+  audioDuration: string;
+  rating: number;
+  reviewsCount: number;
+  narrator?: string;
+  status?: string;
+  chapters: Chapter[];
+  featuredQuote: string;
+  audioTracks?: BookAudioTrack[];
+  is_premium?: boolean;
+  price?: number;
+}
+
+export interface BookAudioTrack {
+  id: string;
+  bookId: string;
+  trackNumber: number;
+  title: string;
+  audioUrl: string;
+  durationSeconds: number;
+  fileSizeBytes: number;
+  narrator?: string;
+  createdAt?: string;
+}
+
+export interface AudioTrack {
+  bookId: string;
+  title: string;
+  author: string;
+  coverImage: string;
+  chapterTitle: string;
+  duration: string;
+  isPlaying: boolean;
+  currentTime: number;
+  playbackRate: number;
+  audioUrl?: string;
+  narrator?: string;
+  trackList?: BookAudioTrack[];
+  currentTrackIndex?: number;
+}
+
+export interface Bookmark {
+  id: string;
+  bookId: string;
+  bookTitle: string;
+  chapterNumber: number;
+  chapterTitle: string;
+  text: string;
+  note?: string;
+  createdAt: string;
+}
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: 'USER' | 'ADMIN' | 'VOLUNTEER';
+  avatarUrl?: string;
+  dailyGoalMinutes: number;
+  todayMinutes: number;
+  readingStreakDays: number;
+  totalHours: number;
+  finishedBooksCount: number;
+  is2FAEnabled: boolean;
+  volunteer_code?: string;
+  volunteer_title?: string;
+  volunteer_hours?: number;
+  is_volunteer?: boolean;
+  volunteer_since?: string;
+  is_premium?: boolean;
+  premium_until?: string;
+  created_at?: string;
+}
