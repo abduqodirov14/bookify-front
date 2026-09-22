@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { 
   ArrowLeft, Clock, Play, X, ChevronLeft, ChevronRight, 
   BookOpen, ZoomIn, ZoomOut, Loader2, Maximize, Minimize,
-  Columns2, Square, Volume2, VolumeX
+  Columns2, Square
 } from "lucide-react";
 import { api, resolveFileUrl } from "@/services/api";
 
@@ -34,7 +34,6 @@ export default function ReadBookPage() {
   const [isZenModalOpen, setIsZenModalOpen] = useState(false);
   const [zenTime, setZenTime] = useState(30);
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const bookContainerRef = useRef<HTMLDivElement | null>(null);
 
   // Detect Mobile
@@ -48,21 +47,6 @@ export default function ReadBookPage() {
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
-
-  // Optional Page Flip Sound
-  useEffect(() => {
-    try {
-      audioRef.current = new Audio("/Paper Slide - Sound Effect.mp3");
-      audioRef.current.preload = "auto";
-    } catch {}
-  }, []);
-
-  const playFlipSound = useCallback(() => {
-    if (soundEnabled && audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => {});
-    }
-  }, [soundEnabled]);
 
   // Load Book and Pages
   useEffect(() => {
@@ -138,23 +122,21 @@ export default function ReadBookPage() {
     setCurrentSpreadIndex((prev) => {
       const next = prev + step;
       if (next < totalPages) {
-        playFlipSound();
         return next;
       }
       return prev;
     });
-  }, [step, totalPages, playFlipSound]);
+  }, [step, totalPages]);
 
   const prevPage = useCallback(() => {
     setCurrentSpreadIndex((prev) => {
       const p = prev - step;
       if (p >= 0) {
-        playFlipSound();
         return p;
       }
       return 0;
     });
-  }, [step, playFlipSound]);
+  }, [step]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -291,17 +273,6 @@ export default function ReadBookPage() {
               <span className="hidden lg:inline text-[11px]">{isSpreadMode ? "2 Sahifali" : "1 Sahifali"}</span>
             </button>
           )}
-
-          {/* Page sound effect */}
-          <button
-            onClick={() => setSoundEnabled(!soundEnabled)}
-            className={`p-2 rounded-xl border cursor-pointer transition-colors shadow-2xs ${
-              soundEnabled ? "bg-white text-gray-800 border-stone-300" : "bg-stone-200/80 text-gray-400 border-stone-300"
-            }`}
-            title={soundEnabled ? "Varaqlash ovozini o'chirish" : "Varaqlash ovozini yoqish"}
-          >
-            {soundEnabled ? <Volume2 size={15} /> : <VolumeX size={15} />}
-          </button>
 
           {/* Font Size Adjusters (for text pages) */}
           <div className="hidden sm:flex items-center bg-white border border-stone-300 rounded-xl px-1.5 py-0.5 shadow-2xs">
