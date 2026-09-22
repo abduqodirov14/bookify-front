@@ -1,4 +1,4 @@
-import { Book } from '../types';
+import { Book } from '@/types';
 
 // ALL books below are confirmed public-domain works from Project Gutenberg.
 // Gutenberg IDs are listed in comments for verification.

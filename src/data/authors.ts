@@ -1,4 +1,4 @@
-﻿import { Author } from '../types';
+import { Author } from '@/types';
 
 // All portrait images are from Wikimedia Commons (public domain, pre-1928 or released).
 // URLs link to specific file revisions to avoid future redirects.
@@ -81,8 +81,8 @@ export const AUTHORS: Author[] = [
     name: "Abdulla Qodiriy",
     lifetime: "1894 — 1938",
     movement: "O'zbek Milliy Adabiyoti",
-    // Wikimedia: Arxiv fotosurati. Public domain.
-    portrait: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Abdulla_Qodiriy.jpg/400px-Abdulla_Qodiriy.jpg",
+    // Mahalliy rasm: public/authors/abdulla-qodiriy.jpg
+    portrait: "/authors/abdulla-qodiriy.jpg",
     quote: "Modomiki, biz yangi davrga oyoq qo'ydik, bas, biz har bir yo'nalishda yangiliklar orqasidan ergashmog'imiz lozim.",
     bio: "O'zbek milliy romanchiligining asoschisi. 'O'tkan Kunlar' va 'Mehrobdan Chayon' romanlari o'zbek adabiyotining klassikasiga aylangan.",
     booksCount: 1,

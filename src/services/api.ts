@@ -1,5 +1,5 @@
 export const getBaseApiUrl = () => {
-  const raw = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_UR || 'https://3-68-191-39.sslip.io/api/v1';
+  const raw = process.env.NEXT_PUBLIC_API_URL || 'https://3-68-191-39.sslip.io/api/v1';
   const clean = raw.trim().replace(/\/+$/, '');
   return clean.endsWith('/api/v1') ? clean : `${clean}/api/v1`;
 };
