@@ -80,66 +80,12 @@ export const AUTHORS: Author[] = [
     id: "abdulla-qodiriy",
     name: "Abdulla Qodiriy",
     lifetime: "1894 — 1938",
-    movement: "O'zbek Milliy Romanchiligi",
+    movement: "O'zbek Milliy Adabiyoti",
+    // Mahalliy rasm: public/authors/abdulla-qodiriy.jpg
     portrait: "/authors/abdulla-qodiriy.jpg",
     quote: "Modomiki, biz yangi davrga oyoq qo'ydik, bas, biz har bir yo'nalishda yangiliklar orqasidan ergashmog'imiz lozim.",
-    bio: "O'zbek milliy romanchiligining asoschisi. 'O'tkan Kunlar' va 'Mehrobdan Chayon' romanlari muallifi.",
-    booksCount: 2,
-    featuredBookId: "otkan-kunlar"
-  },
-  {
-    id: "cholpon",
-    name: "Abdulhamid Cho'lpon",
-    lifetime: "1897 — 1938",
-    movement: "Milliy Uyg'onish Adabiyoti",
-    portrait: "/authors/cholpon.jpg",
-    quote: "Kishan kiyma, bo'yin egma, ki sen ham hur tug'ilg'onsen!",
-    bio: "Yangi o'zbek she'riyati va nasrining yorqin namoyandasi. 'Kecha va Kunduz' romani bilan mashhur.",
+    bio: "O'zbek milliy romanchiligining asoschisi. 'O'tkan Kunlar' va 'Mehrobdan Chayon' romanlari o'zbek adabiyotining klassikasiga aylangan.",
     booksCount: 1,
-    featuredBookId: "kecha-va-kunduz"
-  },
-  {
-    id: "otkir-hoshimov",
-    name: "O'tkir Hoshimov",
-    lifetime: "1941 — 2013",
-    movement: "O'zbek Realistik Nasri",
-    portrait: "/authors/otkir-hoshimov.jpg",
-    quote: "Dunyoda eng buyuk qalb — ona qalbidir.",
-    bio: "O'zbekiston xalq yozuvchisi. 'Dunyoning Ishlari', 'Ikki Eshik Orasi', 'Bahor Qaytmaydi' kabi durdona asarlar muallifi.",
-    booksCount: 3,
-    featuredBookId: "dunyoning-ishlari"
-  },
-  {
-    id: "oybek",
-    name: "Muso Toshmuhammad o'g'li Oybek",
-    lifetime: "1905 — 1968",
-    movement: "Klassik O'zbek Nasri",
-    portrait: "/authors/oybek.jpg",
-    quote: "Ilm va ijod inson ruhiyatini yuksaklikka ko'taruvchi qanotdir.",
-    bio: "Buyuk adib, akademik. 'Navoiy' va 'Qutlug' Qon' romanlari orqali o'zbek adabiyoti xazinasini boyitgan.",
-    booksCount: 2,
-    featuredBookId: "navoiy"
-  },
-  {
-    id: "gafur-gulom",
-    name: "G'afur G'ulom",
-    lifetime: "1903 — 1966",
-    movement: "Milliy Lirik va Hajviy Nasr",
-    portrait: "/authors/gafur-gulom.jpg",
-    quote: "Sen yetim emassan, tinchlan, jigarim!",
-    bio: "O'zbekiston xalq shoiri va akademik. 'Shum Bola' va 'Yodgor' qissalari xalq mehrini qozongan.",
-    booksCount: 2,
-    featuredBookId: "shum-bola"
-  },
-  {
-    id: "pirimqul-qodirov",
-    name: "Pirimqul Qodirov",
-    lifetime: "1928 — 2010",
-    movement: "Tarixiy Romanchilik",
-    portrait: "/authors/pirimqul-qodirov.jpg",
-    quote: "Tarixni bilmagan xalq kelajak sari yo'l topa olmaydi.",
-    bio: "Taniqli yozuvchi, davlat arbobi. 'Yulduzli Tunlar' (Bobur) va 'Avlodlar Dovoni' romanlari bilan dovruq qozongan.",
-    booksCount: 2,
-    featuredBookId: "yulduzli-tunlar"
+    featuredBookId: "otkan-kunlar"
   }
 ];
