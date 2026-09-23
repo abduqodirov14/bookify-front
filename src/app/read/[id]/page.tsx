@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { 
   ArrowLeft, Clock, Play, X, ChevronLeft, ChevronRight, 
   BookOpen, ZoomIn, ZoomOut, Loader2, Maximize, Minimize,
-  Columns2, Square
+  Columns2, Square, Sparkles
 } from "lucide-react";
 import { api, resolveFileUrl } from "@/services/api";
 
@@ -29,8 +29,8 @@ export default function ReadBookPage() {
   const [isSpreadMode, setIsSpreadMode] = useState(true); // true = 2 pages, false = 1 page
   const [isMobile, setIsMobile] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [fontSize, setFontSize] = useState(17);
-  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [fontSize, setFontSize] = useState(22); // Default to larger, comfortable font
+  const [bookSize, setBookSize] = useState<"standard" | "large" | "full">("large"); // Default to big immersive book
   const [isZenModalOpen, setIsZenModalOpen] = useState(false);
   const [zenTime, setZenTime] = useState(30);
 
@@ -179,13 +179,12 @@ export default function ReadBookPage() {
     const p1 = leftPage?.page_number || currentSpreadIndex + 1;
     const p2 = rightPage?.page_number || currentSpreadIndex + 2;
     if (currentSpreadIndex === 0) {
-      // If at start, show "1 / total sahifa" just like Image 2
       return `1 / ${totalPages} sahifa`;
     }
     return `${p1}-${p2} / ${totalPages} sahifa`;
   };
 
-  // Render text content cleanly formatted matching classical typesetting
+  // Render text content cleanly formatted with large classical typography
   const renderTextContent = (rawText: string | null | undefined, pageNum: number) => {
     if (!rawText) return null;
     const paras = rawText.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
@@ -193,20 +192,20 @@ export default function ReadBookPage() {
     // If it's the title page (page 1) and looks like book intro:
     if (pageNum === 1 && paras.length <= 4) {
       return (
-        <div className="h-full flex flex-col justify-between py-10 px-6 sm:px-12 text-center font-serif">
-          <div className="text-base sm:text-lg font-medium text-gray-800 tracking-wide">
+        <div className="h-full flex flex-col justify-between py-12 md:py-20 px-8 sm:px-14 md:px-20 text-center font-serif select-text">
+          <div className="text-xl sm:text-2xl md:text-3xl font-medium text-gray-800 tracking-wider">
             {book?.author || "Muallif"}
           </div>
-          <div className="space-y-4 my-auto">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold uppercase tracking-wider text-gray-900 leading-tight">
+          <div className="space-y-6 my-auto">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold uppercase tracking-widest text-gray-900 leading-tight">
               {book?.title || "Asar Nomi"}
             </h1>
-            <p className="text-xs sm:text-sm italic text-gray-600 font-sans">
+            <p className="text-base sm:text-lg italic text-gray-600 font-sans">
               Elektron nashr
             </p>
           </div>
-          <div className="text-xs text-gray-500 font-sans space-y-1">
-            <p>Bookify Raqamli Kutubxonasi</p>
+          <div className="text-xs sm:text-sm text-gray-500 font-sans space-y-1.5">
+            <p className="font-semibold tracking-wide">Bookify Raqamli Kutubxonasi</p>
             <p>{book?.published_year || 2025}</p>
           </div>
         </div>
@@ -215,26 +214,39 @@ export default function ReadBookPage() {
 
     return (
       <div 
-        className="h-full overflow-y-auto px-6 sm:px-10 py-8 font-serif leading-[1.9] text-gray-900 select-text"
+        className="h-full overflow-y-auto px-8 sm:px-12 md:px-16 lg:px-20 py-10 md:py-14 font-serif leading-[2.2] text-gray-950 select-text"
         style={{ fontSize: `${fontSize}px` }}
       >
         {paras.map((para, idx) => {
           const isHeading = para.length < 80 && /^(bob|fasl|chapter|\d+[\.\-]|boshlashdan|muqaddima|xotima)/i.test(para);
           if (isHeading) {
             return (
-              <h2 key={idx} className="text-center font-bold text-lg sm:text-xl my-6 text-gray-950 font-sans tracking-wide">
+              <h2 key={idx} className="text-center font-bold text-2xl sm:text-3xl my-8 text-gray-950 font-sans tracking-wide">
                 {para}
               </h2>
             );
           }
           return (
-            <p key={idx} className="mb-4 text-justify indent-6 text-gray-800">
+            <p key={idx} className="mb-6 text-justify indent-8 sm:indent-12 text-gray-900 font-serif">
               {para}
             </p>
           );
         })}
       </div>
     );
+  };
+
+  // Determine container width based on size mode
+  const getContainerMaxWidth = () => {
+    if (bookSize === "full") return "w-full max-w-[98vw] 2xl:max-w-[1850px]";
+    if (bookSize === "large") return "w-full max-w-[95vw] xl:max-w-[1550px] 2xl:max-w-[1720px]";
+    return "w-full max-w-6xl";
+  };
+
+  const getContainerHeight = () => {
+    if (bookSize === "full") return "min-h-[720px] md:min-h-[800px] lg:h-[88vh]";
+    if (bookSize === "large") return "min-h-[660px] md:min-h-[740px] lg:h-[84vh]";
+    return "min-h-[580px] md:min-h-[660px] lg:h-[760px]";
   };
 
   return (
@@ -274,20 +286,41 @@ export default function ReadBookPage() {
             </button>
           )}
 
+          {/* Book Scale / Size Buttons */}
+          <div className="flex items-center bg-white border border-stone-300 rounded-xl p-0.5 shadow-2xs">
+            <button
+              onClick={() => setBookSize((s) => s === "full" ? "large" : "standard")}
+              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${bookSize === "standard" ? "bg-stone-200 text-gray-900" : "text-gray-600 hover:text-black"}`}
+              title="Kichikroq o'lcham"
+            >
+              <ZoomOut size={15} />
+            </button>
+            <span className="text-[11px] text-gray-600 font-bold px-1.5">
+              {bookSize === "full" ? "150%" : (bookSize === "large" ? "125%" : "100%")}
+            </span>
+            <button
+              onClick={() => setBookSize((s) => s === "standard" ? "large" : "full")}
+              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${bookSize === "full" ? "bg-[#E05638] text-white" : "text-gray-600 hover:text-black"}`}
+              title="Kattalashtirish (Keng ekran)"
+            >
+              <ZoomIn size={15} />
+            </button>
+          </div>
+
           {/* Font Size Adjusters (for text pages) */}
           <div className="hidden sm:flex items-center bg-white border border-stone-300 rounded-xl px-1.5 py-0.5 shadow-2xs">
             <button 
-              onClick={() => setFontSize((f) => Math.max(13, f - 1))}
+              onClick={() => setFontSize((f) => Math.max(14, f - 2))}
               className="px-1.5 py-1 text-xs font-bold text-gray-600 hover:text-black cursor-pointer"
-              title="Kichraytirish"
+              title="Shriftni kichraytirish"
             >
               A-
             </button>
-            <span className="text-[11px] text-gray-400 font-mono px-1">{fontSize}</span>
+            <span className="text-[11px] text-gray-500 font-mono px-1 font-bold">{fontSize}</span>
             <button 
-              onClick={() => setFontSize((f) => Math.min(24, f + 1))}
+              onClick={() => setFontSize((f) => Math.min(34, f + 2))}
               className="px-1.5 py-1 text-xs font-bold text-gray-600 hover:text-black cursor-pointer"
-              title="Kattalashtirish"
+              title="Shriftni kattalashtirish"
             >
               A+
             </button>
@@ -313,42 +346,42 @@ export default function ReadBookPage() {
         </div>
       </header>
 
-      {/* ─── Main Two-Page Spread Book Stage (Image 2 Design) ──────── */}
-      <main className="flex-1 w-full flex items-center justify-center pt-16 pb-20 px-2 sm:px-6 md:px-8">
+      {/* ─── Main Two-Page Spread Book Stage (Image 2 Design - Kattalashtirilgan) ─── */}
+      <main className="flex-1 w-full flex items-center justify-center pt-14 pb-16 px-1 sm:px-4 md:px-6">
         {loading ? (
           <div className="flex flex-col items-center justify-center space-y-4 py-32">
             <Loader2 size={40} className="animate-spin text-[#E05638]" />
             <p className="text-sm font-medium text-gray-600">Kitob sahifalari ochilmoqda...</p>
           </div>
         ) : (
-          <div className="relative w-full max-w-6xl flex flex-col items-center my-auto">
+          <div className={`relative flex flex-col items-center my-auto transition-all duration-300 ${getContainerMaxWidth()}`}>
             
             {/* ─── The Realistic Open Book Spread ─────────────────────── */}
             <div 
               ref={bookContainerRef}
-              className={`relative w-full bg-[#FAF9F6] border-[1.5px] border-[#202020] shadow-[0_20px_60px_-10px_rgba(0,0,0,0.35)] transition-all ${
+              className={`relative w-full bg-[#FAF9F6] border-[2px] border-[#202020] shadow-[0_25px_70px_-10px_rgba(0,0,0,0.4)] transition-all duration-300 ${
                 (!isMobile && isSpreadMode)
-                  ? "grid grid-cols-2 min-h-[580px] md:min-h-[660px] lg:h-[740px]"
-                  : "flex flex-col min-h-[540px] max-w-xl mx-auto"
+                  ? `grid grid-cols-2 ${getContainerHeight()}`
+                  : `flex flex-col max-w-3xl mx-auto ${getContainerHeight()}`
               }`}
             >
               {/* ─── Center Spine Crease & Notch (Image 2 signature element) ─ */}
               {(!isMobile && isSpreadMode) && (
                 <>
                   {/* Top center spine notch | */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[2px] h-3.5 bg-[#202020] z-30" />
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[2.5px] h-4 bg-[#202020] z-30" />
                   
                   {/* Vertical spine divider line */}
-                  <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[1px] bg-[#202020]/20 z-20 pointer-events-none" />
+                  <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[1.5px] bg-[#202020]/25 z-20 pointer-events-none" />
 
                   {/* Left page right spine shadow */}
                   <div className="absolute top-0 bottom-0 left-0 right-1/2 pointer-events-none z-10 flex justify-end">
-                    <div className="w-10 sm:w-16 h-full bg-gradient-to-l from-black/14 via-black/4 to-transparent" />
+                    <div className="w-12 sm:w-20 md:w-28 h-full bg-gradient-to-l from-black/15 via-black/5 to-transparent" />
                   </div>
 
                   {/* Right page left spine shadow */}
                   <div className="absolute top-0 bottom-0 left-1/2 right-0 pointer-events-none z-10 flex justify-start">
-                    <div className="w-10 sm:w-16 h-full bg-gradient-to-r from-black/14 via-black/4 to-transparent" />
+                    <div className="w-12 sm:w-20 md:w-28 h-full bg-gradient-to-r from-black/15 via-black/5 to-transparent" />
                   </div>
                 </>
               )}
@@ -360,12 +393,12 @@ export default function ReadBookPage() {
                 title="Oldingi sahifaga o'tish"
               >
                 {/* Content */}
-                <div className="flex-1 flex items-center justify-center p-2 sm:p-4 overflow-hidden">
+                <div className="flex-1 flex items-center justify-center p-3 sm:p-6 md:p-8 overflow-hidden">
                   {leftPage?.image_path ? (
                     <img
                       src={resolveFileUrl(leftPage.image_path)}
                       alt={`Sahifa ${leftPage.page_number}`}
-                      className="max-h-full max-w-full object-contain pointer-events-none select-none"
+                      className="max-h-full max-w-full object-contain pointer-events-none select-none transition-transform"
                       loading="eager"
                     />
                   ) : (
@@ -374,8 +407,8 @@ export default function ReadBookPage() {
                 </div>
 
                 {/* Subtle Hover Chevron on left page */}
-                <div className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/5 group-hover:bg-black/10 flex items-center justify-center text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                  <ChevronLeft size={18} />
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/5 group-hover:bg-black/10 flex items-center justify-center text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xs">
+                  <ChevronLeft size={22} />
                 </div>
               </div>
 
@@ -387,35 +420,35 @@ export default function ReadBookPage() {
                   title="Keyingi sahifaga o'tish"
                 >
                   {/* Content */}
-                  <div className="flex-1 flex items-center justify-center p-2 sm:p-4 overflow-hidden">
+                  <div className="flex-1 flex items-center justify-center p-3 sm:p-6 md:p-8 overflow-hidden">
                     {rightPage ? (
                       rightPage.image_path ? (
                         <img
                           src={resolveFileUrl(rightPage.image_path)}
                           alt={`Sahifa ${rightPage.page_number}`}
-                          className="max-h-full max-w-full object-contain pointer-events-none select-none"
+                          className="max-h-full max-w-full object-contain pointer-events-none select-none transition-transform"
                           loading="eager"
                         />
                       ) : (
                         renderTextContent(rightPage.text, rightPage.page_number)
                       )
                     ) : (
-                      <div className="h-full flex flex-col items-center justify-center text-gray-300 font-serif italic text-sm">
+                      <div className="h-full flex flex-col items-center justify-center text-gray-300 font-serif italic text-base">
                         Asar yakuni
                       </div>
                     )}
                   </div>
 
                   {/* Subtle Hover Chevron on right page */}
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/5 group-hover:bg-black/10 flex items-center justify-center text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                    <ChevronRight size={18} />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/5 group-hover:bg-black/10 flex items-center justify-center text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xs">
+                    <ChevronRight size={22} />
                   </div>
                 </div>
               )}
 
-              {/* ─── Bottom Centered Pill Badge (Exact Image 2 Style) ─── */}
-              <div className="absolute bottom-[-13px] left-1/2 -translate-x-1/2 z-30">
-                <div className="bg-[#303030] text-white px-3.5 py-1 rounded-full text-[11px] font-sans font-medium tracking-wide shadow-md border border-stone-700/50 whitespace-nowrap">
+              {/* ─── Bottom Centered Pill Badge (Exact Image 2 Style - Kattalashtirilgan) ─── */}
+              <div className="absolute bottom-[-16px] left-1/2 -translate-x-1/2 z-30">
+                <div className="bg-[#2E2E2E] text-white px-4 py-1.5 rounded-full text-xs font-sans font-semibold tracking-wide shadow-lg border border-stone-700/60 whitespace-nowrap">
                   {getBadgeText()}
                 </div>
               </div>
@@ -423,27 +456,27 @@ export default function ReadBookPage() {
             </div>
 
             {/* ─── External Navigation Controls Under Book ───────────── */}
-            <div className="w-full flex items-center justify-between mt-6 px-4 max-w-md">
+            <div className="w-full flex items-center justify-between mt-6 px-4 max-w-lg">
               <button
                 onClick={prevPage}
                 disabled={currentSpreadIndex === 0}
-                className="flex items-center gap-1 px-4 py-2 rounded-full bg-white hover:bg-stone-100 disabled:opacity-30 disabled:hover:bg-white text-gray-800 text-xs font-bold border border-stone-300 shadow-xs cursor-pointer transition-all active:scale-95"
+                className="flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-white hover:bg-stone-100 disabled:opacity-30 disabled:hover:bg-white text-gray-900 text-xs font-bold border border-stone-300 shadow-xs cursor-pointer transition-all active:scale-95"
               >
-                <ChevronLeft size={16} />
-                <span>Oldingi</span>
+                <ChevronLeft size={18} />
+                <span>Oldingi sahifa</span>
               </button>
 
-              <span className="text-xs text-gray-600 font-medium">
+              <span className="text-xs text-gray-600 font-bold font-mono">
                 {currentSpreadIndex + 1} / {totalPages}
               </span>
 
               <button
                 onClick={nextPage}
                 disabled={currentSpreadIndex + step >= totalPages}
-                className="flex items-center gap-1 px-4 py-2 rounded-full bg-white hover:bg-stone-100 disabled:opacity-30 disabled:hover:bg-white text-gray-800 text-xs font-bold border border-stone-300 shadow-xs cursor-pointer transition-all active:scale-95"
+                className="flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-white hover:bg-stone-100 disabled:opacity-30 disabled:hover:bg-white text-gray-900 text-xs font-bold border border-stone-300 shadow-xs cursor-pointer transition-all active:scale-95"
               >
-                <span>Keyingi</span>
-                <ChevronRight size={16} />
+                <span>Keyingi sahifa</span>
+                <ChevronRight size={18} />
               </button>
             </div>
 
