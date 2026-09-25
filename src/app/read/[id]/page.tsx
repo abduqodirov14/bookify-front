@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useParams, useRouter } from "next/navigation";
 import { 
   ArrowLeft, Clock, Play, X, ChevronLeft, ChevronRight, 
@@ -9,6 +10,8 @@ import {
   Columns2, Square, Sparkles
 } from "lucide-react";
 import { api, resolveFileUrl } from "@/services/api";
+
+
 
 interface PageItem {
   page_number: number;
@@ -29,7 +32,7 @@ export default function ReadBookPage() {
   const [isSpreadMode, setIsSpreadMode] = useState(true); // true = 2 pages, false = 1 page
   const [isMobile, setIsMobile] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [fontSize, setFontSize] = useState(22); // Default to larger, comfortable font
+  const [fontSize, setFontSize] = useState(17); // Optimal reading size that fits page without scrolling
   const [bookSize, setBookSize] = useState<"standard" | "large" | "full">("large"); // Default to big immersive book
   const [isZenModalOpen, setIsZenModalOpen] = useState(false);
   const [zenTime, setZenTime] = useState(30);
@@ -170,21 +173,25 @@ export default function ReadBookPage() {
   const leftPage = pages[currentSpreadIndex] || null;
   const rightPage = (!isMobile && isSpreadMode) ? (pages[currentSpreadIndex + 1] || null) : null;
 
-  // Bottom Pill Badge Text (Matching Image 2: "1 / 11 sahifa" or "2-3 / 11 sahifa")
-  const getBadgeText = () => {
-    if (totalPages === 0) return "0 / 0 sahifa";
+  // 2 ta pageni hisoblab sanash: 3-4 yoki 5-6 emas, 2 ta pageni qo'shib (2, 4, 6, 8...) sanaydi
+  const getCurrentPageNumber = () => {
+    if (totalPages === 0) return 0;
     if (isMobile || !isSpreadMode || !rightPage) {
-      return `${(leftPage?.page_number || currentSpreadIndex + 1)} / ${totalPages} sahifa`;
+      return leftPage?.page_number || (currentSpreadIndex + 1);
     }
-    const p1 = leftPage?.page_number || currentSpreadIndex + 1;
-    const p2 = rightPage?.page_number || currentSpreadIndex + 2;
-    if (currentSpreadIndex === 0) {
-      return `1 / ${totalPages} sahifa`;
-    }
-    return `${p1}-${p2} / ${totalPages} sahifa`;
+    // 2-sahifali ko'rinishda o'ng sahifa raqamini olamiz (2, 4, 6...)
+    const rightNum = rightPage?.page_number || (currentSpreadIndex + 2);
+    return Math.min(rightNum, totalPages);
   };
 
-  // Render text content cleanly formatted with large classical typography
+  // Bottom Pill Badge Text (2 ta pageni hisoblab bitta aniq raqam bilan ko'rsatish)
+  const getBadgeText = () => {
+    if (totalPages === 0) return "0 / 0 sahifa";
+    const currentNum = getCurrentPageNumber();
+    return `${currentNum} / ${totalPages} sahifa`;
+  };
+
+  // Render text content cleanly formatted with classical book typography (NO SCROLLBAR)
   const renderTextContent = (rawText: string | null | undefined, pageNum: number) => {
     if (!rawText) return null;
     const paras = rawText.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
@@ -192,19 +199,19 @@ export default function ReadBookPage() {
     // If it's the title page (page 1) and looks like book intro:
     if (pageNum === 1 && paras.length <= 4) {
       return (
-        <div className="h-full flex flex-col justify-between py-12 md:py-20 px-8 sm:px-14 md:px-20 text-center font-serif select-text">
-          <div className="text-xl sm:text-2xl md:text-3xl font-medium text-gray-800 tracking-wider">
+        <div className="h-full w-full flex flex-col justify-between py-10 md:py-16 px-6 sm:px-12 md:px-16 text-center font-serif select-text overflow-hidden">
+          <div className="text-lg sm:text-xl md:text-2xl font-medium text-gray-800 tracking-wider">
             {book?.author || "Muallif"}
           </div>
-          <div className="space-y-6 my-auto">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold uppercase tracking-widest text-gray-900 leading-tight">
+          <div className="space-y-4 my-auto">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold uppercase tracking-widest text-gray-900 leading-tight">
               {book?.title || "Asar Nomi"}
             </h1>
-            <p className="text-base sm:text-lg italic text-gray-600 font-sans">
+            <p className="text-sm sm:text-base italic text-gray-600 font-sans">
               Elektron nashr
             </p>
           </div>
-          <div className="text-xs sm:text-sm text-gray-500 font-sans space-y-1.5">
+          <div className="text-xs text-gray-500 font-sans space-y-1">
             <p className="font-semibold tracking-wide">Bookify Raqamli Kutubxonasi</p>
             <p>{book?.published_year || 2025}</p>
           </div>
@@ -214,39 +221,46 @@ export default function ReadBookPage() {
 
     return (
       <div 
-        className="h-full overflow-y-auto px-8 sm:px-12 md:px-16 lg:px-20 py-10 md:py-14 font-serif leading-[2.2] text-gray-950 select-text"
-        style={{ fontSize: `${fontSize}px` }}
+        className="h-full w-full flex flex-col justify-between overflow-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden px-6 sm:px-10 md:px-14 lg:px-16 py-6 md:py-8 font-serif text-gray-950 select-text"
+        style={{ fontSize: `${fontSize}px`, lineHeight: 1.7 }}
       >
-        {paras.map((para, idx) => {
-          const isHeading = para.length < 80 && /^(bob|fasl|chapter|\d+[\.\-]|boshlashdan|muqaddima|xotima)/i.test(para);
-          if (isHeading) {
+        <div className="flex-1 overflow-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          {paras.map((para, idx) => {
+            const isHeading = para.length < 80 && /^(bob|fasl|chapter|\d+[\.\-]|boshlashdan|muqaddima|xotima)/i.test(para);
+            if (isHeading) {
+              return (
+                <h2 key={idx} className="text-center font-bold text-xl sm:text-2xl my-3 text-gray-950 font-sans tracking-wide">
+                  {para}
+                </h2>
+              );
+            }
             return (
-              <h2 key={idx} className="text-center font-bold text-2xl sm:text-3xl my-8 text-gray-950 font-sans tracking-wide">
+              <p key={idx} className="mb-3 text-justify indent-6 sm:indent-10 text-gray-900 font-serif leading-[1.7]">
                 {para}
-              </h2>
+              </p>
             );
-          }
-          return (
-            <p key={idx} className="mb-6 text-justify indent-8 sm:indent-12 text-gray-900 font-serif">
-              {para}
-            </p>
-          );
-        })}
+          })}
+        </div>
+
+        {/* Subtle physical book footer page number */}
+        <div className="text-center text-[11px] font-mono text-stone-400 font-medium pt-2 border-t border-black/5 mt-auto select-none">
+          {pageNum}
+        </div>
       </div>
     );
   };
 
-  // Determine container width based on size mode
+  // Determine container width based on size mode (kattaroq format)
   const getContainerMaxWidth = () => {
-    if (bookSize === "full") return "w-full max-w-[98vw] 2xl:max-w-[1850px]";
-    if (bookSize === "large") return "w-full max-w-[95vw] xl:max-w-[1550px] 2xl:max-w-[1720px]";
+    if (bookSize === "full") return "w-full max-w-[98vw] 2xl:max-w-[1900px]";
+    if (bookSize === "large") return "w-full max-w-[96vw] xl:max-w-[1650px] 2xl:max-w-[1800px]";
     return "w-full max-w-6xl";
   };
 
   const getContainerHeight = () => {
-    if (bookSize === "full") return "min-h-[720px] md:min-h-[800px] lg:h-[88vh]";
-    if (bookSize === "large") return "min-h-[660px] md:min-h-[740px] lg:h-[84vh]";
-    return "min-h-[580px] md:min-h-[660px] lg:h-[760px]";
+    if (bookSize === "full") return "min-h-[760px] md:min-h-[840px] lg:h-[88vh]";
+    if (bookSize === "large") return "min-h-[700px] md:min-h-[780px] lg:h-[85vh]";
+    return "min-h-[620px] md:min-h-[700px] lg:h-[80vh]";
   };
 
   return (
@@ -349,12 +363,15 @@ export default function ReadBookPage() {
       {/* ─── Main Two-Page Spread Book Stage (Image 2 Design - Kattalashtirilgan) ─── */}
       <main className="flex-1 w-full flex items-center justify-center pt-14 pb-16 px-1 sm:px-4 md:px-6">
         {loading ? (
-          <div className="flex flex-col items-center justify-center space-y-4 py-32">
-            <Loader2 size={40} className="animate-spin text-[#E05638]" />
-            <p className="text-sm font-medium text-gray-600">Kitob sahifalari ochilmoqda...</p>
+          <div className="flex flex-col items-center justify-center space-y-3 py-36">
+            <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center shadow-xs">
+              <Loader2 size={24} className="animate-spin text-orange-500" />
+            </div>
+            <p className="text-xs font-semibold text-gray-500 tracking-wider">Sahifalar yuklanmoqda...</p>
           </div>
         ) : (
           <div className={`relative flex flex-col items-center my-auto transition-all duration-300 ${getContainerMaxWidth()}`}>
+
             
             {/* ─── The Realistic Open Book Spread ─────────────────────── */}
             <div 
@@ -393,14 +410,16 @@ export default function ReadBookPage() {
                 title="Oldingi sahifaga o'tish"
               >
                 {/* Content */}
-                <div className="flex-1 flex items-center justify-center p-3 sm:p-6 md:p-8 overflow-hidden">
+                <div className="flex-1 w-full h-full flex items-stretch justify-center overflow-hidden">
                   {leftPage?.image_path ? (
-                    <img
-                      src={resolveFileUrl(leftPage.image_path)}
-                      alt={`Sahifa ${leftPage.page_number}`}
-                      className="max-h-full max-w-full object-contain pointer-events-none select-none transition-transform"
-                      loading="eager"
-                    />
+                    <div className="p-3 sm:p-6 md:p-8 flex items-center justify-center w-full h-full">
+                      <img
+                        src={resolveFileUrl(leftPage.image_path)}
+                        alt={`Sahifa ${leftPage.page_number}`}
+                        className="max-h-full max-w-full object-contain pointer-events-none select-none transition-transform"
+                        loading="eager"
+                      />
+                    </div>
                   ) : (
                     renderTextContent(leftPage?.text, leftPage?.page_number || 1)
                   )}
@@ -420,20 +439,22 @@ export default function ReadBookPage() {
                   title="Keyingi sahifaga o'tish"
                 >
                   {/* Content */}
-                  <div className="flex-1 flex items-center justify-center p-3 sm:p-6 md:p-8 overflow-hidden">
+                  <div className="flex-1 w-full h-full flex items-stretch justify-center overflow-hidden">
                     {rightPage ? (
                       rightPage.image_path ? (
-                        <img
-                          src={resolveFileUrl(rightPage.image_path)}
-                          alt={`Sahifa ${rightPage.page_number}`}
-                          className="max-h-full max-w-full object-contain pointer-events-none select-none transition-transform"
-                          loading="eager"
-                        />
+                        <div className="p-3 sm:p-6 md:p-8 flex items-center justify-center w-full h-full">
+                          <img
+                            src={resolveFileUrl(rightPage.image_path)}
+                            alt={`Sahifa ${rightPage.page_number}`}
+                            className="max-h-full max-w-full object-contain pointer-events-none select-none transition-transform"
+                            loading="eager"
+                          />
+                        </div>
                       ) : (
                         renderTextContent(rightPage.text, rightPage.page_number)
                       )
                     ) : (
-                      <div className="h-full flex flex-col items-center justify-center text-gray-300 font-serif italic text-base">
+                      <div className="h-full w-full flex flex-col items-center justify-center text-gray-300 font-serif italic text-base">
                         Asar yakuni
                       </div>
                     )}
@@ -467,7 +488,7 @@ export default function ReadBookPage() {
               </button>
 
               <span className="text-xs text-gray-600 font-bold font-mono">
-                {currentSpreadIndex + 1} / {totalPages}
+                {getCurrentPageNumber()} / {totalPages}
               </span>
 
               <button

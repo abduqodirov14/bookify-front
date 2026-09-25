@@ -1,5 +1,5 @@
-﻿"use client";
-import { useParams } from "next/navigation";
+"use client";
+import { useParams, useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { 
@@ -13,7 +13,9 @@ import { api, resolveFileUrl, resolveAudioUrl } from "@/services/api";
 
 export default function BookDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const id = params?.id as string;
+  const [isNavigatingToReader, setIsNavigatingToReader] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isMoreModalOpen, setIsMoreModalOpen] = useState(false);
   const [playerState, setPlayerState] = useState<'closed' | 'mini' | 'full'>('closed');
@@ -173,6 +175,22 @@ export default function BookDetailPage() {
         await api.removeFromLibrary(book.id);
       }
     } catch {}
+  };
+
+  const handleStartReading = async () => {
+    if (isNavigatingToReader) return;
+    setIsNavigatingToReader(true);
+    try {
+      // Tezkor prefetch: sahifalar va kitobni oldindan xotiraga tortib oladi
+      await Promise.race([
+        Promise.all([
+          api.getBookById(id).catch(() => null),
+          api.getBookPages(id).catch(() => null)
+        ]),
+        new Promise((resolve) => setTimeout(resolve, 600)) // smooth visual feel
+      ]);
+    } catch {}
+    router.push(`/read/${id}`);
   };
 
   return (
@@ -463,10 +481,23 @@ export default function BookDetailPage() {
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-            <Link href={`/read/${id}`} className="w-full sm:w-auto px-10 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-full shadow-lg shadow-orange-500/30 transition-transform active:scale-95 flex items-center justify-center gap-2">
-              <BookOpen size={20} />
-              Mutolaa qilish
-            </Link>
+            <button 
+              onClick={handleStartReading}
+              disabled={isNavigatingToReader}
+              className="w-full sm:w-auto px-10 py-4 bg-orange-500 hover:bg-orange-600 disabled:opacity-90 text-white font-bold rounded-full shadow-lg shadow-orange-500/30 transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              {isNavigatingToReader ? (
+                <>
+                  <Loader2 size={20} className="animate-spin text-white" />
+                  <span>Sahifalar ochilmoqda...</span>
+                </>
+              ) : (
+                <>
+                  <BookOpen size={20} />
+                  <span>Mutolaa qilish</span>
+                </>
+              )}
+            </button>
             {audioTracks.length > 0 && (
               <button 
                 onClick={() => handleStartAudio(0)}

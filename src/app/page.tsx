@@ -7,6 +7,7 @@ import { ArrowRight, Trophy, BookOpen, Clock, Heart, User, Plus, Loader2, LogOut
 import { api, getCachedUser, clearAuthToken, resolveFileUrl } from "@/services/api";
 
 import { BOOKS } from "@/data/books";
+import BookMoviesSection from "@/components/home/BookMoviesSection";
 
 export default function Home() {
   const [books, setBooks] = useState<any[]>([]);
@@ -135,7 +136,7 @@ export default function Home() {
         )}
       </header>
       
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 mt-8 space-y-12">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 mt-8 pb-36 space-y-12">
         
         {/* Apple-style Hero Card */}
         {loading ? (
@@ -175,9 +176,9 @@ export default function Home() {
               </div>
 
               <div className="relative z-10 w-full sm:w-auto flex justify-center mt-4 sm:mt-0">
-                <div className="w-[180px] aspect-[2/3] rounded-xl shadow-2xl overflow-hidden transform sm:rotate-3 transition-transform hover:rotate-0 duration-500 ring-1 ring-black/5">
+                <Link href={`/book/${heroBook.id}`} className="w-[180px] aspect-[2/3] rounded-xl shadow-2xl overflow-hidden transform sm:rotate-3 transition-transform hover:rotate-0 duration-500 ring-1 ring-black/5 block cursor-pointer">
                   <img src={resolveFileUrl(heroBook.cover_image) || "/images/books/ref2.png"} alt={heroBook.title} className="w-full h-full object-cover bg-gray-100" />
-                </div>
+                </Link>
               </div>
             </div>
           </section>
@@ -194,15 +195,19 @@ export default function Home() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
               {catalogBooks.map(book => (
                 <div key={book.id} className="group cursor-pointer block">
-                  <div className="bg-white rounded-[28px] p-6 aspect-[4/5] flex items-center justify-center shadow-[0_8px_30px_rgb(0,0,0,0.03)] mb-4 transition-transform duration-300 group-hover:-translate-y-1 relative">
-                    <div className="w-full max-w-[130px] aspect-[2/3] rounded-lg shadow-md overflow-hidden group-hover:shadow-xl group-hover:scale-105 transition-all duration-300 ring-1 ring-black/5">
-                      <img src={resolveFileUrl(book.cover_image) || "/images/books/ref1.png"} alt={book.title} className="w-full h-full object-cover" />
+                  <Link href={`/book/${book.id}`} className="block">
+                    <div className="bg-white rounded-[28px] p-6 aspect-[4/5] flex items-center justify-center shadow-[0_8px_30px_rgb(0,0,0,0.03)] mb-4 transition-transform duration-300 group-hover:-translate-y-1 relative">
+                      <div className="w-full max-w-[130px] aspect-[2/3] rounded-lg shadow-md overflow-hidden group-hover:shadow-xl group-hover:scale-105 transition-all duration-300 ring-1 ring-black/5">
+                        <img src={resolveFileUrl(book.cover_image) || "/images/books/ref1.png"} alt={book.title} className="w-full h-full object-cover" />
+                      </div>
                     </div>
-                  </div>
-                  <div className="px-2 space-y-1">
-                    <h3 className="text-base font-bold text-gray-900 leading-tight truncate">{book.title}</h3>
-                    <p className="text-[13px] text-gray-500 font-medium truncate">{book.author || "Muallif noma'lum"}</p>
-                    <div className="flex items-center gap-2 pt-1">
+                    <div className="px-2 space-y-1">
+                      <h3 className="text-base font-bold text-gray-900 leading-tight truncate group-hover:text-orange-600 transition-colors">{book.title}</h3>
+                      <p className="text-[13px] text-gray-500 font-medium truncate">{book.author || "Muallif noma'lum"}</p>
+                    </div>
+                  </Link>
+                  <div className="px-2 pt-2">
+                    <div className="flex items-center gap-2">
                       <Link 
                         href={`/read/${book.id}`}
                         className="text-xs font-bold text-orange-600 hover:underline flex items-center gap-1"
@@ -223,6 +228,9 @@ export default function Home() {
             </div>
           </section>
         )}
+
+        {/* Kinolar & Ekranlashtirishlar Bo'limi */}
+        <BookMoviesSection />
 
         {/* Minimalist Action Widget */}
         <section>
