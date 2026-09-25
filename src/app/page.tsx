@@ -175,7 +175,7 @@ export default function Home() {
               </div>
 
               <div className="relative z-10 w-full sm:w-auto flex justify-center mt-4 sm:mt-0">
-                <Link href={`/book/${heroBook.id}`} className="w-[180px] aspect-[2/3] rounded-xl shadow-2xl overflow-hidden transform sm:rotate-3 transition-transform hover:rotate-0 duration-500 ring-1 ring-black/5 block cursor-pointer">
+                <Link href={`/read/${heroBook.id}`} className="w-[180px] aspect-[2/3] rounded-xl shadow-2xl overflow-hidden transform sm:rotate-3 transition-transform hover:rotate-0 duration-500 ring-1 ring-black/5 block cursor-pointer">
                   <img src={resolveFileUrl(heroBook.cover_image) || "/images/books/ref2.png"} alt={heroBook.title} className="w-full h-full object-cover bg-gray-100" />
                 </Link>
               </div>
@@ -194,7 +194,7 @@ export default function Home() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
               {catalogBooks.map(book => (
                 <div key={book.id} className="group cursor-pointer block">
-                  <Link href={`/book/${book.id}`} className="block">
+                  <Link href={`/read/${book.id}`} className="block">
                     <div className="bg-white rounded-[28px] p-6 aspect-[4/5] flex items-center justify-center shadow-[0_8px_30px_rgb(0,0,0,0.03)] mb-4 transition-transform duration-300 group-hover:-translate-y-1 relative">
                       <div className="w-full max-w-[130px] aspect-[2/3] rounded-lg shadow-md overflow-hidden group-hover:shadow-xl group-hover:scale-105 transition-all duration-300 ring-1 ring-black/5">
                         <img src={resolveFileUrl(book.cover_image) || "/images/books/ref1.png"} alt={book.title} className="w-full h-full object-cover" />
