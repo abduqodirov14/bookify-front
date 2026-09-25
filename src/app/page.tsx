@@ -7,7 +7,6 @@ import { ArrowRight, Trophy, BookOpen, Clock, Heart, User, Plus, Loader2, LogOut
 import { api, getCachedUser, clearAuthToken, resolveFileUrl } from "@/services/api";
 
 import { BOOKS } from "@/data/books";
-import BookMoviesSection from "@/components/home/BookMoviesSection";
 
 export default function Home() {
   const [books, setBooks] = useState<any[]>([]);
@@ -229,8 +228,6 @@ export default function Home() {
           </section>
         )}
 
-        {/* Kinolar & Ekranlashtirishlar Bo'limi */}
-        <BookMoviesSection />
 
         {/* Minimalist Action Widget */}
         <section>

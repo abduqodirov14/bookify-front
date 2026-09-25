@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Building2, Users, Headphones, UploadCloud, Calendar, MessageSquare, ChevronLeft, LogOut } from "lucide-react";
+import { LayoutDashboard, Building2, Users, Headphones, UploadCloud, Calendar, MessageSquare, ChevronLeft, LogOut, Film } from "lucide-react";
 import AuthGuard from "@/components/AuthGuard";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
