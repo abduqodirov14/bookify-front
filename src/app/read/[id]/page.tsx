@@ -194,7 +194,17 @@ export default function ReadBookPage() {
   // Render text content cleanly formatted with classical book typography (NO SCROLLBAR)
   const renderTextContent = (rawText: string | null | undefined, pageNum: number) => {
     if (!rawText) return null;
-    const paras = rawText.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+
+    // Filter out isolated page number lines that were extracted from PDF headers/footers
+    const cleanedLines = rawText
+      .split('\n')
+      .filter(line => !/^\s*\d+\s*$/.test(line))
+      .join('\n');
+
+    const paras = cleanedLines
+      .split(/\n\s*\n/)
+      .map(p => p.trim())
+      .filter(p => Boolean(p) && !/^\d+$/.test(p));
 
     // If it's the title page (page 1) and looks like book intro:
     if (pageNum === 1 && paras.length <= 4) {
@@ -240,11 +250,6 @@ export default function ReadBookPage() {
               </p>
             );
           })}
-        </div>
-
-        {/* Subtle physical book footer page number */}
-        <div className="text-center text-[11px] font-mono text-stone-400 font-medium pt-2 border-t border-black/5 mt-auto select-none">
-          {pageNum}
         </div>
       </div>
     );
@@ -477,7 +482,7 @@ export default function ReadBookPage() {
             </div>
 
             {/* ─── External Navigation Controls Under Book ───────────── */}
-            <div className="w-full flex items-center justify-between mt-6 px-4 max-w-lg">
+            <div className="w-full flex items-center justify-center gap-6 mt-6 px-4 max-w-lg">
               <button
                 onClick={prevPage}
                 disabled={currentSpreadIndex === 0}
@@ -486,10 +491,6 @@ export default function ReadBookPage() {
                 <ChevronLeft size={18} />
                 <span>Oldingi sahifa</span>
               </button>
-
-              <span className="text-xs text-gray-600 font-bold font-mono">
-                {getCurrentPageNumber()} / {totalPages}
-              </span>
 
               <button
                 onClick={nextPage}
