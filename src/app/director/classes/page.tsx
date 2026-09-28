@@ -31,7 +31,7 @@ export default function ClassesPage() {
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {classes.length === 0 ? (
-            <div className="col-span-full py-12 text-center text-gray-400 font-medium bg-white rounded-3xl">Hozircha sinflar qo'shilmagan.</div>
+            <div className="col-span-full py-12 text-center text-gray-400 font-medium bg-white rounded-3xl">Hozircha sinflar qoʻshilmagan.</div>
           ) : classes.map((cls, idx) => (
             <div key={cls.id || idx} className="bg-white rounded-[28px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 hover:shadow-xl transition-shadow group relative overflow-hidden">
               <div className="absolute top-0 right-0 p-6 flex justify-end">
@@ -45,7 +45,7 @@ export default function ClassesPage() {
               </div>
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="bg-gray-50 rounded-xl p-3">
-                  <div className="text-xs font-bold text-gray-400 uppercase">O'quvchilar</div>
+                  <div className="text-xs font-bold text-gray-400 uppercase">Oʻquvchilar</div>
                   <div className="text-lg font-bold text-gray-900">{cls.students_count || 0} nafar</div>
                 </div>
                 <div className="bg-orange-50 rounded-xl p-3">

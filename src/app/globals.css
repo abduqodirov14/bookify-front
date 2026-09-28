@@ -35,3 +35,18 @@ body {
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #E3DCCB; border-radius: 3px; }
+
+/* Suppress any stray bottom-right dev indicators, overlays, or injected badges */
+nextjs-portal,
+#nextjs-dev-overlay,
+[data-nextjs-dev-indicator],
+[data-nextjs-toast],
+div[class*="dev-indicator"],
+div[class*="devIndicator"],
+#vercel-toolbar,
+.vercel-toolbar,
+[data-vercel-toolbar] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

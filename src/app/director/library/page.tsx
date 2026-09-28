@@ -56,7 +56,7 @@ export default function LibraryPage() {
           </div>
           <div>
             <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-emerald-700/50 rounded text-[10px] font-bold uppercase tracking-wider mb-1">
-              <CheckCircle2 size={12}/> Mas'ul Kutubxonachi
+              <CheckCircle2 size={12}/> Masʼul Kutubxonachi
             </div>
             <h2 className="text-xl font-bold">{librarian.name}</h2>
             <p className="text-emerald-100 text-sm font-medium mt-0.5">Aloqa: {librarian.phone}</p>
@@ -66,7 +66,7 @@ export default function LibraryPage() {
           onClick={() => setIsLibrarianModalOpen(true)}
           className="relative z-10 w-full sm:w-auto px-6 py-3 bg-white text-emerald-600 font-bold rounded-xl shadow-lg hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2"
         >
-          <UserPlus size={18} /> Kutubxonachi qo'shish
+          <UserPlus size={18} /> Kutubxonachi qoʻshish
         </button>
       </div>
 
@@ -123,7 +123,7 @@ export default function LibraryPage() {
                 </div>
               ) : (
                 <div>
-                  <div className="text-xs font-bold text-gray-400 uppercase">O'qilgan</div>
+                  <div className="text-xs font-bold text-gray-400 uppercase">Oʻqilgan</div>
                   <div className="font-black text-blue-600">{book.reads} marta</div>
                 </div>
               )}
@@ -142,8 +142,8 @@ export default function LibraryPage() {
           <div className="relative bg-white rounded-[32px] shadow-2xl w-full max-w-md p-6 sm:p-8 animate-fade-in">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h2 className="text-2xl font-black text-gray-900">Kutubxonachi qo'shish</h2>
-                <p className="text-sm font-medium text-gray-500 mt-1">Yangi mas'ul xodimni ro'yxatdan o'tkazish</p>
+                <h2 className="text-2xl font-black text-gray-900">Kutubxonachi qoʻshish</h2>
+                <p className="text-sm font-medium text-gray-500 mt-1">Yangi masʼul xodimni roʻyxatdan oʻtkazish</p>
               </div>
               <button onClick={() => setIsLibrarianModalOpen(false)} className="p-2 bg-gray-50 text-gray-500 hover:text-gray-900 rounded-full transition-colors self-start">
                 <X size={20} />
@@ -195,7 +195,7 @@ export default function LibraryPage() {
               </div>
 
               <button type="submit" className="w-full mt-4 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/20 active:scale-95 transition-all flex items-center justify-center gap-2">
-                Tasdiqlash va Qo'shish
+                Tasdiqlash va Qoʻshish
               </button>
             </form>
           </div>
@@ -239,14 +239,14 @@ export default function LibraryPage() {
                   </div>
                   
                   <button className="w-full py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-colors shadow-lg shadow-black/10">
-                    O'quvchiga biriktirish (QR Skaner)
+                    Oʻquvchiga biriktirish (QR Skaner)
                   </button>
                 </div>
               ) : (
                 <div className="space-y-6">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-blue-50 p-4 rounded-2xl">
-                      <div className="text-xs font-bold text-blue-600 uppercase mb-1">Jami O'qilgan</div>
+                      <div className="text-xs font-bold text-blue-600 uppercase mb-1">Jami Oʻqilgan</div>
                       <div className="text-2xl font-black text-blue-700">{selectedBook.reads} marta</div>
                     </div>
                     <div className="bg-purple-50 p-4 rounded-2xl">

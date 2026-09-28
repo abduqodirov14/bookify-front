@@ -9,7 +9,7 @@ export default function UsersPage() {
     { id: 1, name: "Aliyev Azamat", email: "azamat@example.com", role: "VIP", status: "Active", avatar: "A" },
     { id: 2, name: "Rustamov Bekzod", email: "bekzod@example.com", role: "VOLUNTEER", status: "Active", avatar: "R" },
     { id: 3, name: "Toshmatov Vali", email: "vali@example.com", role: "USER", status: "Banned", avatar: "T" },
-    { id: 4, name: "G'aniyev Sardor", email: "sardor@example.com", role: "ADMIN", status: "Active", avatar: "G" },
+    { id: 4, name: "Gʻaniyev Sardor", email: "sardor@example.com", role: "ADMIN", status: "Active", avatar: "G" },
   ];
 
   return (
@@ -29,7 +29,7 @@ export default function UsersPage() {
       </header>
 
       <div className="flex items-center gap-2 overflow-x-auto pb-2">
-        {['Barchasi', 'Adminlar', 'Ko\'ngillilar', 'VIP', 'Bloklanganlar'].map(tab => (
+        {['Barchasi', 'Adminlar', 'Koʻngillilar', 'VIP', 'Bloklanganlar'].map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-colors ${activeTab === tab ? 'bg-black text-white' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'}`}>
             {tab}
           </button>

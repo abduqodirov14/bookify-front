@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -23,7 +23,7 @@ export default function TaskDetailPage() {
         </Link>
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Vazifa natijalari</h1>
-          <p className="text-gray-500 font-medium mt-1">"O'tkan kunlar" (1-qism) bo'yicha batafsil hisobot</p>
+          <p className="text-gray-500 font-medium mt-1">"Oʻtkan kunlar" (1-qism) boʻyicha batafsil hisobot</p>
         </div>
       </div>
 
@@ -36,7 +36,7 @@ export default function TaskDetailPage() {
         <div className="bg-white p-6 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
           <div className="w-12 h-12 bg-orange-50 text-orange-500 rounded-2xl flex items-center justify-center mb-4"><Clock size={24}/></div>
           <div className="text-3xl font-black text-gray-900 mb-1">10 ta</div>
-          <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">O'qiyotganlar</div>
+          <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">Oʻqiyotganlar</div>
         </div>
         <div className="bg-white p-6 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
           <div className="w-12 h-12 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mb-4"><AlertTriangle size={24}/></div>
@@ -47,15 +47,15 @@ export default function TaskDetailPage() {
 
       <div className="bg-white border border-gray-100 rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
         <div className="p-6 border-b border-gray-50">
-          <h2 className="text-xl font-bold text-gray-900">O'quvchilar kesimida</h2>
+          <h2 className="text-xl font-bold text-gray-900">Oʻquvchilar kesimida</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                <th className="p-5 pl-6">O'quvchi</th>
+                <th className="p-5 pl-6">Oʻquvchi</th>
                 <th className="p-5">Holat</th>
-                <th className="p-5">O'qish vaqti</th>
+                <th className="p-5">Oʻqish vaqti</th>
                 <th className="p-5">Test (Viktorina)</th>
               </tr>
             </thead>
@@ -66,7 +66,7 @@ export default function TaskDetailPage() {
                   <td className="p-5">
                     <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${r.color}`}>
                       {r.status === 'finished' ? <CheckCircle2 size={14}/> : r.status === 'reading' ? <Clock size={14}/> : <XCircle size={14}/>}
-                      {r.status === 'finished' ? 'Tugatdi' : r.status === 'reading' ? "O'qimoqda" : 'Boshlamadi'}
+                      {r.status === 'finished' ? 'Tugatdi' : r.status === 'reading' ? "Oʻqimoqda" : 'Boshlamadi'}
                     </span>
                   </td>
                   <td className="p-5">

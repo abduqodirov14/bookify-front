@@ -9,7 +9,7 @@ export const b2bService = {
     const res = await fetchWithRetry(getUrl('/admin/schools'), {
       headers: token ? { 'Authorization': `Bearer ${token}` } : {}
     });
-    if (!res.ok) throw new Error("Maktablarni yuklab bo'lmadi");
+    if (!res.ok) throw new Error("Maktablarni yuklab boʻlmadi");
     return res.json();
   },
 
@@ -23,7 +23,7 @@ export const b2bService = {
       },
       body: JSON.stringify(payload)
     });
-    if (!res.ok) throw new Error("Maktab qo'shishda xatolik");
+    if (!res.ok) throw new Error("Maktab qoʻshishda xatolik");
     return res.json();
   },
 
@@ -33,7 +33,7 @@ export const b2bService = {
     const res = await fetchWithRetry(getUrl('/director/dashboard'), {
       headers: token ? { 'Authorization': `Bearer ${token}` } : {}
     });
-    if (!res.ok) throw new Error("Dashboardni yuklab bo'lmadi");
+    if (!res.ok) throw new Error("Dashboardni yuklab boʻlmadi");
     return res.json();
   },
 
@@ -42,7 +42,7 @@ export const b2bService = {
     const res = await fetchWithRetry(getUrl('/director/classes'), {
       headers: token ? { 'Authorization': `Bearer ${token}` } : {}
     });
-    if (!res.ok) throw new Error("Sinflarni yuklab bo'lmadi");
+    if (!res.ok) throw new Error("Sinflarni yuklab boʻlmadi");
     return res.json();
   },
 
@@ -51,7 +51,7 @@ export const b2bService = {
     const res = await fetchWithRetry(getUrl(`/director/classes/${classId}`), {
       headers: token ? { 'Authorization': `Bearer ${token}` } : {}
     });
-    if (!res.ok) throw new Error("Sinf ma'lumotlarini yuklab bo'lmadi");
+    if (!res.ok) throw new Error("Sinf maʼlumotlarini yuklab boʻlmadi");
     return res.json();
   },
 
@@ -61,7 +61,7 @@ export const b2bService = {
     const res = await fetchWithRetry(getUrl('/librarian/books'), {
       headers: token ? { 'Authorization': `Bearer ${token}` } : {}
     });
-    if (!res.ok) throw new Error("Kutubxona kitoblarini yuklab bo'lmadi");
+    if (!res.ok) throw new Error("Kutubxona kitoblarini yuklab boʻlmadi");
     return res.json();
   },
 
@@ -84,7 +84,7 @@ export const b2bService = {
     const res = await fetchWithRetry(getUrl('/librarian/issued-books'), {
       headers: token ? { 'Authorization': `Bearer ${token}` } : {}
     });
-    if (!res.ok) throw new Error("Tarqatilgan kitoblarni yuklab bo'lmadi");
+    if (!res.ok) throw new Error("Tarqatilgan kitoblarni yuklab boʻlmadi");
     return res.json();
   },
 
@@ -98,7 +98,7 @@ export const b2bService = {
       },
       body: JSON.stringify(payload)
     });
-    if (!res.ok) throw new Error("Kutubxonachi qo'shishda xatolik");
+    if (!res.ok) throw new Error("Kutubxonachi qoʻshishda xatolik");
     return res.json();
   },
 
@@ -108,7 +108,7 @@ export const b2bService = {
     const res = await fetchWithRetry(getUrl('/student/homework'), {
       headers: token ? { 'Authorization': `Bearer ${token}` } : {}
     });
-    if (!res.ok) throw new Error("Vazifalarni yuklab bo'lmadi");
+    if (!res.ok) throw new Error("Vazifalarni yuklab boʻlmadi");
     return res.json();
   }
 };

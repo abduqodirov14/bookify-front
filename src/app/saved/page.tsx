@@ -69,20 +69,20 @@ export default function SavedPage() {
                 </div>
                 <div className="flex-1 py-1">
                   <h3 className="font-[var(--font-newsreader)] font-bold text-base text-[#1B1A17] mb-1">{book.title}</h3>
-                  <p className="text-xs text-[#6B675E] mb-3">{book.author || book.authorName || "Muallif noma'lum"}</p>
+                  <p className="text-xs text-[#6B675E] mb-3">{book.author || book.authorName || "Muallif nomaʼlum"}</p>
                   
                   <div className="flex items-center gap-4 text-xs font-medium">
                     <button 
                       onClick={(e) => { e.stopPropagation(); router.push(`/read/${book.id}`); }}
                       className="text-[#B4472B] hover:underline"
                     >
-                      O'qish
+                      Oʻqish
                     </button>
                     <button 
                       onClick={(e) => handleRemove(book, e)}
                       className="text-[#6B675E] hover:text-[#1B1A17]"
                     >
-                      O'chirish
+                      Oʻchirish
                     </button>
                   </div>
                 </div>
@@ -92,9 +92,9 @@ export default function SavedPage() {
         ) : (
           <div className="py-20">
             <h2 className="font-[var(--font-newsreader)] text-2xl mb-2">Hali hech narsa saqlanmagan</h2>
-            <p className="text-[#6B675E] text-sm mb-6">Yoqtirgan kitoblaringizni saqlab qo'ying, ular shu yerda ko'rinadi.</p>
+            <p className="text-[#6B675E] text-sm mb-6">Yoqtirgan kitoblaringizni saqlab qoʻying, ular shu yerda koʻrinadi.</p>
             <Link href="/" className="text-sm border border-[#E3DCCB] rounded-md px-4 py-2 hover:bg-[#FBF8F1] transition-colors">
-              Kitoblarni ko'rish
+              Kitoblarni koʻrish
             </Link>
           </div>
         )}

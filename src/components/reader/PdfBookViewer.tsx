@@ -3,14 +3,14 @@
 /**
  * PdfBookViewer.tsx
  * ─────────────────────────────────────────────────────────────────────────────
- * PDF kitobni sahifama-sahifa ko'rsatuvchi komponent (react-pdf asosida).
+ * PDF kitobni sahifama-sahifa koʻrsatuvchi komponent (react-pdf asosida).
  *
  * Arxitektura:
  *  - react-pdf → pdf.js orqali butun faylni frontendga emas, faqat KERAKLI
  *    sahifani yuklab render qiladi (lazy load).
- *  - fileUrl Cloudinary HTTPS URL yoki lokal /uploads/... URL bo'lishi mumkin.
- *  - Ikki sahifali spread (chapda va o'ngda) va yagona sahifa rejimi qo'llab-quvvatlanadi.
- *  - "To'liq ko'rinmaydi" muammosi yo'q — react-pdf iframe emas, canvas bilan ishlaydi.
+ *  - fileUrl Cloudinary HTTPS URL yoki lokal /uploads/... URL boʻlishi mumkin.
+ *  - Ikki sahifali spread (chapda va oʻngda) va yagona sahifa rejimi qoʻllab-quvvatlanadi.
+ *  - "Toʻliq koʻrinmaydi" muammosi yoʻq — react-pdf iframe emas, canvas bilan ishlaydi.
  */
 
 import React, { useState, useCallback } from "react";
@@ -19,7 +19,7 @@ import { ChevronLeft, ChevronRight, Loader2, AlertCircle, ZoomIn, ZoomOut, Maxim
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
-// pdf.js worker — CDN orqali (bundler bilan ziddiyat yo'q)
+// pdf.js worker — CDN orqali (bundler bilan ziddiyat yoʻq)
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 interface PdfBookViewerProps {
@@ -81,7 +81,7 @@ export default function PdfBookViewer({
     >
       {/* ── Toolbar ─────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-4 py-2.5 bg-[#111] border-b border-white/5 gap-3 flex-wrap">
-        {/* Sahifa ko'rsatkichi */}
+        {/* Sahifa koʻrsatkichi */}
         <span className="text-xs font-mono text-gray-400 shrink-0">
           {numPages > 0
             ? isSpread && rightPageNumber && rightPageNumber <= numPages
@@ -123,7 +123,7 @@ export default function PdfBookViewer({
           <button
             onClick={() => setIsFullscreen(v => !v)}
             className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
-            title={isFullscreen ? "Chiqish" : "To'liq ekran"}
+            title={isFullscreen ? "Chiqish" : "Toʻliq ekran"}
           >
             {isFullscreen ? <Minimize size={15} /> : <Maximize size={15} />}
           </button>
@@ -137,7 +137,7 @@ export default function PdfBookViewer({
             <AlertCircle size={36} />
             <p className="text-sm font-medium">{loadError}</p>
             <p className="text-xs text-gray-500">
-              PDF URL ni tekshiring yoki Cloudinary CORS sozlamalarini ko'ring.
+              PDF URL ni tekshiring yoki Cloudinary CORS sozlamalarini koʻring.
             </p>
           </div>
         ) : (
@@ -166,7 +166,7 @@ export default function PdfBookViewer({
               />
             </div>
 
-            {/* O'ng sahifa (spread rejimda) */}
+            {/* Oʻng sahifa (spread rejimda) */}
             {isSpread && rightPageNumber && rightPageNumber <= numPages && (
               <div className="shadow-2xl rounded-sm overflow-hidden">
                 <Page

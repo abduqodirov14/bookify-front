@@ -113,7 +113,7 @@ export const api = {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      throw new Error(data.detail || "Ro'yxatdan o'tishda xatolik yuz berdi");
+      throw new Error(data.detail || "Roʻyxatdan oʻtishda xatolik yuz berdi");
     }
     if (data.access_token) {
       setAuthToken(data.access_token);
@@ -168,7 +168,7 @@ export const api = {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || "5 xonali tasdiqlash kodi noto'g'ri");
+      throw new Error(err.detail || "5 xonali tasdiqlash kodi notoʻgʻri");
     }
     const data = await res.json();
     if (data.access_token) {
@@ -185,7 +185,7 @@ export const api = {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    if (!res.ok) throw new Error("2FA holatini o'zgartirishda xatolik");
+    if (!res.ok) throw new Error("2FA holatini oʻzgartirishda xatolik");
     return res.json();
   },
 
@@ -349,7 +349,7 @@ export const api = {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      throw new Error(data.detail || "Audio trekni o'chirishda xatolik");
+      throw new Error(data.detail || "Audio trekni oʻchirishda xatolik");
     }
     return data;
   },
@@ -624,7 +624,7 @@ export const api = {
       },
       body: JSON.stringify({ is_suspended: isSuspended })
     });
-    if (!res.ok) throw new Error("Statusni o'zgartirishda xatolik");
+    if (!res.ok) throw new Error("Statusni oʻzgartirishda xatolik");
     return res.json();
   },
 
@@ -670,7 +670,7 @@ export const api = {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || "Kitobni o'chirishda xatolik");
+      throw new Error(err.detail || "Kitobni oʻchirishda xatolik");
     }
     return res.json();
   },
@@ -699,13 +699,13 @@ export const api = {
         onProgress?.(0); // Keep UI alive
         await new Promise(r => setTimeout(r, 3000));
       } else {
-        throw new Error("Server javob bermayapti. Iltimos, bir daqiqadan so'ng qayta urinib ko'ring.");
+        throw new Error("Server javob bermayapti. Iltimos, bir daqiqadan soʻng qayta urinib koʻring.");
       }
     }
 
     // 2. Upload with retry (up to 3 attempts on connection errors)
     const MAX_RETRIES = 3;
-    let lastError: Error = new Error("Noma'lum xatolik");
+    let lastError: Error = new Error("Nomaʼlum xatolik");
 
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
@@ -737,7 +737,7 @@ export const api = {
             }
           };
 
-          xhr.ontimeout = () => reject(new Error("Yuklash vaqti tugadi (5 daqiqa). Fayl juda katta bo'lishi mumkin."));
+          xhr.ontimeout = () => reject(new Error("Yuklash vaqti tugadi (5 daqiqa). Fayl juda katta boʻlishi mumkin."));
           xhr.onerror = () => reject(new Error("ERR_CONNECTION_CLOSED"));
 
           const formData = new FormData();
@@ -809,7 +809,7 @@ export const api = {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || "Trekni o'chirishda xatolik");
+      throw new Error(err.detail || "Trekni oʻchirishda xatolik");
     }
     return res.json();
   },
@@ -927,7 +927,7 @@ export const api = {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    if (!res.ok) throw new Error("Musobaqaga qo'shilishda xatolik");
+    if (!res.ok) throw new Error("Musobaqaga qoʻshilishda xatolik");
     return res.json();
   },
 
@@ -996,7 +996,7 @@ export const api = {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    if (!res.ok) throw new Error("Fikrni o'chirishda xatolik");
+    if (!res.ok) throw new Error("Fikrni oʻchirishda xatolik");
     return res.json();
   },
 
@@ -1007,7 +1007,7 @@ export const api = {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    if (!res.ok) throw new Error("Fikrni o'chirishda xatolik");
+    if (!res.ok) throw new Error("Fikrni oʻchirishda xatolik");
     return res.json();
   },
 
@@ -1122,7 +1122,7 @@ export const api = {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || "Volontyorlik kodi noto'g'ri yoki mavjud emas");
+      throw new Error(err.detail || "Volontyorlik kodi notoʻgʻri yoki mavjud emas");
     }
     return res.json();
   },
@@ -1303,7 +1303,7 @@ export const api = {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || 'To\'lov yaratishda xatolik');
+      throw new Error(err.detail || 'Toʻlov yaratishda xatolik');
     }
     return res.json();
   },

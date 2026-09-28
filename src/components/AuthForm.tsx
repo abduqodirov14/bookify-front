@@ -54,7 +54,7 @@ export default function AuthForm() {
     setSuccessMsg("");
 
     if (!email || !password) {
-      setErrorMsg("Elektron pochta va parolni to'liq kiriting.");
+      setErrorMsg("Elektron pochta va parolni toʻliq kiriting.");
       return;
     }
 
@@ -69,7 +69,7 @@ export default function AuthForm() {
       if (isRegister) {
         const res = await api.register(email, password, name);
         if (res.access_token) {
-          setSuccessMsg("Muvaffaqiyatli ro'yxatdan o'tdingiz!");
+          setSuccessMsg("Muvaffaqiyatli roʻyxatdan oʻtdingiz!");
           setTimeout(() => {
             window.location.href = redirectPath;
           }, 600);
@@ -83,7 +83,7 @@ export default function AuthForm() {
           setSuccessMsg("Tasdiqlash kodi pochtangizga yuborildi.");
         } else {
           setIsRegister(false);
-          setSuccessMsg("Ro'yxatdan o'tdingiz. Endi parolingiz bilan kiring.");
+          setSuccessMsg("Roʻyxatdan oʻtdingiz. Endi parolingiz bilan kiring.");
         }
       } else {
         const res = await api.login(email, password);
@@ -101,11 +101,11 @@ export default function AuthForm() {
           setStep("otp");
           setSuccessMsg("2-bosqich: Xavfsizlik kodi yuborildi.");
         } else {
-          setErrorMsg("Login javobi noto'g'ri bo'ldi. Qaytadan urinib ko'ring.");
+          setErrorMsg("Login javobi notoʻgʻri boʻldi. Qaytadan urinib koʻring.");
         }
       }
     } catch (err: any) {
-      setErrorMsg(err.message || "Elektron pochta yoki parol noto'g'ri kiritildi.");
+      setErrorMsg(err.message || "Elektron pochta yoki parol notoʻgʻri kiritildi.");
     } finally {
       setLoading(false);
     }
@@ -146,7 +146,7 @@ export default function AuthForm() {
     e.preventDefault();
     const code = otp.join("");
     if (code.length < 5) {
-      setErrorMsg("Iltimos, tasdiqlash kodini to'liq kiriting.");
+      setErrorMsg("Iltimos, tasdiqlash kodini toʻliq kiriting.");
       return;
     }
 
@@ -156,7 +156,7 @@ export default function AuthForm() {
     try {
       const res = await api.verify2FA(tempToken, code);
       if (res.access_token) {
-        setSuccessMsg("Tasdiqlandi! Tizimga yo'naltirilmoqda...");
+        setSuccessMsg("Tasdiqlandi! Tizimga yoʻnaltirilmoqda...");
         setTimeout(() => {
           window.location.href = redirectPath;
         }, 500);
@@ -164,7 +164,7 @@ export default function AuthForm() {
         setErrorMsg("Tasdiqlashda xatolik yuz berdi.");
       }
     } catch (err: any) {
-      setErrorMsg(err.message || "Tasdiqlash kodi noto'g'ri.");
+      setErrorMsg(err.message || "Tasdiqlash kodi notoʻgʻri.");
     } finally {
       setLoading(false);
     }
@@ -446,7 +446,7 @@ export default function AuthForm() {
                 {loading ? (
                   <Loader2 size={16} className="animate-spin" />
                 ) : (
-                  <span>{isRegister ? "Ro'yxatdan o'tish" : "Kirish"}</span>
+                  <span>{isRegister ? "Roʻyxatdan oʻtish" : "Kirish"}</span>
                 )}
               </button>
             </form>
@@ -549,7 +549,7 @@ export default function AuthForm() {
             }}
             className="text-sm text-[#6B675E] hover:text-[#1B1A17] transition-colors underline underline-offset-4"
           >
-            {isRegister ? "Hisob bormi? Kiring" : "Hisobingiz yo'qmi? Ro'yxatdan o'ting"}
+            {isRegister ? "Hisob bormi? Kiring" : "Hisobingiz yoʻqmi? Roʻyxatdan oʻting"}
           </button>
         </div>
       )}

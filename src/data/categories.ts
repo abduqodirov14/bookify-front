@@ -101,7 +101,7 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     ]
   },
   {
-    name: "Biznes, Fan & Ta'lim",
+    name: "Biznes, Fan & Taʼlim",
     icon: "💼",
     items: [
       "Biznes va tadbirkorlik",
@@ -113,7 +113,7 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     ]
   },
   {
-    name: "Falsafa, Din & Ma'naviyat",
+    name: "Falsafa, Din & Maʼnaviyat",
     icon: "✨",
     items: [
       "Falsafa",
@@ -122,7 +122,7 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     ]
   },
   {
-    name: "Hayot, San'at & Bolalar",
+    name: "Hayot, Sanʼat & Bolalar",
     icon: "🎨",
     items: [
       "Biografiya va memuar",

@@ -30,12 +30,12 @@
     totalReadingHours: 18200, 
     plan: "Premium", 
     progress: 70,
-    director: "G'aniyev Sardor"
+    director: "Gʻaniyev Sardor"
   },
   { 
     id: "sch_4", 
-    name: "15-umumta'lim maktabi", 
-    region: "Farg'ona",
+    name: "15-umumtaʼlim maktabi", 
+    region: "Fargʻona",
     studentsCount: 2100, 
     activeStudents: 420, 
     totalReadingHours: 3400, 

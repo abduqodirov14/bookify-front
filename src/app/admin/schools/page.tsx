@@ -24,7 +24,7 @@ export default function AdminSchoolsPage() {
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Maktablar (B2B)</h1>
-          <p className="text-gray-500 font-medium mt-1">Platformaga ulangan barcha ta'lim muassasalari va ularning reytingi</p>
+          <p className="text-gray-500 font-medium mt-1">Platformaga ulangan barcha taʼlim muassasalari va ularning reytingi</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -32,7 +32,7 @@ export default function AdminSchoolsPage() {
             <input type="text" placeholder="Maktab qidirish..." className="pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-black/5 w-full sm:w-64" />
           </div>
           <button className="flex items-center justify-center gap-2 px-6 py-2.5 bg-gray-900 text-white rounded-xl font-bold shadow-lg hover:bg-black active:scale-95 transition-all whitespace-nowrap">
-            <Plus size={18} /> Maktab qo'shish
+            <Plus size={18} /> Maktab qoʻshish
           </button>
         </div>
       </header>
@@ -54,7 +54,7 @@ export default function AdminSchoolsPage() {
           </div>
           <div>
             <div className="text-2xl font-black text-gray-900">2,270</div>
-            <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">Faol o'quvchilar</div>
+            <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">Faol oʻquvchilar</div>
           </div>
         </div>
         <div className="bg-white p-6 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex items-center gap-4">
@@ -62,7 +62,7 @@ export default function AdminSchoolsPage() {
             <TrendingUp size={24} />
           </div>
           <div>
-            <div className="text-2xl font-black text-gray-900">11.4M so'm</div>
+            <div className="text-2xl font-black text-gray-900">11.4M soʻm</div>
             <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">Oylik tushum (MRR)</div>
           </div>
         </div>
@@ -77,7 +77,7 @@ export default function AdminSchoolsPage() {
                 <th className="p-5">Maktab Nomi</th>
                 <th className="p-5">Direktor</th>
                 <th className="p-5">Faollik (Progress)</th>
-                <th className="p-5">O'quvchilar</th>
+                <th className="p-5">Oʻquvchilar</th>
                 <th className="p-5">Obuna</th>
                 <th className="p-5 text-right">Amallar</th>
               </tr>

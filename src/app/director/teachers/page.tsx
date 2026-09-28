@@ -13,12 +13,12 @@ export default function TeachersPage() {
     <div className="space-y-8 animate-fade-in">
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">O'qituvchilar</h1>
-          <p className="text-gray-500 font-medium mt-1">Maktabdagi sinf rahbarlari ro'yxati</p>
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Oʻqituvchilar</h1>
+          <p className="text-gray-500 font-medium mt-1">Maktabdagi sinf rahbarlari roʻyxati</p>
         </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-          <input type="text" placeholder="Ism bo'yicha qidirish..." className="pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-64" />
+          <input type="text" placeholder="Ism boʻyicha qidirish..." className="pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-64" />
         </div>
       </header>
 
@@ -27,9 +27,9 @@ export default function TeachersPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                <th className="p-5">O'qituvchi</th>
+                <th className="p-5">Oʻqituvchi</th>
                 <th className="p-5">Biriktirilgan Sinf</th>
-                <th className="p-5">O'quvchilar</th>
+                <th className="p-5">Oʻquvchilar</th>
                 <th className="p-5">Telefon</th>
                 <th className="p-5 text-right">Amallar</th>
               </tr>

@@ -52,7 +52,7 @@ export default function SeasonsPage() {
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Mavsumlar</h1>
-          <p className="text-gray-500 font-medium mt-1">Kitobxonlar o'rtasidagi musobaqalar va mavsumlar</p>
+          <p className="text-gray-500 font-medium mt-1">Kitobxonlar oʻrtasidagi musobaqalar va mavsumlar</p>
         </div>
         <button onClick={() => setIsModalOpen(true)} className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl font-bold shadow-lg hover:bg-black active:scale-95 transition-all">
           <Plus size={18} /> Yangi Mavsum
@@ -70,7 +70,7 @@ export default function SeasonsPage() {
               Joriy Mavsum
             </div>
             <h2 className="text-3xl font-black mb-2">{activeChallenge.name}</h2>
-            <p className="text-white/80 font-medium mb-6 max-w-md">{activeChallenge.description || "Eng ko'p kitob o'qiganlarga qimmatbaho sovg'alar!"}</p>
+            <p className="text-white/80 font-medium mb-6 max-w-md">{activeChallenge.description || "Eng koʻp kitob oʻqiganlarga qimmatbaho sovgʻalar!"}</p>
             
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
@@ -91,8 +91,8 @@ export default function SeasonsPage() {
       ) : (
         <div className="bg-white rounded-[32px] p-12 text-center shadow-sm border border-gray-100">
           <Calendar size={48} className="mx-auto text-gray-300 mb-4" />
-          <h3 className="text-xl font-bold text-gray-900">Faol mavsum yo'q</h3>
-          <p className="text-gray-500 mt-2">Yangi mavsum qo'shing va o'quvchilarni jalb qiling.</p>
+          <h3 className="text-xl font-bold text-gray-900">Faol mavsum yoʻq</h3>
+          <p className="text-gray-500 mt-2">Yangi mavsum qoʻshing va oʻquvchilarni jalb qiling.</p>
         </div>
       )}
 
@@ -110,8 +110,8 @@ export default function SeasonsPage() {
                 <input required type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="Kuzgi Mutolaa 2026" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-black/5" />
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Ta'rifi</label>
-                <textarea value={description} onChange={e=>setDescription(e.target.value)} placeholder="Eng yaxshi kitobxonlarga sovg'alar..." rows={3} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-black/5"></textarea>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Taʼrifi</label>
+                <textarea value={description} onChange={e=>setDescription(e.target.value)} placeholder="Eng yaxshi kitobxonlarga sovgʻalar..." rows={3} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-black/5"></textarea>
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">Davomiyligi (kun)</label>

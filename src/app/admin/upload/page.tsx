@@ -41,21 +41,21 @@ export default function UploadBookPage() {
   };
 
   const handleDeleteBook = async (id: string, title: string) => {
-    if (!window.confirm(`Haqiqatan ham "${title}" asarini bazadan o'chirmoqchimisiz?`)) return;
+    if (!window.confirm(`Haqiqatan ham "${title}" asarini bazadan oʻchirmoqchimisiz?`)) return;
     try {
       await api.deleteBook(id);
-      setSuccess(`"${title}" muvaffaqiyatli o'chirildi.`);
+      setSuccess(`"${title}" muvaffaqiyatli oʻchirildi.`);
       loadBooks();
     } catch (err: any) {
-      setError(err.message || "Kitobni o'chirishda xatolik");
+      setError(err.message || "Kitobni oʻchirishda xatolik");
     }
   };
 
   const handleClearAllBooks = async () => {
-    if (!window.confirm("DIQQAT! Bazadagi BARCHA kitoblar, boblar, sahifalar va audio treklar o'chiriladi va baza 0 holatiga keltiriladi. Rozimisiz?")) return;
+    if (!window.confirm("DIQQAT! Bazadagi BARCHA kitoblar, boblar, sahifalar va audio treklar oʻchiriladi va baza 0 holatiga keltiriladi. Rozimisiz?")) return;
     try {
       await api.clearAllBooks();
-      setSuccess("Barcha kitoblar bazadan to'liq o'chirildi (baza 0 qilindi).");
+      setSuccess("Barcha kitoblar bazadan toʻliq oʻchirildi (baza 0 qilindi).");
       loadBooks();
     } catch (err: any) {
       setError(err.message || "Bazani tozalashda xatolik");
@@ -86,7 +86,7 @@ export default function UploadBookPage() {
     setSuccess("");
 
     if (!title.trim() || !author.trim()) {
-      setError("Iltimos, kitob nomi va muallifini to'liq kiriting.");
+      setError("Iltimos, kitob nomi va muallifini toʻliq kiriting.");
       return;
     }
 
@@ -110,7 +110,7 @@ export default function UploadBookPage() {
         formData.append("file", bookFile);
       } else {
         // Create an automatic digital placeholder text file so backend never fails with 422
-        const defaultContent = `1-Bob: ${title.trim()}\n\nMuallif: ${author.trim()}\n\n${description.trim() || "Ushbu asar muvaffaqiyatli chop etildi va Bookify tizimida ro'yxatdan o'tdi."}`;
+        const defaultContent = `1-Bob: ${title.trim()}\n\nMuallif: ${author.trim()}\n\n${description.trim() || "Ushbu asar muvaffaqiyatli chop etildi va Bookify tizimida roʻyxatdan oʻtdi."}`;
         const autoFile = new File([defaultContent], `${title.replace(/\s+/g, '_')}.txt`, { type: "text/plain" });
         formData.append("file", autoFile);
       }
@@ -181,7 +181,7 @@ export default function UploadBookPage() {
             <input 
               type="text" 
               required
-              placeholder="Masalan: O'tkan Kunlar" 
+              placeholder="Masalan: Oʻtkan Kunlar" 
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-gray-900 font-medium placeholder:text-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-black/5 transition-all"
@@ -217,7 +217,7 @@ export default function UploadBookPage() {
               <option value="Tarixiy Asarlar">Tarixiy Asarlar</option>
               <option value="Psixologiya & Rivojlanish">Psixologiya & Rivojlanish</option>
               <option value="Biznes & Moliya">Biznes & Moliya</option>
-              <option value="Diniy-Ma'rifiy">Diniy-Ma'rifiy</option>
+              <option value="Diniy-Maʼrifiy">Diniy-Maʼrifiy</option>
               <option value="Bolalar Adabiyoti">Bolalar Adabiyoti</option>
             </select>
           </div>
@@ -237,7 +237,7 @@ export default function UploadBookPage() {
               <div className="flex-1">
                 <input 
                   type="number"
-                  placeholder="Narxi (so'm)"
+                  placeholder="Narxi (soʻm)"
                   value={price || ""}
                   onChange={(e) => setPrice(Number(e.target.value))}
                   className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-3 text-sm font-bold text-gray-900"
@@ -253,7 +253,7 @@ export default function UploadBookPage() {
           </label>
           <textarea 
             rows={3}
-            placeholder="Asar haqida qisqacha ma'lumot kiriting..." 
+            placeholder="Asar haqida qisqacha maʼlumot kiriting..." 
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-gray-900 font-medium placeholder:text-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-black/5 transition-all resize-none"
@@ -274,7 +274,7 @@ export default function UploadBookPage() {
                   <img src={coverPreview} className="w-16 h-20 object-cover rounded-xl shadow-sm" />
                   <div className="flex-1 truncate">
                     <p className="text-xs font-bold text-gray-900 truncate">{coverFile?.name}</p>
-                    <p className="text-[11px] text-gray-400">O'zgartirish uchun bosing</p>
+                    <p className="text-[11px] text-gray-400">Oʻzgartirish uchun bosing</p>
                   </div>
                 </div>
               ) : (
@@ -415,7 +415,7 @@ export default function UploadBookPage() {
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-bold transition-colors"
                   >
                     <Trash2 size={14} />
-                    <span>O'chirish</span>
+                    <span>Oʻchirish</span>
                   </button>
                 </div>
               </div>

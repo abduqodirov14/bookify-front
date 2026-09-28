@@ -111,14 +111,14 @@ export default function LibrarianDashboard() {
             {filteredBooks.length === 0 ? (
               <div className="p-12 text-center flex flex-col items-center justify-center">
                 <BookOpen size={48} className="text-gray-200 mb-4" />
-                <h3 className="text-lg font-bold text-gray-900">Ma'lumot topilmadi</h3>
+                <h3 className="text-lg font-bold text-gray-900">Maʼlumot topilmadi</h3>
                 <p className="text-gray-500 font-medium">Bu filtrlarga mos kitoblar mavjud emas.</p>
               </div>
             ) : (
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-gray-100 bg-gray-50/50">
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider rounded-tl-[32px]">O'quvchi</th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider rounded-tl-[32px]">Oʻquvchi</th>
                     <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider hidden sm:table-cell">Sinf / ID</th>
                     <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Kitob nomi</th>
                     <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right rounded-tr-[32px]">Muddati</th>
@@ -130,7 +130,7 @@ export default function LibrarianDashboard() {
                     return (
                       <tr key={item.id || idx} className="hover:bg-gray-50 transition-colors group">
                         <td className="px-6 py-4">
-                          <div className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{item.student || item.student_name || "Noma'lum"}</div>
+                          <div className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{item.student || item.student_name || "Nomaʼlum"}</div>
                         </td>
                         <td className="px-6 py-4 hidden sm:table-cell">
                           <div className="font-bold text-gray-700">{item.class || "-"}</div>
@@ -170,7 +170,7 @@ export default function LibrarianDashboard() {
             
             <form onSubmit={handleIssueBook} className="p-6 space-y-5">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">O'quvchi ID yoki Ismi</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Oʻquvchi ID yoki Ismi</label>
                 <div className="relative">
                   <UserSearch size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input required type="text" value={formStudent} onChange={e=>setFormStudent(e.target.value)} placeholder="ID-9012 yoki Azizov Bekzod" className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />

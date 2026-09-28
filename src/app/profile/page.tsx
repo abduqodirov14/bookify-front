@@ -60,7 +60,7 @@ export default function ProfilePage() {
                 Kirish
               </Link>
               <Link href="/auth" className="px-5 py-2 border border-[#E3DCCB] text-[#1B1A17] text-sm rounded-md hover:bg-[#FBF8F1] transition-colors">
-                Ro'yxatdan o'tish
+                Roʻyxatdan oʻtish
               </Link>
             </div>
           </div>

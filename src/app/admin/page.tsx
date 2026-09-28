@@ -15,9 +15,9 @@ export default function AdminDashboard() {
           { label: "Jami Foydalanuvchilar", value: "1,248", icon: Users, color: "text-blue-500", bg: "bg-blue-50" },
           { label: "Moderatsiyadagi Audiolar", value: "34", icon: Headphones, color: "text-orange-500", bg: "bg-orange-50" },
           { label: "Jami Kitoblar", value: "156", icon: UploadCloud, color: "text-purple-500", bg: "bg-purple-50" },
-          { label: "Faol O'quvchilar", value: "892", icon: Activity, color: "text-green-500", bg: "bg-green-50" },
-          { label: "Haftalik O'sish", value: "+12.4%", icon: TrendingUp, color: "text-red-500", bg: "bg-red-50" },
-          { label: "Kiritilgan Mablag'", value: "4.2M", icon: DollarSign, color: "text-yellow-500", bg: "bg-yellow-50" },
+          { label: "Faol Oʻquvchilar", value: "892", icon: Activity, color: "text-green-500", bg: "bg-green-50" },
+          { label: "Haftalik Oʻsish", value: "+12.4%", icon: TrendingUp, color: "text-red-500", bg: "bg-red-50" },
+          { label: "Kiritilgan Mablagʻ", value: "4.2M", icon: DollarSign, color: "text-yellow-500", bg: "bg-yellow-50" },
         ].map((stat, i) => (
           <div key={i} className="bg-white p-6 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex items-center gap-5">
             <div className={`w-14 h-14 rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
@@ -36,7 +36,7 @@ export default function AdminDashboard() {
         <div className="relative z-10">
           <h3 className="text-xl font-bold mb-2">Yangi Admin Panelga Xush Kelibsiz!</h3>
           <p className="text-gray-400 font-medium max-w-xl">
-            Eski tizimdagi barcha funksiyalar (180KB kod) yangi App Router va iOS dizayn uslubiga bosqichma-bosqich o'tkazilmoqda. 
+            Eski tizimdagi barcha funksiyalar (180KB kod) yangi App Router va iOS dizayn uslubiga bosqichma-bosqich oʻtkazilmoqda. 
             Hozirda Layout va Dashboard tayyor. Keyingi bosqichda Moderatsiya va Kitob yuklash qismlarini ulaymiz.
           </p>
         </div>

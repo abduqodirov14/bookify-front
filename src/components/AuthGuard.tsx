@@ -109,7 +109,7 @@ export default function AuthGuard({
             {panelTitle}
           </h2>
           <p className="text-gray-500 text-sm font-medium leading-relaxed mb-8">
-            Ushbu panelga kirish uchun tizimga o'z hisobingiz orqali kirishingiz talab etiladi.
+            Ushbu panelga kirish uchun tizimga oʻz hisobingiz orqali kirishingiz talab etiladi.
           </p>
 
           <div className="space-y-3">
@@ -121,7 +121,7 @@ export default function AuthGuard({
                 "bg-black hover:bg-gray-800 shadow-black/20"
               }`}
             >
-              <LogIn size={18} /> Kirish / Ro'yxatdan o'tish
+              <LogIn size={18} /> Kirish / Roʻyxatdan oʻtish
             </button>
 
             <button

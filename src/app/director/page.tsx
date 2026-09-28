@@ -46,13 +46,13 @@ export default function DirectorDashboard() {
             <div className="bg-white p-6 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
               <div className="w-12 h-12 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center mb-4"><Users size={24} /></div>
               <div className="text-3xl font-black text-gray-900 mb-1">{stats.active_students} <span className="text-gray-400 text-lg font-bold">/ {stats.total_students || 1}</span></div>
-              <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">Faol o'quvchilar</div>
+              <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">Faol oʻquvchilar</div>
             </div>
             
             <div className="bg-white p-6 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
               <div className="w-12 h-12 bg-orange-50 text-orange-500 rounded-2xl flex items-center justify-center mb-4"><BookOpen size={24} /></div>
               <div className="text-3xl font-black text-gray-900 mb-1">{stats.books_read} ta</div>
-              <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">O'qilgan asarlar</div>
+              <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">Oʻqilgan asarlar</div>
             </div>
 
             <div className="bg-white p-6 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
@@ -64,7 +64,7 @@ export default function DirectorDashboard() {
             <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-[24px] shadow-xl shadow-blue-900/20 text-white relative overflow-hidden">
               <div className="relative z-10">
                 <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-4"><Trophy size={24} className="text-yellow-400" /></div>
-                <div className="text-3xl font-black mb-1">#{stats.rank || 1} O'rinda</div>
+                <div className="text-3xl font-black mb-1">#{stats.rank || 1} Oʻrinda</div>
                 <div className="text-xs font-bold text-white/70 uppercase tracking-wide">Respublika maktablari orasida</div>
               </div>
               <div className="absolute right-0 bottom-0 w-32 h-32 bg-white/10 rounded-full blur-2xl translate-x-1/2 translate-y-1/2"></div>
@@ -75,16 +75,16 @@ export default function DirectorDashboard() {
             <h2 className="text-xl font-bold text-gray-900 mb-4 px-1">Top Sinflar Reytingi</h2>
             <div className="bg-white rounded-[32px] p-2 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
               {topClasses.length === 0 ? (
-                <div className="p-8 text-center text-gray-400 font-medium">Hali sinflar faolligi yo'q</div>
+                <div className="p-8 text-center text-gray-400 font-medium">Hali sinflar faolligi yoʻq</div>
               ) : (
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-gray-50">
-                      <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">O'rin</th>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Oʻrin</th>
                       <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Sinf</th>
                       <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Sinf rahbari</th>
                       <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Mutolaa soati</th>
-                      <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">O'zlashish</th>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Oʻzlashish</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -94,7 +94,7 @@ export default function DirectorDashboard() {
                           <span className={`w-8 h-8 flex items-center justify-center rounded-lg font-bold text-sm ${idx === 0 ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-600'}`}>{idx + 1}</span>
                         </td>
                         <td className="px-6 py-4 font-bold text-gray-900">{item.name}</td>
-                        <td className="px-6 py-4 text-sm font-medium text-gray-500">{item.teacher_name || "Noma'lum"}</td>
+                        <td className="px-6 py-4 text-sm font-medium text-gray-500">{item.teacher_name || "Nomaʼlum"}</td>
                         <td className="px-6 py-4 font-bold text-blue-600">{item.hours} soat</td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">

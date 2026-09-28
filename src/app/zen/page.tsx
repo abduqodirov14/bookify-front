@@ -119,7 +119,7 @@ export default function ZenMutolaaPage() {
               onClick={toggleTimer}
               className="px-6 py-2 text-sm text-white bg-[#B4472B] rounded-md hover:bg-[#9e3d25] transition-colors"
             >
-              {isActive ? 'To\'xtatish' : 'Boshlash'}
+              {isActive ? 'Toʻxtatish' : 'Boshlash'}
             </button>
           </div>
 

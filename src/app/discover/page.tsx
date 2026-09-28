@@ -28,7 +28,7 @@ export default function DiscoverPage() {
             <h2 className="text-lg font-bold text-gray-900">Trenddagi qidiruvlar</h2>
           </div>
           <div className="flex flex-wrap gap-2">
-            {["O'tkan Kunlar", "Psixologiya", "Biznes", "Shaxsiy rivojlanish", "Tarixiy roman"].map((tag, i) => (
+            {["Oʻtkan Kunlar", "Psixologiya", "Biznes", "Shaxsiy rivojlanish", "Tarixiy roman"].map((tag, i) => (
               <button key={i} className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-bold text-gray-600 hover:border-orange-500 hover:text-orange-500 transition-colors">
                 {tag}
               </button>
@@ -44,7 +44,7 @@ export default function DiscoverPage() {
           <div className="grid grid-cols-2 gap-4">
             {[
               { name: "Jahon adabiyoti", color: "from-blue-500 to-indigo-500" },
-              { name: "O'zbek klassikasi", color: "from-orange-400 to-red-500" },
+              { name: "Oʻzbek klassikasi", color: "from-orange-400 to-red-500" },
               { name: "Zamonaviy", color: "from-emerald-400 to-teal-500" },
               { name: "Ilmiy-fantastika", color: "from-purple-500 to-pink-500" }
             ].map((genre, i) => (

@@ -12,8 +12,8 @@ export default function DirectorLayout({ children }: { children: React.ReactNode
 
   const tabs = [
     { name: "Asosiy Oyna", href: "/director", icon: LayoutDashboard },
-    { name: "Sinflar va O'quvchilar", href: "/director/classes", icon: Users },
-    { name: "O'qituvchilar", href: "/director/teachers", icon: GraduationCap },
+    { name: "Sinflar va Oʻquvchilar", href: "/director/classes", icon: Users },
+    { name: "Oʻqituvchilar", href: "/director/teachers", icon: GraduationCap },
     { name: "Maktab Kutubxonasi", href: "/director/library", icon: BookOpen },
     { name: "Rasmiy Hisobotlar", href: "/director/reports", icon: FileText },
   ];

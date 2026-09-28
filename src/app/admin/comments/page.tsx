@@ -4,8 +4,8 @@ import { MessageSquare, Trash2, Ban } from "lucide-react";
 
 export default function CommentsPage() {
   const comments = [
-    { id: 1, user: "Alisher U.", book: "Qiyomat", text: "Juda ta'sirli asar ekan, Chingiz Aytmatov qalamiga qoyil!", time: "2 soat oldin" },
-    { id: 2, user: "Zilola M.", book: "1984", text: "Ba'zi joylarida audio biroz xirillagan, iltimos tekshirib ko'ringlar.", time: "Kecha" },
+    { id: 1, user: "Alisher U.", book: "Qiyomat", text: "Juda taʼsirli asar ekan, Chingiz Aytmatov qalamiga qoyil!", time: "2 soat oldin" },
+    { id: 2, user: "Zilola M.", book: "1984", text: "Baʼzi joylarida audio biroz xirillagan, iltimos tekshirib koʻringlar.", time: "Kecha" },
   ];
 
   return (
@@ -33,7 +33,7 @@ export default function CommentsPage() {
             </div>
             
             <div className="flex items-center gap-2 sm:self-start">
-              <button className="p-2.5 text-red-500 bg-red-50 hover:bg-red-100 rounded-xl transition-colors tooltip" title="O'chirish">
+              <button className="p-2.5 text-red-500 bg-red-50 hover:bg-red-100 rounded-xl transition-colors tooltip" title="Oʻchirish">
                 <Trash2 size={18} />
               </button>
               <button className="p-2.5 text-orange-500 bg-orange-50 hover:bg-orange-100 rounded-xl transition-colors tooltip" title="Foydalanuvchini bloklash">

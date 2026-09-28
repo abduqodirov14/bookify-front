@@ -20,6 +20,31 @@ function bookHasAudio(book: any): boolean {
   return !!(book.has_audio || book.audio_url || (book.audio_count && book.audio_count > 0));
 }
 
+/* ── Hero book meta string (page count · audio duration) ─────────────────── */
+function getHeroMeta(book: any): string | null {
+  if (!book) return null;
+  const parts: string[] = [];
+  const pages = book.pages_count || book.pages;
+  if (pages && Number(pages) > 0) {
+    parts.push(`${pages} sahifa`);
+  }
+  const audio = book.audio_duration || book.audioDuration;
+  if (audio) {
+    if (typeof audio === "number") {
+      const h = Math.floor(audio / 3600);
+      const m = Math.floor((audio % 3600) / 60);
+      if (h > 0) {
+        parts.push(`${h} soat ${m > 0 ? `${m} daqiqa` : ""}`.trim() + " audio");
+      } else if (m > 0) {
+        parts.push(`${m} daqiqa audio`);
+      }
+    } else if (typeof audio === "string" && audio.trim()) {
+      parts.push(`${audio.trim()} audio`);
+    }
+  }
+  return parts.length > 0 ? parts.join(" · ") : null;
+}
+
 /* ── Shared container width ──────────────────────────────────────────────── */
 // Both <header> inner div and <main> use this so the wordmark aligns
 // with the page content's left edge.
@@ -73,24 +98,22 @@ export default function Home() {
               <div className="relative">
                 <button
                   onClick={() => setMenuOpen(!menuOpen)}
-                  className="flex items-center gap-2 text-[14px] font-medium text-[#1B1A17] border border-[#E3DCCB] rounded-full px-3 py-1.5 hover:bg-[#FBF8F1] transition-colors"
+                  className="w-9 h-9 rounded-full bg-[#B4472B] text-white flex items-center justify-center text-[13px] font-bold hover:opacity-90 transition-opacity flex-shrink-0"
+                  title={user.name || user.email || "Profil"}
+                  aria-label="Foydalanuvchi menyusi"
                 >
-                  <span className="w-6 h-6 rounded-full bg-[#B4472B] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
-                    {(user.name || user.email || "K").charAt(0).toUpperCase()}
-                  </span>
-                  <span className="max-w-[100px] truncate hidden sm:block">{user.name || user.email}</span>
+                  {(user.name || user.email || "K").charAt(0).toUpperCase()}
                 </button>
                 {menuOpen && (
-                  <div className="absolute right-0 top-10 w-48 bg-[#FBF8F1] border border-[#E3DCCB] rounded-lg shadow-md py-1 z-50">
+                  <div className="absolute right-0 top-11 w-44 bg-[#FBF8F1] border border-[#E3DCCB] rounded-lg shadow-sm py-1 z-50">
                     <div className="px-3 py-2 border-b border-[#E3DCCB]">
-                      <div className="text-[13px] text-[#5C584F]">{user.role || "Kitobxon"}</div>
-                      <div className="text-[14px] font-semibold text-[#1B1A17] truncate">{user.name || user.email}</div>
+                      <div className="text-[12px] text-[#5C584F]">{user.role || "Kitobxon"}</div>
+                      <div className="text-[13px] font-semibold text-[#1B1A17] truncate">{user.name || user.email}</div>
                     </div>
                     {String(user.role || "").toLowerCase().includes("admin") && (
                       <Link href="/admin" onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-[14px] text-[#1B1A17] hover:bg-[#F6F1E7] transition-colors">Admin panel</Link>
                     )}
                     <Link href="/profile" onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-[14px] text-[#1B1A17] hover:bg-[#F6F1E7] transition-colors">Profil</Link>
-                    <Link href="/saved"   onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-[14px] text-[#1B1A17] hover:bg-[#F6F1E7] transition-colors">Saqlangan</Link>
                     <button onClick={handleLogout} className="w-full text-left px-3 py-2 text-[14px] text-[#B4472B] hover:bg-[#F6F1E7] transition-colors flex items-center gap-2">
                       <LogOut size={14} /> Chiqish
                     </button>
@@ -149,8 +172,15 @@ export default function Home() {
                   <p className="text-[#5C584F] text-[15px] mb-2">{heroBook.author}</p>
                 )}
                 {heroBook.description && (
-                  <p className="text-[#5C584F] text-[15px] leading-[1.65] mb-7 line-clamp-3">
+                  <p className="text-[#5C584F] text-[15px] leading-[1.65] mb-3 line-clamp-3">
                     {heroBook.description}
+                  </p>
+                )}
+
+                {/* Muted meta line built from real book data (page count · audio duration) */}
+                {getHeroMeta(heroBook) && (
+                  <p className="text-[13px] text-[#5C584F] mb-6 font-medium">
+                    {getHeroMeta(heroBook)}
                   </p>
                 )}
 
@@ -195,7 +225,7 @@ export default function Home() {
               {catalogBooks.map(book => {
                 const hasAudio = bookHasAudio(book);
                 return (
-                  /* Whole card is one Link — no secondary "O'qish · Audio" row */
+                  /* Whole card is one Link — no secondary "Oʻqish · Audio" row */
                   <Link
                     key={book.id}
                     href={`/read/${book.id}`}

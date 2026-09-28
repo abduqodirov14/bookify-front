@@ -72,17 +72,17 @@ export default function AudioModerationPage() {
   };
 
   const handleDeleteTrack = async (track: any) => {
-    if (!window.confirm(`Haqiqatan ham "${track.title}" trekini o'chirmoqchimisiz?`)) return;
+    if (!window.confirm(`Haqiqatan ham "${track.title}" trekini oʻchirmoqchimisiz?`)) return;
     try {
       await api.deleteAdminAudioTrack(track.book_id || track.bookId, track.id);
       if (playingTrackId === track.id) {
         if (audioRef.current) audioRef.current.pause();
         setPlayingTrackId(null);
       }
-      setSuccess(`"${track.title}" muvaffaqiyatli o'chirildi.`);
+      setSuccess(`"${track.title}" muvaffaqiyatli oʻchirildi.`);
       loadTracks();
     } catch (err: any) {
-      setError(err.message || "Trekni o'chirishda xatolik");
+      setError(err.message || "Trekni oʻchirishda xatolik");
     }
   };
 
@@ -155,7 +155,7 @@ export default function AudioModerationPage() {
             className="flex items-center gap-2 px-4 py-2.5 bg-[#E05638] hover:bg-[#D04C2E] text-white rounded-2xl text-xs font-bold shadow-md shadow-[#E05638]/20 transition-all cursor-pointer"
           >
             <Upload size={14} />
-            <span>Audio Trek Qo'shish</span>
+            <span>Audio Trek Qoʻshish</span>
           </button>
 
           <button 
@@ -196,7 +196,7 @@ export default function AudioModerationPage() {
           </div>
           <h3 className="text-lg font-bold text-gray-900">Hozircha audio treklar mavjud emas</h3>
           <p className="text-sm text-gray-400 max-w-md mx-auto">
-            Platformaga kitoblar uchun audio yozuvlar yuklanganda, ular shu yerda real vaqtda ko'rinadi va tekshirish uchun tinglash mumkin bo'ladi.
+            Platformaga kitoblar uchun audio yozuvlar yuklanganda, ular shu yerda real vaqtda koʻrinadi va tekshirish uchun tinglash mumkin boʻladi.
           </p>
           <button
             onClick={() => setIsUploadModalOpen(true)}
@@ -271,7 +271,7 @@ export default function AudioModerationPage() {
                     className="flex items-center gap-1.5 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-bold transition-colors cursor-pointer"
                   >
                     <Trash2 size={14} />
-                    <span>O'chirish</span>
+                    <span>Oʻchirish</span>
                   </button>
                 </div>
               </div>
@@ -287,7 +287,7 @@ export default function AudioModerationPage() {
             <div className="flex items-center justify-between border-b border-gray-100 pb-4">
               <div>
                 <h3 className="text-xl font-bold text-gray-900">Yangi Audio Trek Yuklash</h3>
-                <p className="text-xs text-gray-400">Kitob uchun yangi audio bob yoki to'liq audio faylni qo'shish</p>
+                <p className="text-xs text-gray-400">Kitob uchun yangi audio bob yoki toʻliq audio faylni qoʻshish</p>
               </div>
               <button 
                 onClick={() => setIsUploadModalOpen(false)}
@@ -353,7 +353,7 @@ export default function AudioModerationPage() {
                 </label>
                 <input
                   type="text"
-                  placeholder="Masalan: Afzal Rafiqov yoki O'zingiz"
+                  placeholder="Masalan: Afzal Rafiqov yoki Oʻzingiz"
                   value={narrator}
                   onChange={(e) => setNarrator(e.target.value)}
                   className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-3.5 text-sm font-semibold text-gray-900 outline-none focus:bg-white focus:border-[#E05638]"

@@ -173,18 +173,18 @@ export default function ReadBookPage() {
   const leftPage = pages[currentSpreadIndex] || null;
   const rightPage = (!isMobile && isSpreadMode) ? (pages[currentSpreadIndex + 1] || null) : null;
 
-  // 2 ta pageni hisoblab sanash: 3-4 yoki 5-6 emas, 2 ta pageni qo'shib (2, 4, 6, 8...) sanaydi
+  // 2 ta pageni hisoblab sanash: 3-4 yoki 5-6 emas, 2 ta pageni qoʻshib (2, 4, 6, 8...) sanaydi
   const getCurrentPageNumber = () => {
     if (totalPages === 0) return 0;
     if (isMobile || !isSpreadMode || !rightPage) {
       return leftPage?.page_number || (currentSpreadIndex + 1);
     }
-    // 2-sahifali ko'rinishda o'ng sahifa raqamini olamiz (2, 4, 6...)
+    // 2-sahifali koʻrinishda oʻng sahifa raqamini olamiz (2, 4, 6...)
     const rightNum = rightPage?.page_number || (currentSpreadIndex + 2);
     return Math.min(rightNum, totalPages);
   };
 
-  // Bottom Pill Badge Text (2 ta pageni hisoblab bitta aniq raqam bilan ko'rsatish)
+  // Bottom Pill Badge Text (2 ta pageni hisoblab bitta aniq raqam bilan koʻrsatish)
   const getBadgeText = () => {
     if (totalPages === 0) return "0 / 0 sahifa";
     const currentNum = getCurrentPageNumber();
@@ -298,7 +298,7 @@ export default function ReadBookPage() {
             <button
               onClick={() => setIsSpreadMode(!isSpreadMode)}
               className="flex items-center gap-1 px-2.5 py-1.5 bg-white hover:bg-stone-100 rounded-xl text-xs font-semibold text-gray-700 border border-stone-300 cursor-pointer shadow-2xs"
-              title={isSpreadMode ? "Bitta sahifali ko'rinish" : "Ikki sahifali yoyilma"}
+              title={isSpreadMode ? "Bitta sahifali koʻrinish" : "Ikki sahifali yoyilma"}
             >
               {isSpreadMode ? <Columns2 size={15} className="text-[#E05638]" /> : <Square size={15} />}
               <span className="hidden lg:inline text-[11px]">{isSpreadMode ? "2 Sahifali" : "1 Sahifali"}</span>
@@ -310,7 +310,7 @@ export default function ReadBookPage() {
             <button
               onClick={() => setBookSize((s) => s === "full" ? "large" : "standard")}
               className={`p-1.5 rounded-lg transition-colors cursor-pointer ${bookSize === "standard" ? "bg-stone-200 text-gray-900" : "text-gray-600 hover:text-black"}`}
-              title="Kichikroq o'lcham"
+              title="Kichikroq oʻlcham"
             >
               <ZoomOut size={15} />
             </button>
@@ -349,7 +349,7 @@ export default function ReadBookPage() {
           <button
             onClick={toggleFullscreen}
             className="p-2 bg-white hover:bg-stone-100 rounded-xl border border-stone-300 text-gray-700 cursor-pointer shadow-2xs"
-            title={isFullscreen ? "To'liq ekrandan chiqish" : "To'liq ekran"}
+            title={isFullscreen ? "Toʻliq ekrandan chiqish" : "Toʻliq ekran"}
           >
             {isFullscreen ? <Minimize size={15} /> : <Maximize size={15} />}
           </button>
@@ -412,7 +412,7 @@ export default function ReadBookPage() {
               <div 
                 onClick={prevPage}
                 className="relative h-full w-full flex flex-col justify-between overflow-hidden cursor-pointer group bg-[#FCFBF9]"
-                title="Oldingi sahifaga o'tish"
+                title="Oldingi sahifaga oʻtish"
               >
                 {/* Content */}
                 <div className="flex-1 w-full h-full flex items-stretch justify-center overflow-hidden">
@@ -441,7 +441,7 @@ export default function ReadBookPage() {
                 <div 
                   onClick={nextPage}
                   className="relative h-full w-full flex flex-col justify-between overflow-hidden cursor-pointer group bg-[#FCFBF9] border-l border-stone-200"
-                  title="Keyingi sahifaga o'tish"
+                  title="Keyingi sahifaga oʻtish"
                 >
                   {/* Content */}
                   <div className="flex-1 w-full h-full flex items-stretch justify-center overflow-hidden">
@@ -521,7 +521,7 @@ export default function ReadBookPage() {
             </div>
             <h3 className="text-xl font-bold text-gray-900">Zen Mutolaa</h3>
             <p className="text-xs text-gray-500 leading-relaxed px-2">
-              Chalg'ituvchi narsalarni unuting va faqat kitob mutolaasi bilan qoling.
+              Chalgʻituvchi narsalarni unuting va faqat kitob mutolaasi bilan qoling.
             </p>
             <div className="grid grid-cols-4 gap-2 pt-2">
               {[15, 30, 45, 60].map((mins) => (

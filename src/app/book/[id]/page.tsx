@@ -155,7 +155,7 @@ export default function BookDetailPage() {
       try {
         await navigator.share({
           title: book.title,
-          text: `Bookify orqali "${book.title}" asarini o'qing!`,
+          text: `Bookify orqali "${book.title}" asarini oʻqing!`,
           url: window.location.href,
         });
       } catch (err) {
@@ -516,7 +516,7 @@ export default function BookDetailPage() {
         <div className="bg-white rounded-[32px] p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
           <h2 className="text-2xl font-bold text-gray-900 tracking-tight mb-4">Asar haqida</h2>
           <p className="text-gray-600 leading-relaxed font-medium text-base sm:text-lg">
-            {book.description || "Ushbu asar o'zbek va jahon adabiyotining sara durdonalaridan biri hisoblanadi."}
+            {book.description || "Ushbu asar oʻzbek va jahon adabiyotining sara durdonalaridan biri hisoblanadi."}
           </p>
         </div>
       </div>
