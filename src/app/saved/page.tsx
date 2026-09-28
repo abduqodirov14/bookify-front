@@ -11,7 +11,7 @@ export default function SavedPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    document.title = 'Saqlanganlar — Bookify';
+    document.title = 'Saqlangan — Bookify';
     api.getLibrary()
       .then(items => {
         if (Array.isArray(items) && items.length > 0) {

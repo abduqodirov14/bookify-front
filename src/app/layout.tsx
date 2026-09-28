@@ -18,8 +18,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Bookify — Oʻzbek adabiyoti kutubxonasi",
-  description: "Oʻzbek va jahon adabiyotining sara asarlarini onlayn oʻqing. Bookify — raqamli mutolaa makoni.",
+  title: "Bookify — oʻzbek tilidagi kitoblar: oʻqing va tinglang",
+  description: "Zamonaviy va klassik asarlarni onlayn oʻqing, audio tinglang, Zen rejimida chalgʻimay mutolaa qiling.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

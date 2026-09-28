@@ -57,6 +57,7 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
+    document.title = "Bookify — oʻzbek tilidagi kitoblar: oʻqing va tinglang";
     const cached = getCachedUser();
     if (cached) setUser(cached);
     api.getMe().then(u => { if (u) setUser(u); }).catch(() => {});
