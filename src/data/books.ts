@@ -20,6 +20,7 @@ export const BOOKS: Book[] = [
     // Open Library: Penguin Classics ISBN 978-0-14-044913-6
     coverImage: "https://covers.openlibrary.org/b/isbn/9780140449136-L.jpg",
     spineColor: "#16213E",
+    accent_color: "#16213E",
     description: "Talaba Raskolnikov oʻzini qoida ustida turgan deb hisoblab, bir sudxoʻr kampirni oʻldiradi. Jinoyatdan keyingi azob va vijdon azobi uning ruhini ezadi. Dostoyevskiyning psixologik realizmining choʻqqisi.",
     publishedYear: 1866,
     pages: 574,

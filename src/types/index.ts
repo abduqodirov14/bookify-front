@@ -44,6 +44,8 @@ export interface Book {
   category: string;
   coverImage: string;
   spineColor: string;
+  accentColor?: string;
+  accent_color?: string;
   description: string;
   publishedYear: number;
   pages: number;

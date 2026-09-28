@@ -14,8 +14,6 @@ import { api, getCachedUser, clearAuthToken, resolveFileUrl } from "@/services/a
 import { BOOKS } from "@/data/books";
 
 /* ── Audio detection ─────────────────────────────────────────────────────── */
-// Book objects returned by the API may include `has_audio`, `audio_url`,
-// or `audio_count`. We treat any truthy value as "has audio".
 function bookHasAudio(book: any): boolean {
   return !!(book.has_audio || book.audio_url || (book.audio_count && book.audio_count > 0));
 }
@@ -45,9 +43,21 @@ function getHeroMeta(book: any): string | null {
   return parts.length > 0 ? parts.join(" · ") : null;
 }
 
+/* ── Luminance-based contrast checker (WCAG AA/AAA) ──────────────────────── */
+function getContrastTextColor(hex?: string): string {
+  if (!hex || !hex.startsWith("#") || hex.length < 7) return "#F6F1E7";
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const toLinear = (c: number) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  };
+  const L = 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+  return L < 0.45 ? "#F6F1E7" : "#1B1A17";
+}
+
 /* ── Shared container width ──────────────────────────────────────────────── */
-// Both <header> inner div and <main> use this so the wordmark aligns
-// with the page content's left edge.
 const CONTENT_WIDTH = "max-w-5xl mx-auto px-4 sm:px-6";
 
 export default function Home() {
@@ -55,6 +65,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     document.title = "Bookify — oʻzbek tilidagi kitoblar: oʻqing va tinglang";
@@ -65,32 +76,52 @@ export default function Home() {
       .then(data => { setBooks(Array.isArray(data) && data.length > 0 ? data : BOOKS); })
       .catch(() => setBooks(BOOKS))
       .finally(() => setLoading(false));
+
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 380);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const handleLogout = () => { clearAuthToken(); setUser(null); setMenuOpen(false); };
   const heroBook     = books[0] || null;
   const catalogBooks = books.slice(1);
+  const heroAccent   = heroBook?.accent_color || heroBook?.accentColor || "#7A4109";
+  const heroMeta     = getHeroMeta(heroBook);
 
   return (
     <div className="min-h-screen bg-[#F6F1E7]">
 
-      {/* ── Header ────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 bg-[#F6F1E7]/95 backdrop-blur-sm border-b border-[#E3DCCB]">
-        <div className={`${CONTENT_WIDTH} py-3 flex items-center justify-between`}>
+      {/* ── Header: transparent over hero, cream + ink on scroll ────────────── */}
+      <header
+        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+          isScrolled
+            ? "bg-[#F6F1E7]/95 backdrop-blur-sm border-b border-[#E3DCCB]"
+            : "bg-transparent border-b border-transparent"
+        }`}
+      >
+        <div className={`${CONTENT_WIDTH} py-3.5 flex items-center justify-between`}>
 
           {/* Wordmark — Newsreader serif */}
           <Link
             href="/"
-            className="font-serif text-2xl font-semibold text-[#1B1A17] tracking-tight leading-none"
+            className={`font-serif text-2xl font-semibold tracking-tight leading-none transition-colors duration-200 ${
+              isScrolled ? "text-[#1B1A17]" : "text-[#F6F1E7]"
+            }`}
           >
             Bookify
           </Link>
 
           {/* Desktop nav — Inter 14 px */}
-          <nav className="hidden md:flex items-center gap-6 text-[14px] text-[#5C584F]">
-            <Link href="/"      className="hover:text-[#1B1A17] transition-colors">Kutubxona</Link>
-            <Link href="/zen"   className="hover:text-[#1B1A17] transition-colors">Zen Mutolaa</Link>
-            <Link href="/saved" className="hover:text-[#1B1A17] transition-colors">Saqlangan</Link>
+          <nav
+            className={`hidden md:flex items-center gap-6 text-[14px] transition-colors duration-200 ${
+              isScrolled ? "text-[#5C584F]" : "text-[#F6F1E7]/80"
+            }`}
+          >
+            <Link href="/" className={`transition-colors ${isScrolled ? "hover:text-[#1B1A17]" : "hover:text-[#F6F1E7]"}`}>Kutubxona</Link>
+            <Link href="/zen" className={`transition-colors ${isScrolled ? "hover:text-[#1B1A17]" : "hover:text-[#F6F1E7]"}`}>Zen Mutolaa</Link>
+            <Link href="/saved" className={`transition-colors ${isScrolled ? "hover:text-[#1B1A17]" : "hover:text-[#F6F1E7]"}`}>Saqlangan</Link>
           </nav>
 
           {/* Auth */}
@@ -99,7 +130,11 @@ export default function Home() {
               <div className="relative">
                 <button
                   onClick={() => setMenuOpen(!menuOpen)}
-                  className="w-9 h-9 rounded-full bg-[#B4472B] text-white flex items-center justify-center text-[13px] font-bold hover:opacity-90 transition-opacity flex-shrink-0"
+                  className={`w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-bold transition-opacity hover:opacity-90 flex-shrink-0 ${
+                    isScrolled
+                      ? "bg-[#B4472B] text-white"
+                      : "bg-[#F6F1E7] text-[#1B1A17] shadow-sm"
+                  }`}
                   title={user.name || user.email || "Profil"}
                   aria-label="Foydalanuvchi menyusi"
                 >
@@ -122,7 +157,14 @@ export default function Home() {
                 )}
               </div>
             ) : (
-              <Link href="/auth" className="text-[14px] font-medium border border-[#E3DCCB] rounded-md px-4 py-1.5 text-[#1B1A17] hover:bg-[#FBF8F1] transition-colors">
+              <Link
+                href="/auth"
+                className={`text-[14px] font-medium border rounded-md px-4 py-1.5 transition-colors ${
+                  isScrolled
+                    ? "border-[#E3DCCB] text-[#1B1A17] hover:bg-[#FBF8F1]"
+                    : "border-[#F6F1E7]/40 text-[#F6F1E7] hover:bg-[#F6F1E7]/10"
+                }`}
+              >
                 Kirish
               </Link>
             )}
@@ -130,21 +172,74 @@ export default function Home() {
         </div>
       </header>
 
-      {/* ── Main ──────────────────────────────────────────────────────────── */}
-      <main className={`${CONTENT_WIDTH} py-10 pb-28 space-y-14`}>
+      {/* ── Hero: full-bleed band (~480px) with flat accent_color ─────────── */}
+      {heroBook && (
+        <section
+          className="w-full relative transition-colors duration-300 overflow-visible pt-24 pb-16 lg:pt-0 lg:pb-0 lg:min-h-[480px] lg:h-[480px] flex items-center"
+          style={{ backgroundColor: heroAccent }}
+        >
+          <div className={`${CONTENT_WIDTH} w-full flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-14 relative`}>
 
-        {/* Hero */}
-        {heroBook && (
-          <section className="border-b border-[#E3DCCB] pb-14">
-            {/* Label */}
-            <p className="text-[11px] font-semibold text-[#B4472B] uppercase tracking-widest mb-5">
-              Hafta asari
-            </p>
+            {/* Left: Metadata, Title, Description, Actions */}
+            <div className="flex-1 max-w-xl z-10 text-left">
+              <p className="text-[11px] font-semibold text-[#F6F1E7]/70 uppercase tracking-widest mb-3">
+                HAFTA ASARI
+              </p>
 
-            <div className="flex flex-col sm:flex-row gap-8 items-start">
-              {/* Cover — ~200 px wide */}
-              <Link href={`/read/${heroBook.id}`} className="shrink-0 block">
-                <div className="w-[200px] aspect-[2/3] rounded-lg border border-[#E3DCCB] overflow-hidden bg-[#FBF8F1]">
+              <h1 className="font-serif text-[42px] sm:text-[54px] lg:text-[66px] font-bold text-[#F6F1E7] leading-[1.08] mb-3 tracking-tight">
+                {heroBook.title}
+              </h1>
+
+              {heroBook.author && (
+                <p className="text-[16px] text-[#F6F1E7]/85 font-medium mb-3">
+                  {heroBook.author}
+                </p>
+              )}
+
+              {heroBook.description && (
+                <p className="text-[15px] leading-[1.65] text-[#F6F1E7]/80 line-clamp-2 mb-4 max-w-lg">
+                  {heroBook.description}
+                </p>
+              )}
+
+              {/* Real book data meta line */}
+              {heroMeta && (
+                <p className="text-[13px] text-[#F6F1E7]/70 font-medium mb-6">
+                  {heroMeta}
+                </p>
+              )}
+
+              {/* CTAs */}
+              <div className="flex items-center gap-3 flex-wrap">
+                {/* Primary: cream fill, dark text */}
+                <Link
+                  href={`/read/${heroBook.id}`}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#F6F1E7] text-[#1B1A17] text-[14px] font-semibold rounded-md hover:bg-white transition-colors"
+                >
+                  <BookOpen size={16} />
+                  Oʻqishni boshlash
+                </Link>
+
+                {/* Secondary: cream outline */}
+                <Link
+                  href={`/book/${heroBook.id}`}
+                  className="inline-flex items-center gap-2 px-6 py-3 border border-[#F6F1E7]/50 text-[#F6F1E7] text-[14px] font-semibold rounded-md hover:bg-[#F6F1E7]/10 transition-colors"
+                >
+                  <Headphones size={16} />
+                  Audio tinglash
+                </Link>
+              </div>
+            </div>
+
+            {/* Right: Cover (~300px wide, rotated -3deg, overlapping bottom edge by ~80px) */}
+            <div className="shrink-0 relative lg:translate-y-[80px] z-20">
+              <Link href={`/read/${heroBook.id}`} className="block">
+                <div
+                  className="w-[240px] sm:w-[280px] lg:w-[300px] aspect-[2/3] rounded-lg overflow-hidden -rotate-3 transition-transform duration-200"
+                  style={{
+                    boxShadow: "0 30px 60px -20px rgba(0, 0, 0, 0.45)",
+                  }}
+                >
                   {resolveFileUrl(heroBook.cover_image) ? (
                     <img
                       src={resolveFileUrl(heroBook.cover_image)}
@@ -152,7 +247,6 @@ export default function Home() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    /* Typographic fallback cover */
                     <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-[#E3DCCB] gap-2">
                       <span className="font-serif text-base font-bold text-[#1B1A17] leading-snug">{heroBook.title}</span>
                       {heroBook.author && (
@@ -162,78 +256,37 @@ export default function Home() {
                   )}
                 </div>
               </Link>
-
-              {/* Text */}
-              <div className="flex-1">
-                {/* Title ~48px */}
-                <h1 className="font-serif text-[40px] sm:text-[48px] font-bold text-[#1B1A17] leading-[1.15] mb-3">
-                  {heroBook.title}
-                </h1>
-                {heroBook.author && (
-                  <p className="text-[#5C584F] text-[15px] mb-2">{heroBook.author}</p>
-                )}
-                {heroBook.description && (
-                  <p className="text-[#5C584F] text-[15px] leading-[1.65] mb-3 line-clamp-3">
-                    {heroBook.description}
-                  </p>
-                )}
-
-                {/* Muted meta line built from real book data (page count · audio duration) */}
-                {getHeroMeta(heroBook) && (
-                  <p className="text-[13px] text-[#5C584F] mb-6 font-medium">
-                    {getHeroMeta(heroBook)}
-                  </p>
-                )}
-
-                {/* CTAs — same height, outlined secondary */}
-                <div className="flex items-center gap-3 flex-wrap">
-                  <Link
-                    href={`/read/${heroBook.id}`}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#B4472B] text-white text-[14px] font-semibold rounded-md hover:bg-[#9e3d25] transition-colors"
-                  >
-                    <BookOpen size={15} />
-                    Oʻqishni boshlash
-                  </Link>
-                  {/* Outlined — same height as primary */}
-                  <Link
-                    href={`/book/${heroBook.id}`}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 border border-[#E3DCCB] text-[#5C584F] text-[14px] font-semibold rounded-md hover:bg-[#FBF8F1] transition-colors"
-                  >
-                    <Headphones size={15} />
-                    Audio tinglash
-                  </Link>
-                </div>
-              </div>
             </div>
-          </section>
-        )}
 
-        {/* ── Catalog ─────────────────────────────────────────────────────── */}
+          </div>
+        </section>
+      )}
+
+      {/* ── Library: below band on cream #F6F1E7, gap 32px, hover translateY(-6px) ── */}
+      <main className={`${CONTENT_WIDTH} pt-28 lg:pt-36 pb-28`}>
         {loading ? (
           <div className="py-16 text-center text-[#5C584F] text-[15px]">Yuklanmoqda…</div>
         ) : catalogBooks.length > 0 ? (
           <section>
-            <div className="flex items-baseline justify-between mb-6">
-              {/* Section heading — Newsreader serif */}
+            <div className="flex items-baseline justify-between mb-8">
               <h2 className="font-serif text-2xl font-semibold text-[#1B1A17]">Kutubxona</h2>
-              {/* Show count only when there are 12+ books so it's meaningful */}
               {catalogBooks.length >= 12 && (
                 <span className="text-[13px] text-[#5C584F]">{catalogBooks.length} ta asar</span>
               )}
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-8">
+            {/* Gap 32px (gap-8) */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-8">
               {catalogBooks.map(book => {
                 const hasAudio = bookHasAudio(book);
                 return (
-                  /* Whole card is one Link — no secondary "Oʻqish · Audio" row */
                   <Link
                     key={book.id}
                     href={`/read/${book.id}`}
                     className="group block"
                   >
-                    {/* Cover */}
-                    <div className="aspect-[2/3] rounded-lg border border-[#E3DCCB] overflow-hidden bg-[#FBF8F1] mb-2">
+                    {/* Cover: hover translateY(-6px) + soft shadow, 200ms ease-out */}
+                    <div className="aspect-[2/3] rounded-lg border border-[#E3DCCB] overflow-hidden bg-[#FBF8F1] mb-3 transition-all duration-200 ease-out group-hover:-translate-y-1.5 group-hover:shadow-[0_16px_32px_-8px_rgba(0,0,0,0.18)]">
                       {resolveFileUrl(book.cover_image) ? (
                         <img
                           src={resolveFileUrl(book.cover_image)}
@@ -250,15 +303,15 @@ export default function Home() {
                       )}
                     </div>
 
-                    {/* Title — 16px Newsreader serif */}
+                    {/* Title — Newsreader 16px */}
                     <h3 className="font-serif text-[16px] font-semibold text-[#1B1A17] leading-snug line-clamp-2">
                       {book.title}
                     </h3>
 
-                    {/* Author + optional audio badge — 13px muted */}
-                    <div className="flex items-center gap-1.5 mt-0.5">
+                    {/* Author — 13px muted */}
+                    <div className="flex items-center gap-1.5 mt-1">
                       <p className="text-[13px] text-[#5C584F] truncate">
-                        {book.author || "Muallif noma\u02bclum"}
+                        {book.author || "Muallif nomaʼlum"}
                       </p>
                       {hasAudio && (
                         <Headphones
@@ -286,7 +339,6 @@ export default function Home() {
             </div>
           )
         )}
-
       </main>
 
       {/* ── Minimal footer ────────────────────────────────────────────────── */}
@@ -299,12 +351,12 @@ export default function Home() {
         </div>
       </footer>
 
-      {/* ── Mobile bottom nav ─────────────────────────────────────────────── */}
+      {/* ── Mobile bottom nav (md:hidden) ─────────────────────────────────── */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#FBF8F1] border-t border-[#E3DCCB] flex">
         {[
-          { href: "/",        label: "Kutubxona" },
-          { href: "/zen",     label: "Zen" },
-          { href: "/saved",   label: "Saqlangan" },
+          { href: "/", label: "Kutubxona" },
+          { href: "/zen", label: "Zen" },
+          { href: "/saved", label: "Saqlangan" },
           { href: "/profile", label: "Profil" },
         ].map(item => (
           <Link
