@@ -1,33 +1,33 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Newsreader, Inter } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const newsreader = Newsreader({
+  variable: "--font-newsreader",
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Bookify — Kitoblar va ta'lim platformasi",
-  description: "Kitoblar mutolaasi, audio kitoblar va maktablar uchun boshqaruv platformasi",
+  title: "Bookify — O'zbek adabiyoti kutubxonasi",
+  description: "O'zbek va jahon adabiyotining sara asarlarini onlayn o'qing. Bookify — raqamli mutolaa makoni.",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="uz"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="uz" className={`${newsreader.variable} ${inter.variable} h-full`}>
+      <body className="min-h-full flex flex-col bg-[#F6F1E7] text-[#1B1A17] antialiased">
+        {children}
+      </body>
     </html>
   );
 }

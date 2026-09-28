@@ -2,8 +2,7 @@
 
 import React, { useState, useRef, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { Mail, Lock, User, ArrowRight, ArrowLeft, Loader2, AlertCircle, CheckCircle2, ShieldCheck, RefreshCw, Check } from "lucide-react";
+import { Mail, Lock, User, ArrowRight, Loader2, AlertCircle, CheckCircle2, ShieldCheck, Check } from "lucide-react";
 import { api, setAuthToken, setCachedUser, getCachedUser } from "@/services/api";
 
 export default function AuthForm() {
@@ -183,9 +182,7 @@ export default function AuthForm() {
     }
   };
 
-  // Initialize Google Identity Services & Telegram OAuth listener
   useEffect(() => {
-    // 1. Load Google Identity Services script
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
     script.async = true;
@@ -223,7 +220,6 @@ export default function AuthForm() {
     };
     document.body.appendChild(script);
 
-    // 2. Telegram OAuth listener
     const handleTgMsg = async (event: MessageEvent) => {
       if (event.data?.event === "auth_result" && event.data?.result) {
         setLoading(true);
@@ -253,14 +249,12 @@ export default function AuthForm() {
     };
   }, [redirectPath]);
 
-  // Google Login Trigger
   const handleGoogleLogin = async () => {
     setErrorMsg("");
     try {
       if ((window as any).google?.accounts?.id) {
         (window as any).google.accounts.id.prompt((notification: any) => {
           if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-            // Fallback to demo Google token if Google prompt was blocked or closed
             setLoading(true);
             const dummyCred = "google_oauth_token_" + Date.now();
             api.googleAuth(dummyCred).then((res) => {
@@ -274,7 +268,6 @@ export default function AuthForm() {
           }
         });
       } else {
-        // Fallback demo auth if GSI not loaded
         setLoading(true);
         const dummyCred = "google_oauth_token_" + Date.now();
         const res = await api.googleAuth(dummyCred);
@@ -290,7 +283,6 @@ export default function AuthForm() {
     }
   };
 
-  // Telegram Login Trigger
   const handleTelegramLogin = async () => {
     setErrorMsg("");
     try {
@@ -302,7 +294,6 @@ export default function AuthForm() {
       const top = window.screen.height / 2 - h / 2;
       const popup = window.open(popupUrl, "telegram_auth", `width=${w},height=${h},top=${top},left=${left}`);
       
-      // If popup was blocked or closed without completing, allow fallback
       if (!popup || popup.closed) {
         setLoading(true);
         const dummyTg = {
@@ -326,150 +317,138 @@ export default function AuthForm() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 flex flex-col items-center justify-center px-6 py-12 transition-colors w-full">
-      <div className="relative w-full max-w-[400px] bg-white space-y-8 animate-fade-in mx-auto">
+    <div className="space-y-6">
+      <div className="bg-[#FBF8F1] border border-[#E3DCCB] rounded-lg p-6 sm:p-8">
         
-        {/* Brand Header */}
-        <div className="text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-[#E05638] flex items-center justify-center text-white font-serif font-bold text-3xl shadow-sm mx-auto">
-            B
-          </div>
-          <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+        {/* Header */}
+        <div className="text-center mb-6">
+          <h2 className="text-xl font-[var(--font-newsreader)] font-bold text-[#1B1A17]">
             {step === "otp" ? "Tasdiqlash" : isRegister ? "Yangi hisob" : "Xush kelibsiz"}
           </h2>
-          <p className="text-[15px] text-gray-500 font-medium">
+          <p className="text-sm text-[#6B675E] mt-1">
             {step === "otp" 
               ? "Xavfsizlik kodini kiriting" 
-              : "Durdona asarlar olamiga marhamat"}
+              : "Davom etish uchun tizimga kiring"}
           </p>
         </div>
 
-        {/* Alert Banners */}
+        {/* Banners */}
         {errorMsg && (
-          <div className="p-4 bg-red-50 border-l-4 border-red-500 text-red-600 rounded-r-2xl flex items-start gap-3 text-sm font-medium animate-fade-in shadow-sm">
-            <AlertCircle size={20} className="shrink-0 mt-0.5" />
-            <span className="leading-relaxed">{errorMsg}</span>
+          <div className="mb-6 p-3 bg-[#FBF8F1] border border-red-300 text-red-700 rounded-md flex items-start gap-2 text-sm">
+            <AlertCircle size={18} className="shrink-0 mt-0.5" />
+            <span>{errorMsg}</span>
           </div>
         )}
 
         {successMsg && (
-          <div className="p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 rounded-r-2xl flex items-start gap-3 text-sm font-medium animate-fade-in shadow-sm">
-            <CheckCircle2 size={20} className="shrink-0 mt-0.5" />
-            <span className="leading-relaxed">{successMsg}</span>
+          <div className="mb-6 p-3 bg-[#FBF8F1] border border-emerald-300 text-emerald-700 rounded-md flex items-start gap-2 text-sm">
+            <CheckCircle2 size={18} className="shrink-0 mt-0.5" />
+            <span>{successMsg}</span>
           </div>
         )}
 
         {/* STEP 1: Credentials Form */}
         {step === "creds" && (
-          <div className="space-y-6">
+          <div className="space-y-5">
             
-            {/* Social Auth */}
             <div className="space-y-3">
               <button
                 type="button"
                 onClick={handleGoogleLogin}
-                className="w-full h-14 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-900 font-semibold text-[15px] flex items-center justify-center gap-3 transition-colors shadow-sm active:scale-[0.98]"
+                className="w-full h-10 border border-[#E3DCCB] bg-[#FBF8F1] hover:bg-[#F6F1E7] text-[#1B1A17] font-medium text-sm rounded-md flex items-center justify-center gap-2 transition-colors"
               >
-                <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
                 </svg>
-                <span>Google orqali davom etish</span>
+                Google orqali kirish
               </button>
 
               <button
                 type="button"
                 onClick={handleTelegramLogin}
-                className="w-full h-14 rounded-2xl bg-[#24A1DE] hover:bg-[#208fca] active:scale-[0.98] text-white font-semibold text-[15px] flex items-center justify-center gap-3 transition-all shadow-sm"
+                className="w-full h-10 border border-[#24A1DE] bg-[#24A1DE] hover:bg-[#208fca] text-white font-medium text-sm rounded-md flex items-center justify-center gap-2 transition-colors"
               >
-                <svg className="w-5 h-5 fill-current shrink-0" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" />
                 </svg>
-                <span>Telegram orqali davom etish</span>
+                Telegram orqali kirish
               </button>
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-gray-200"></div>
-              <span className="text-[13px] font-medium text-gray-400">yoki pochta orqali</span>
-              <div className="flex-1 h-px bg-gray-200"></div>
+              <div className="flex-1 h-px bg-[#E3DCCB]"></div>
+              <span className="text-xs font-medium text-[#6B675E]">yoki</span>
+              <div className="flex-1 h-px bg-[#E3DCCB]"></div>
             </div>
 
             <form onSubmit={handleCredsSubmit} className="space-y-4">
               {isRegister && (
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[#E05638] transition-colors">
-                    <User size={18} />
+                <div>
+                  <label className="sr-only">Ism</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-[#6B675E]">
+                      <User size={16} />
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Ism va familiya"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full h-10 pl-10 pr-3 rounded-md bg-[#FBF8F1] border border-[#E3DCCB] focus:border-[#B4472B] focus:ring-2 focus:ring-[#B4472B]/20 text-sm text-[#1B1A17] outline-none transition-colors"
+                    />
                   </div>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ism va familiyangiz"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full h-14 pl-12 pr-4 rounded-2xl bg-white border border-gray-200 focus:border-[#E05638] focus:ring-4 focus:ring-[#E05638]/10 text-[15px] text-gray-900 placeholder:text-gray-400 outline-none transition-all shadow-sm"
-                  />
                 </div>
               )}
 
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[#E05638] transition-colors">
-                  <Mail size={18} />
+              <div>
+                <label className="sr-only">Elektron pochta</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-[#6B675E]">
+                    <Mail size={16} />
+                  </div>
+                  <input
+                    type="email"
+                    required
+                    placeholder="Elektron pochta"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full h-10 pl-10 pr-3 rounded-md bg-[#FBF8F1] border border-[#E3DCCB] focus:border-[#B4472B] focus:ring-2 focus:ring-[#B4472B]/20 text-sm text-[#1B1A17] outline-none transition-colors"
+                  />
                 </div>
-                <input
-                  type="email"
-                  required
-                  placeholder="Elektron pochta"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full h-14 pl-12 pr-4 rounded-2xl bg-white border border-gray-200 focus:border-[#E05638] focus:ring-4 focus:ring-[#E05638]/10 text-[15px] text-gray-900 placeholder:text-gray-400 outline-none transition-all shadow-sm"
-                />
               </div>
 
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[#E05638] transition-colors">
-                  <Lock size={18} />
+              <div>
+                <label className="sr-only">Parol</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-[#6B675E]">
+                    <Lock size={16} />
+                  </div>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Parol"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full h-10 pl-10 pr-3 rounded-md bg-[#FBF8F1] border border-[#E3DCCB] focus:border-[#B4472B] focus:ring-2 focus:ring-[#B4472B]/20 text-sm text-[#1B1A17] outline-none transition-colors"
+                  />
                 </div>
-                <input
-                  type="password"
-                  required
-                  placeholder="Parolingiz"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-14 pl-12 pr-4 rounded-2xl bg-white border border-gray-200 focus:border-[#E05638] focus:ring-4 focus:ring-[#E05638]/10 text-[15px] text-gray-900 placeholder:text-gray-400 outline-none transition-all shadow-sm"
-                />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-14 rounded-2xl bg-[#E05638] hover:bg-[#D04C2E] text-white font-bold text-[15px] shadow-lg shadow-[#E05638]/20 transition-transform active:scale-[0.98] flex items-center justify-center gap-2 mt-4 disabled:opacity-50"
+                className="w-full h-10 rounded-md bg-[#B4472B] hover:bg-[#9e3d25] text-white font-medium text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
               >
                 {loading ? (
-                  <Loader2 size={20} className="animate-spin" />
+                  <Loader2 size={16} className="animate-spin" />
                 ) : (
-                  <>
-                    <span>{isRegister ? "Ro'yxatdan o'tish" : "Kirish"}</span>
-                    <ArrowRight size={18} />
-                  </>
+                  <span>{isRegister ? "Ro'yxatdan o'tish" : "Kirish"}</span>
                 )}
               </button>
-
-              <div className="pt-4 text-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsRegister(!isRegister);
-                    setName(""); setEmail(""); setPassword("");
-                    setErrorMsg(""); setSuccessMsg("");
-                  }}
-                  className="text-[14px] text-gray-500 hover:text-gray-900 font-medium transition-colors"
-                >
-                  {isRegister ? "Hisobingiz bormi? Tizimga kiring" : "Hisobingiz yo'qmi? Yangi ochish"}
-                </button>
-              </div>
             </form>
           </div>
         )}
@@ -477,17 +456,17 @@ export default function AuthForm() {
         {/* STEP 2: 2FA OTP Challenge */}
         {step === "otp" && (
           <div className="space-y-6">
-            <div className="text-center space-y-2">
-              <ShieldCheck size={40} className="text-emerald-500 mx-auto" />
-              <p className="text-[15px] text-gray-600 leading-relaxed font-medium">
-                Tasdiqlash kodi <strong className="text-gray-900">{email}</strong> pochtasiga yuborildi.
+            <div className="text-center">
+              <ShieldCheck size={32} className="text-[#B4472B] mx-auto mb-2" />
+              <p className="text-sm text-[#1B1A17]">
+                Kod <strong>{email}</strong> manziliga yuborildi.
               </p>
             </div>
 
             {otpHint && (
-              <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl flex items-center justify-between text-[13px] text-blue-700 font-semibold shadow-sm">
+              <div className="p-3 bg-[#F6F1E7] border border-[#E3DCCB] rounded-md flex items-center justify-between text-xs text-[#1B1A17]">
                 <span className="flex items-center gap-1.5">
-                  <ShieldCheck size={16} />
+                  <ShieldCheck size={14} />
                   Sinov kodi: {otpHint}
                 </span>
                 <button
@@ -496,7 +475,7 @@ export default function AuthForm() {
                     const digits = otpHint.split("").slice(0, 6);
                     setOtp(digits);
                   }}
-                  className="px-3 py-1.5 bg-blue-200/50 hover:bg-blue-200 rounded-lg transition-colors"
+                  className="px-2 py-1 bg-[#FBF8F1] border border-[#E3DCCB] rounded-md hover:bg-[#F6F1E7] transition-colors"
                 >
                   Kiritish
                 </button>
@@ -504,7 +483,7 @@ export default function AuthForm() {
             )}
 
             <form onSubmit={handleVerify} className="space-y-6">
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center justify-between gap-1 sm:gap-2">
                 {otp.map((digit, idx) => (
                   <input
                     key={idx}
@@ -514,10 +493,10 @@ export default function AuthForm() {
                     value={digit}
                     onChange={(e) => handleOtpChange(idx, e.target.value)}
                     onKeyDown={(e) => handleOtpKeyDown(idx, e)}
-                    className={`w-12 h-14 text-center font-bold text-xl rounded-2xl border transition-all outline-none shadow-sm ${
+                    className={`w-10 h-12 sm:w-12 sm:h-14 text-center font-bold text-lg rounded-md border outline-none transition-colors ${
                       digit 
-                        ? "bg-orange-50/50 border-[#E05638] text-gray-900 ring-4 ring-[#E05638]/10" 
-                        : "bg-white border-gray-200 text-gray-900 focus:border-[#E05638] focus:ring-4 focus:ring-[#E05638]/10"
+                        ? "bg-[#FBF8F1] border-[#B4472B] text-[#1B1A17]" 
+                        : "bg-[#FBF8F1] border-[#E3DCCB] text-[#1B1A17] focus:border-[#B4472B] focus:ring-2 focus:ring-[#B4472B]/20"
                     }`}
                   />
                 ))}
@@ -526,15 +505,12 @@ export default function AuthForm() {
               <button
                 type="submit"
                 disabled={loading || otp.some((d) => !d)}
-                className="w-full h-14 rounded-2xl bg-[#E05638] hover:bg-[#D04C2E] text-white font-bold text-[15px] shadow-lg shadow-[#E05638]/20 transition-transform active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full h-10 rounded-md bg-[#B4472B] hover:bg-[#9e3d25] text-white font-medium text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
               >
                 {loading ? (
-                  <Loader2 size={20} className="animate-spin" />
+                  <Loader2 size={16} className="animate-spin" />
                 ) : (
-                  <>
-                    <span>Tasdiqlash</span>
-                    <Check size={18} />
-                  </>
+                  <span>Tasdiqlash</span>
                 )}
               </button>
 
@@ -543,7 +519,7 @@ export default function AuthForm() {
                   type="button"
                   disabled={countdown > 0 || !canResend}
                   onClick={handleResend}
-                  className="text-[14px] text-gray-500 hover:text-gray-900 font-medium disabled:opacity-50 transition-colors"
+                  className="text-xs text-[#6B675E] hover:text-[#1B1A17] disabled:opacity-50 transition-colors"
                 >
                   {countdown > 0 ? `Qayta yuborish (${countdown}s)` : "Kodni qayta yuborish"}
                 </button>
@@ -553,14 +529,30 @@ export default function AuthForm() {
             <button
               type="button"
               onClick={() => { setStep("creds"); setErrorMsg(""); }}
-              className="w-full text-center text-[14px] text-gray-400 hover:text-gray-600 transition-colors mt-2"
+              className="w-full text-center text-xs text-[#6B675E] hover:text-[#1B1A17] transition-colors"
             >
-              ← Boshqa hisob bilan kirish
+              ← Orqaga
             </button>
           </div>
         )}
-
       </div>
+
+      {/* Footer Switch */}
+      {step === "creds" && (
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={() => {
+              setIsRegister(!isRegister);
+              setName(""); setEmail(""); setPassword("");
+              setErrorMsg(""); setSuccessMsg("");
+            }}
+            className="text-sm text-[#6B675E] hover:text-[#1B1A17] transition-colors underline underline-offset-4"
+          >
+            {isRegister ? "Hisob bormi? Kiring" : "Hisobingiz yo'qmi? Ro'yxatdan o'ting"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

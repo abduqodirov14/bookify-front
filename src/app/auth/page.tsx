@@ -1,13 +1,24 @@
-"use client";
-
-import React, { Suspense } from "react";
-import { Loader2 } from "lucide-react";
+import type { Metadata } from "next";
+import { Suspense } from "react";
 import AuthForm from "@/components/AuthForm";
+
+export const metadata: Metadata = {
+  title: "Kirish — Bookify",
+  description: "Bookify hisobingizga kiring yoki yangi hisob oching.",
+};
 
 export default function AuthPage() {
   return (
-    <Suspense fallback={<div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin text-orange-500" size={32} /></div>}>
-      <AuthForm />
-    </Suspense>
+    <main className="min-h-screen bg-[#F6F1E7] flex flex-col items-center justify-center px-4 py-12">
+      <div className="w-full max-w-sm">
+        <div className="mb-8 text-center">
+          <a href="/" className="font-[var(--font-newsreader)] text-3xl font-semibold text-[#1B1A17] tracking-tight">Bookify</a>
+          <p className="mt-2 text-sm text-[#6B675E]">O&apos;zbek adabiyotining eng sara asarlari</p>
+        </div>
+        <Suspense fallback={<div className="h-64 flex items-center justify-center text-sm text-[#6B675E]">Yuklanmoqda...</div>}>
+          <AuthForm />
+        </Suspense>
+      </div>
+    </main>
   );
 }

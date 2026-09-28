@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Play, Pause, RotateCcw, Clock } from "lucide-react";
 
 export default function ZenMutolaaPage() {
   const [time, setTime] = useState(30 * 60); // Default 30 mins in seconds
@@ -10,6 +9,7 @@ export default function ZenMutolaaPage() {
   const [selectedPreset, setSelectedPreset] = useState(30);
 
   useEffect(() => {
+    document.title = 'Zen Mutolaa — Bookify';
     let interval: NodeJS.Timeout;
     if (isActive && time > 0) {
       interval = setInterval(() => {
@@ -45,36 +45,33 @@ export default function ZenMutolaaPage() {
   const dashOffset = dashArray * (1 - progress);
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col font-sans relative overflow-hidden">
+    <div className="min-h-screen bg-[#F6F1E7] font-[var(--font-inter)] text-[#1B1A17] flex flex-col">
       
-      {/* Background ambient glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+      <header className="sticky top-0 z-40 px-4 py-4 text-center">
+        <Link href="/" className="font-[var(--font-newsreader)] text-xl font-semibold text-[#1B1A17]">
+          Bookify
+        </Link>
+      </header>
 
-      {/* Navbar */}
-      
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-center relative z-10 p-6">
+      <main className="flex-1 flex flex-col items-center justify-center p-6 relative pb-24">
         
-        {/* Timer Circle */}
-        <div className="relative flex items-center justify-center mb-12">
-          <svg className="w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] transform -rotate-90">
-            {/* Background track */}
+        <div className="relative flex items-center justify-center mb-10">
+          <svg className="w-[280px] h-[280px] sm:w-[320px] sm:h-[320px] transform -rotate-90">
             <circle
               cx="50%"
               cy="50%"
               r="120"
               fill="transparent"
-              stroke="rgba(255,255,255,0.05)"
-              strokeWidth="8"
+              stroke="#E3DCCB"
+              strokeWidth="4"
             />
-            {/* Progress track */}
             <circle
               cx="50%"
               cy="50%"
               r="120"
               fill="transparent"
-              stroke="#3B82F6"
-              strokeWidth="8"
+              stroke="#B4472B"
+              strokeWidth="4"
               strokeLinecap="round"
               strokeDasharray={dashArray}
               strokeDashoffset={dashOffset}
@@ -83,46 +80,46 @@ export default function ZenMutolaaPage() {
           </svg>
           
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <Clock size={32} className="text-blue-400 mb-4 opacity-50" />
-            <div className="text-6xl sm:text-8xl font-light tracking-tighter font-mono">
+            <div className="font-[var(--font-newsreader)] text-6xl sm:text-7xl text-[#1B1A17]">
               {formatTime(time)}
             </div>
-            <div className="mt-4 text-sm font-medium text-white/40 uppercase tracking-widest">
-              qolgan vaqt
+            <div className="mt-2 text-xs font-medium text-[#6B675E] uppercase tracking-widest">
+              Zen
             </div>
           </div>
         </div>
 
-        {/* Controls */}
-        <div className="flex flex-col items-center gap-10 w-full max-w-sm">
+        <div className="flex flex-col items-center gap-8 w-full max-w-xs">
           
-          {/* Presets */}
-          <div className="grid grid-cols-4 gap-3 w-full">
+          <div className="flex items-center justify-center gap-4 flex-wrap w-full">
             {[15, 30, 45, 60].map((mins) => (
               <button 
                 key={mins}
                 onClick={() => handlePreset(mins)}
-                className={`py-3 rounded-2xl font-bold text-sm transition-all ${selectedPreset === mins ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'bg-white/5 text-white/50 hover:bg-white/10'}`}
+                className={`px-3 py-1 text-sm transition-colors ${
+                  selectedPreset === mins 
+                    ? 'text-[#B4472B] font-semibold underline underline-offset-4' 
+                    : 'text-[#6B675E] hover:text-[#1B1A17]'
+                }`}
               >
-                {mins}
+                {mins} daq
               </button>
             ))}
           </div>
 
-          {/* Action Buttons */}
           <div className="flex items-center gap-6">
             <button 
               onClick={resetTimer}
-              className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center text-white/50 hover:bg-white/10 hover:text-white transition-colors"
+              className="px-4 py-2 text-sm text-[#6B675E] border border-[#E3DCCB] rounded-md hover:bg-[#FBF8F1] transition-colors"
             >
-              <RotateCcw size={24} />
+              Qayta
             </button>
             
             <button 
               onClick={toggleTimer}
-              className="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white hover:bg-blue-500 shadow-[0_10px_30px_rgba(59,130,246,0.4)] transition-transform active:scale-95"
+              className="px-6 py-2 text-sm text-white bg-[#B4472B] rounded-md hover:bg-[#9e3d25] transition-colors"
             >
-              {isActive ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" className="ml-2" />}
+              {isActive ? 'To\'xtatish' : 'Boshlash'}
             </button>
           </div>
 
