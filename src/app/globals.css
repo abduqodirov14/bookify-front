@@ -4,11 +4,13 @@
   --color-bg: #F6F1E7;
   --color-surface: #FBF8F1;
   --color-ink: #1B1A17;
-  --color-muted: #6B675E;
+  /* #5C584F gives >= 4.5:1 contrast on #F6F1E7 — WCAG AA */
+  --color-muted: #5C584F;
   --color-border: #E3DCCB;
   --color-accent: #B4472B;
   --font-sans: var(--font-inter);
-  --font-serif: var(--font-newsreader);
+  /* Wire Tailwind's font-serif utility directly to Newsreader */
+  --font-serif: var(--font-newsreader), Georgia, "Times New Roman", serif;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -19,6 +21,7 @@ body {
   background-color: #F6F1E7;
   color: #1B1A17;
   font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 15px;
   -webkit-font-smoothing: antialiased;
 }
 
